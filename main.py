@@ -1,12 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import os
-import requests
-import torch
-import torchvision.transforms as transforms
-from PIL import Image
-import logging
 
 app = FastAPI(title="Faceit AI Bot Service", version="0.2.0")
 
