@@ -4,8 +4,8 @@ import Navigation from '../components/Navigation';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Faceit AI Bot',
-  description: 'AI-ассистент для Faceit и CS2',
+  title: 'Faceit AI Bot - Анализ статистики и поиск тиммейтов',
+  description: 'Инструмент для анализа игровой статистики и поиска тиммейтов на платформе Faceit. Скачайте расширение для браузера или полную версию на нашем сайте.',
 };
 
 export const viewport: Viewport = {

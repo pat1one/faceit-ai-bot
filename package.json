@@ -1,6 +1,7 @@
 {
-  "name": "utils",
+  "name": "faceit-ai-bot",
   "version": "0.1.0",
+  "description": "Инструмент для анализа игровой статистики и поиска тиммейтов на платформе Faceit",
   "private": true,
   "main": "index.js",
   "devDependencies": {
