@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faceit AI Bot - Скачать</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header .version {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .download-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .download-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .file-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .features {
+            margin-top: 30px;
+        }
+
+        .features h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Faceit AI Bot</h1>
+            <div class="version">Версия 0.1.0</div>
+        </div>
+
+        <div class="content">
+            <p class="description">
+                AI-ассистент и поиск тиммейтов для Faceit с расширением для браузера. 
+                Анализируйте свои игры, находите лучших тиммейтов и прокачивайте навыки!
+            </p>
+
+            <div class="download-section">
+                <div class="download-title">
+                    🌐 Расширение для браузера
+                </div>
+                <a href="https://github.com/pat1one/faceit-ai-bot/releases/download/v0.1.0/faceit-ai-bot-extension-v0.1.0.zip" class="download-btn">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Скачать расширение
+                </a>
+                <div class="file-info">
+                    📦 Размер: 2.18 KB | Формат: ZIP
+                </div>
+            </div>
+
+            <div class="download-section">
+                <div class="download-title">
+                    🐳 Полный релиз (Docker)
+                </div>
+                <a href="https://github.com/pat1one/faceit-ai-bot/releases/download/v0.1.0/faceit-ai-bot-v0.1.0.tar.gz" class="download-btn">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Скачать полный релиз
+                </a>
+                <div class="file-info">
+                    📦 Размер: 9.93 KB | Формат: TAR.GZ
+                </div>
+            </div>
+
+            <div class="features">
+                <h3>✨ Возможности</h3>
+                <ul>
+                    <li>Анализ демок и статистики матчей</li>
+                    <li>Поиск тиммейтов по критериям</li>
+                    <li>Отслеживание прогресса</li>
+                    <li>Рекомендации по улучшению игры</li>
+                    <li>Интеграция с FACEIT профилем</li>
+                </ul>
+            </div>
+
+            <div class="features">
+                <h3>🔧 Технологии</h3>
+                <ul>
+                    <li>Frontend: Next.js 15, React 19, TypeScript</li>
+                    <li>Backend: FastAPI, Python 3.9+</li>
+                    <li>Database: PostgreSQL 16</li>
+                    <li>Deployment: Docker, Docker Compose</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                📚 <a href="https://github.com/pat1one/faceit-ai-bot" target="_blank">GitHub</a> | 
+                📖 <a href="https://github.com/pat1one/faceit-ai-bot/blob/main/README.md" target="_blank">Документация</a> | 
+                🐛 <a href="https://github.com/pat1one/faceit-ai-bot/issues" target="_blank">Сообщить об ошибке</a>
+            </p>
+            <p style="margin-top: 10px;">© 2025 Faceit AI Bot. Дата релиза: 07.11.2025</p>
+        </div>
+    </div>
+</body>
+</html>
