@@ -41,6 +41,13 @@
     "webpack:build": "npx webpack --config webpack.config.js",
     "test": "jest --passWithNoTests",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "build:all": "npm run build && npm run webpack:build",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "deploy": "bash deploy.sh",
+    "dev:db": "bash dev.sh"
   }
 }

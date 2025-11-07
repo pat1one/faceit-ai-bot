@@ -1,6 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import os
+import logging
+import requests
 
 app = FastAPI(title="Faceit AI Bot Service", version="0.2.0")
 
@@ -24,15 +27,17 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Load a pre-trained model (example: ResNet)
-model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
-model.eval()
-
-transform = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+# ML model loading commented out - uncomment when needed
+# import torch
+# from torchvision import transforms
+# from PIL import Image
+# model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet18', pretrained=True)
+# model.eval()
+# transform = transforms.Compose([
+#     transforms.Resize((224, 224)),
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+# ])
 
 @app.get("/")
 def root():
@@ -50,16 +55,13 @@ async def analyze_demo(demo: UploadFile = File(...)):
     if not demo.filename.endswith('.dem'):
         return {"error": "Invalid file format. Only .dem files are supported"}
 
-    # Пример обработки изображения (заменить на обработку демки)
+    # Пример обработки демки (ML модель закомментирована)
     try:
-        image = Image.open(demo.file)
-        input_tensor = transform(image).unsqueeze(0)
-        output = model(input_tensor)
-        _, predicted = output.max(1)
+        # TODO: Implement actual demo analysis
         return {
             "filename": demo.filename,
-            "prediction": predicted.item(),
-            "confidence": output.softmax(1).max().item(),
+            "status": "analyzed",
+            "message": "Demo analysis feature coming soon",
         }
     except Exception as e:
         return {"error": str(e)}
