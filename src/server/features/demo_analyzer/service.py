@@ -1,0 +1,133 @@
+import torch
+import torch.nn as nn
+import numpy as np
+from typing import List, Dict
+from fastapi import UploadFile, HTTPException
+from ..models import DemoAnalysis, PlayerPerformance, RoundAnalysis
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+class DemoAnalyzer:
+    def __init__(self):
+        self.models = {
+            'player_performance': self._load_model('player_performance'),
+            'round_analysis': self._load_model('round_analysis'),
+            'strategy_analysis': self._load_model('strategy_analysis')
+        }
+    
+    def _load_model(self, model_name: str) -> nn.Module:
+        try:
+            # Здесь будет загрузка предварительно обученных моделей
+            # В данном примере используем заглушки
+            return nn.Sequential(
+                nn.Linear(100, 50),
+                nn.ReLU(),
+                nn.Linear(50, 10)
+            )
+        except Exception as e:
+            logger.error(f"Failed to load model {model_name}: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to load {model_name} model"
+            )
+
+    async def analyze_demo(self, demo_file: UploadFile) -> DemoAnalysis:
+        try:
+            # Чтение и парсинг демо файла
+            demo_data = await self._parse_demo_file(demo_file)
+            
+            # Анализ производительности игроков
+            player_performances = await self._analyze_player_performance(demo_data)
+            
+            # Анализ раундов
+            round_analysis = await self._analyze_rounds(demo_data)
+            
+            # Определение ключевых моментов
+            key_moments = await self._identify_key_moments(demo_data)
+            
+            # Генерация рекомендаций
+            recommendations = await self._generate_recommendations(
+                player_performances,
+                round_analysis,
+                key_moments
+            )
+            
+            return DemoAnalysis(
+                demo_id=demo_data['match_id'],
+                metadata={
+                    'match_id': demo_data['match_id'],
+                    'map_name': demo_data['map'],
+                    'game_mode': demo_data['mode'],
+                    'date_played': datetime.now(),
+                    'duration': demo_data['duration'],
+                    'score': demo_data['score']
+                },
+                overall_performance=player_performances,
+                round_analysis=round_analysis,
+                key_moments=key_moments,
+                recommendations=recommendations,
+                improvement_areas=await self._identify_improvement_areas(player_performances)
+            )
+            
+        except Exception as e:
+            logger.exception("Failed to analyze demo")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Demo analysis failed: {str(e)}"
+            )
+
+    async def _parse_demo_file(self, demo_file: UploadFile) -> Dict:
+        """Парсинг демо файла CS2"""
+        # TODO: Реализовать парсинг демо файла
+        return {
+            'match_id': '12345',
+            'map': 'de_dust2',
+            'mode': 'competitive',
+            'duration': 2700,
+            'score': {'team1': 16, 'team2': 14}
+        }
+
+    async def _analyze_player_performance(self, demo_data: Dict) -> Dict[str, PlayerPerformance]:
+        """Анализ производительности игроков"""
+        # TODO: Реализовать анализ с использованием ML моделей
+        return {}
+
+    async def _analyze_rounds(self, demo_data: Dict) -> List[RoundAnalysis]:
+        """Анализ раундов"""
+        # TODO: Реализовать анализ раундов
+        return []
+
+    async def _identify_key_moments(self, demo_data: Dict) -> List[Dict]:
+        """Определение ключевых моментов матча"""
+        # TODO: Реализовать поиск ключевых моментов
+        return []
+
+    async def _generate_recommendations(
+        self,
+        player_performances: Dict[str, PlayerPerformance],
+        round_analysis: List[RoundAnalysis],
+        key_moments: List[Dict]
+    ) -> List[str]:
+        """Генерация рекомендаций по улучшению игры"""
+        # TODO: Реализовать генерацию рекомендаций
+        return [
+            "Улучшить прицеливание в голову",
+            "Работать над экономикой команды",
+            "Улучшить использование утилит"
+        ]
+
+    async def _identify_improvement_areas(
+        self,
+        player_performances: Dict[str, PlayerPerformance]
+    ) -> List[Dict]:
+        """Определение областей для улучшения"""
+        # TODO: Реализовать анализ областей для улучшения
+        return [
+            {
+                "area": "aim",
+                "current_level": "medium",
+                "recommendation": "Тренировать точность прицеливания"
+            }
+        ]
