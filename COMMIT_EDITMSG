@@ -1,0 +1,8 @@
+Update page routing and add new demo and search pages
+
+Update app-build-manifest.json and app-paths-manifest.json to include new pages, modify webpack configuration, and update server reference manifests.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: dcfaba20-a155-4e63-8bed-86a212d4a7cc
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/89f4cd76-9b36-4cb9-9797-f7bf95690841/dcfaba20-a155-4e63-8bed-86a212d4a7cc/N8fahTT
