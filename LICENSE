@@ -1,21 +1,33 @@
-MIT License
+Copyright (c) 2025 pattmsc (Platon)
+All Rights Reserved
 
-Copyright (c) 2025 Platon
+PROPRIETARY LICENSE
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software and associated documentation files (the "Software") are the 
+exclusive property of pattmsc (Platon).
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+RESTRICTIONS:
+1. You may NOT copy, modify, merge, publish, distribute, sublicense, and/or 
+   sell copies of the Software without explicit written permission.
+2. You may NOT use the Software for commercial purposes without authorization.
+3. You may NOT remove or alter any copyright notices from the Software.
+4. You may NOT reverse engineer, decompile, or disassemble the Software.
 
+PERMITTED USE:
+- Personal use of the publicly available application at https://pattmsc.online
+- Use of the browser extension downloaded from official sources
+- Viewing the source code for educational purposes only
+
+ATTRIBUTION:
+Any use of this Software must include clear attribution to the original author:
+"Created by pattmsc - https://pattmsc.online"
+
+DISCLAIMER:
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For licensing inquiries, contact: support@pattmsc.online
