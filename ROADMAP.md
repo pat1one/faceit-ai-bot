@@ -352,7 +352,7 @@
 
 - 💬 [GitHub Discussions](https://github.com/pat1one/faceit-ai-bot/discussions)
 - 🐛 [Issue Tracker](https://github.com/pat1one/faceit-ai-bot/issues)
-- 📧 Email: support@pattmsc.online
+- 📧 Email: [support@pattmsc.online](mailto:support@pattmsc.online)
 - 💡 [Feature Requests](https://github.com/pat1one/faceit-ai-bot/issues/new?labels=enhancement)
 
 ---
