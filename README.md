@@ -9,7 +9,7 @@
 [![Next.js](https://img.shields.io/badge/next.js-15-black.svg)](https://nextjs.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 
-[🌐 Демо](https://pattmsc.online) • [📚 Документация](https://api.pattmsc.online/docs) • [⬇️ Скачать](https://pat1one.github.io/faceit-ai-bot/)
+[🌐 Демо](https://pattmsc.online) • [📚 Документация](https://api.pattmsc.online/docs) • [⬇️ Скачать](DOWNLOAD.md)
 
 </div>
 
@@ -51,6 +51,8 @@
 
 ## 🚀 Быстрый старт
 
+> 🪟 **Windows пользователи:** См. [WINDOWS_SETUP.md](WINDOWS_SETUP.md) для подробных инструкций
+
 ### Установка
 
 ```bash
@@ -60,6 +62,7 @@ cd faceit-ai-bot
 
 # Установить зависимости
 make install
+# или: ./build.sh (Bash) / ./build.zsh (Zsh) / ./build.fish (Fish)
 
 # Настроить окружение
 cp .env.example .env
@@ -68,6 +71,7 @@ cp .env.example .env
 # Собрать и запустить
 make build
 make deploy
+# или: ./deploy.sh (Bash) / ./deploy.zsh (Zsh) / ./deploy.fish (Fish)
 ```
 
 ### 🌐 Доступные сервисы
@@ -81,19 +85,46 @@ make deploy
 | 📖 API Docs | http://localhost:8000/docs | Swagger документация |
 | 🗄️ PostgreSQL | localhost:5432 | База данных |
 
-## 📦 Установка
+## 📦 Скачать
 
-### Вариант 1: Расширение для браузера
+<table>
+<tr>
+<td width="50%" align="center">
 
-Легкий способ интеграции с Faceit
+### 🧩 Browser Extension
 
-[⬇️ Скачать расширение](https://pat1one.github.io/faceit-ai-bot/)
+Легкая интеграция с Faceit<br/>
+Работает прямо на сайте
 
-### Вариант 2: Docker (полная версия)
+[⬇️ Скачать расширение](DOWNLOAD.md#-browser-extension)
 
-Для локального развертывания всех сервисов
+</td>
+<td width="50%" align="center">
+
+### 🌐 Web Application
+
+Полная версия со всеми функциями<br/>
+Доступ с любого устройства
+
+[🌐 Открыть сайт](https://pattmsc.online)
+
+</td>
+</tr>
+</table>
+
+### 💻 Для разработчиков
+
+Локальная установка через Docker:
 
 ```bash
+# Клонировать репозиторий
+git clone https://github.com/pat1one/faceit-ai-bot.git
+cd faceit-ai-bot
+
+# Настроить окружение
+cp .env.example .env
+
+# Запустить
 docker-compose up -d
 ```
 
@@ -157,6 +188,8 @@ faceit-ai-bot/
 | 📘 [BUILD_DEPLOY.md](BUILD_DEPLOY.md) | Подробная инструкция по сборке и деплою |
 | 🗺️ [ROADMAP.md](ROADMAP.md) | План развития проекта |
 | 🚀 [QUICK_START.md](QUICK_START.md) | Быстрый старт для разработчиков |
+| 🪟 [WINDOWS_SETUP.md](WINDOWS_SETUP.md) | Установка на Windows (PowerShell/Bash/Zsh/Fish) |
+| ⬇️ [DOWNLOAD.md](DOWNLOAD.md) | Скачать расширение и приложение |
 | 🌐 [DEPLOY_PATTMSC_ONLINE.md](DEPLOY_PATTMSC_ONLINE.md) | Деплой на VPS |
 
 ## 🎯 Как использовать
