@@ -1,12 +1,12 @@
 """
-Валидаторы для демо-анализа
+Валидаторы for демо-анализа
 """
 from pydantic import BaseModel, validator
 from typing import Optional
 
 
 class DemoFileValidator(BaseModel):
-    """Валидатор для демо-файлов"""
+    """Валидатор for демо-файлов"""
     filename: str
     content_type: str
     size: int

@@ -1,5 +1,5 @@
 """
-Модели базы данных
+Модели database
 """
 import sys
 from pathlib import Path

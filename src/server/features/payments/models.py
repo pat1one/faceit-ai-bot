@@ -8,7 +8,7 @@ class PaymentProvider(str, Enum):
     SBP_SBERBANK = "sbp_sberbank"
     SBP_VTB = "sbp_vtb"
     SBP_ALPHA = "sbp_alpha"
-    STRIPE = "stripe"  # для международных карт
+    STRIPE = "stripe"  # for международных карт
     CRYPTO = "crypto"
 
 class Currency(str, Enum):

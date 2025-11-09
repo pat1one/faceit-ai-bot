@@ -1,5 +1,5 @@
 """
-Кастомные исключения для обработки ошибок приложения
+Кастомные исключения for обработки ошибок application
 """
 from fastapi import HTTPException
 from typing import Optional
@@ -37,7 +37,7 @@ class DatabaseException(BaseAPIException):
 
 
 class ValidationException(BaseAPIException):
-    """Исключение при валидации данных"""
+    """Исключение при validation данных"""
     def __init__(self, detail: str, error_code: Optional[str] = None):
         super().__init__(status_code=422, detail=detail, error_code=error_code or "VALIDATION_ERROR")
 
@@ -49,7 +49,7 @@ class AuthenticationException(BaseAPIException):
 
 
 class AuthorizationException(BaseAPIException):
-    """Исключение при авторизации"""
+    """Исключение при authorization"""
     def __init__(self, detail: str = "Access denied", error_code: Optional[str] = None):
         super().__init__(status_code=403, detail=detail, error_code=error_code or "AUTHORIZATION_ERROR")
 

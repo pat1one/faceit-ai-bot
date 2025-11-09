@@ -60,7 +60,7 @@ class SubscriptionService:
         }
 
     async def get_subscription_plans(self) -> Dict[str, Subscription]:
-        """Получение информации о доступных планах подписки"""
+        """Получение информации о доступных планах subscription"""
         try:
             return {
                 tier.value: Subscription(
@@ -102,7 +102,7 @@ class SubscriptionService:
         user_id: str,
         tier: SubscriptionTier
     ) -> UserSubscription:
-        """Создание новой подписки"""
+        """Создание новой subscription"""
         try:
             plan = self.subscription_plans[tier]
             subscription = UserSubscription(
@@ -137,7 +137,7 @@ class SubscriptionService:
             return False
 
     def _get_plan_description(self, tier: SubscriptionTier) -> str:
-        """Получение описания плана подписки"""
+        """Получение описания плана subscription"""
         descriptions = {
             SubscriptionTier.FREE: "Базовый анализ демок и ограниченный функционал",
             SubscriptionTier.BASIC: "Расширенный анализ и поиск тиммейтов",

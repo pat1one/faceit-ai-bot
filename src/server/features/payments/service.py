@@ -31,7 +31,7 @@ class PaymentService:
         }
 
     async def create_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Создание платежа через выбранную платежную систему"""
+        """Создание payment через выбранную платежную систему"""
         try:
             if request.provider not in self.providers:
                 raise HTTPException(
@@ -39,10 +39,10 @@ class PaymentService:
                     detail=f"Unsupported payment provider: {request.provider}"
                 )
 
-            # Проверяем доступность метода оплаты для региона
+            # Проверяем доступность метода оплаты for региона
             self._validate_payment_method(request)
 
-            # Processing платежа через соответствующий провайдер
+            # Processing payment через соответствующий провайдер
             return await self.providers[request.provider](request)
 
         except Exception as e:
@@ -78,7 +78,7 @@ class PaymentService:
             )
 
     async def _process_sbp_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Обработка платежа через СБП"""
+        """Обработка payment через СБП"""
         try:
             headers = {
                 "Authorization": f"Bearer {self.settings.SBP_TOKEN}",
@@ -128,7 +128,7 @@ class PaymentService:
             raise
 
     async def _process_yookassa_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Обработка платежа через ЮKassa"""
+        """Обработка payment через ЮKassa"""
         try:
             headers = {
                 "Authorization": f"Basic {self.settings.YOOKASSA_AUTH}",

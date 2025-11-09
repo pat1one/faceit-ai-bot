@@ -27,13 +27,13 @@ class FaceitAPIClient:
     
     async def get_player_by_nickname(self, nickname: str) -> Optional[Dict]:
         """
-        Get информацию об игроке по никнейму
+        Get player information by nickname
         
         Args:
-            nickname: Player nickname на Faceit
+            nickname: Player nickname on Faceit
             
         Returns:
-            Информация об игроке или None
+            Player information or None
         """
         if not self.api_key:
             logger.error("Faceit API key not configured")
@@ -60,8 +60,8 @@ class FaceitAPIClient:
         Get player statistics
         
         Args:
-            player_id: ID игрока на Faceit
-            game: Игра (by default cs2)
+            player_id: Player ID on Faceit
+            game: Game (by default cs2)
             
         Returns:
             Player statistics
@@ -94,12 +94,12 @@ class FaceitAPIClient:
         Get player match history
         
         Args:
-            player_id: ID игрока
-            game: Игра
+            player_id: Player ID
+            game: Game
             limit: Number of matches
             
         Returns:
-            Список matches
+            List of matches
         """
         if not self.api_key:
             return []
@@ -129,7 +129,7 @@ class FaceitAPIClient:
         Search players by nickname
         
         Args:
-            nickname: Никнейм для поиска
+            nickname: Никнейм for поиска
             country: Страна (опционально)
             limit: Result limit
             
@@ -159,7 +159,7 @@ class FaceitAPIClient:
             return []
     
     def _get_mock_stats(self) -> Dict:
-        """Моковые данные для тестирования"""
+        """Моковые данные for тестирования"""
         return {
             "lifetime": {
                 "K/D Ratio": "1.15",

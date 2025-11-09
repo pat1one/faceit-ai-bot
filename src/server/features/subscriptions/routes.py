@@ -12,7 +12,7 @@ subscription_service = SubscriptionService()
 @router.get("/plans", response_model=Dict[str, Subscription])
 async def get_subscription_plans():
     """
-    Получение информации о доступных планах подписки
+    Получение информации о доступных планах subscription
     """
     return await subscription_service.get_subscription_plans()
 
@@ -26,7 +26,7 @@ async def get_user_subscription(user_id: str):
 @router.post("/{user_id}", response_model=UserSubscription)
 async def create_subscription(user_id: str, tier: SubscriptionTier):
     """
-    Создание новой подписки для пользователя
+    Создание новой subscription for пользователя
     """
     return await subscription_service.create_subscription(user_id, tier)
 
