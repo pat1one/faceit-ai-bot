@@ -86,8 +86,8 @@ export default function DemoPage() {
       const paymentData = await response.json();
       setPaymentUrl(paymentData.payment_url);
     } catch (error) {
-      // TODO: Implement proper error handling with user notification
-      alert('SBP payment failed. Please try again.');
+      console.error('Error during SBP payment:', error);
+      alert('Ошибка оплаты через СБП. Попробуйте снова.');
     }
   };
 
