@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 class DemoAnalyzer:
     def __init__(self):
         # Initialization AI сервисов
-        from ...ai.openai_service import OpenAIService
+        from ...services.ai_service import AIService
         from ...integrations.faceit_client import FaceitAPIClient
         
-        self.ai_service = OpenAIService()
+        self.ai_service = AIService()
         self.faceit_client = FaceitAPIClient()
         
         logger.info("DemoAnalyzer initialized with AI services")

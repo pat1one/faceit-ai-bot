@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     FACEIT_API_KEY: Optional[str] = None
     
     # AI Services
-    OPENAI_API_KEY: Optional[str] = None
+    GROQ_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
     HUGGINGFACE_TOKEN: Optional[str] = None
     

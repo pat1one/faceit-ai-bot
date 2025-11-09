@@ -32,15 +32,15 @@ async def analyze_player(request: PlayerAnalysisRequest):
     """
     AI player analysis based on Faceit statistics
     
-    Uses GPT-4 for deep performance analysis
+    Uses Groq AI for deep performance analysis
     and generating personalized recommendations
     """
     try:
-        from ...ai.openai_service import OpenAIService
+        from ...services.ai_service import AIService
         from ...integrations.faceit_client import FaceitAPIClient
         
         # Service initialization
-        ai_service = OpenAIService()
+        ai_service = AIService()
         faceit_client = FaceitAPIClient()
         
         # Fetch player data
@@ -109,10 +109,10 @@ async def get_training_plan(player_id: str):
     Get personalized training plan
     """
     try:
-        from ...ai.openai_service import OpenAIService
+        from ...services.ai_service import AIService
         from ...integrations.faceit_client import FaceitAPIClient
         
-        ai_service = OpenAIService()
+        ai_service = AIService()
         faceit_client = FaceitAPIClient()
         
         # Fetch statistics

@@ -28,7 +28,7 @@ redis>=4.5.0
 python-dotenv>=1.0.0
 
 # AI/ML Libraries
-openai>=1.0.0
+# openai>=1.0.0  # Not used, using Groq instead
 anthropic>=0.7.0
 langchain>=0.1.0
 langchain-openai>=0.0.2

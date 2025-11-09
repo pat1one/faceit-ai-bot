@@ -324,7 +324,7 @@
 - CSS Modules
 
 **Анализ данных:**
-- OpenAI GPT-4
+- Groq Groq AI
 - LangChain
 - PyTorch (для моделей анализа)
 

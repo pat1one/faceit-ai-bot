@@ -1,25 +1,25 @@
 """
-OpenAI Integration Service
-Service for GPT-4 and other OpenAI models
+Groq Integration Service
+Service for Groq AI models
 """
 from typing import Dict, List, Optional
 import logging
-from openai import AsyncOpenAI
+# Groq uses standard HTTP requests
 from ..config.settings import settings
 
 logger = logging.getLogger(__name__)
 
 
-class OpenAIService:
-    """Service for OpenAI API"""
+class GroqService:
+    """Service for Groq API"""
     
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or getattr(settings, 'OPENAI_API_KEY', None)
+        self.api_key = api_key or getattr(settings, 'GROQ_API_KEY', None)
         if not self.api_key:
-            logger.warning("OpenAI API key not configured")
+            logger.warning("Groq API key not configured")
             self.client = None
         else:
-            self.client = AsyncOpenAI(api_key=self.api_key)
+            self.client = GroqClient(api_key=self.api_key)
     
     async def analyze_player_performance(
         self, 
@@ -27,7 +27,7 @@ class OpenAIService:
         match_history: Optional[List[Dict]] = None
     ) -> str:
         """
-        Analyze player performance with GPT-4
+        Analyze player performance with Groq AI
         
         Args:
             stats: Current player statistics
@@ -43,7 +43,7 @@ class OpenAIService:
             prompt = self._build_analysis_prompt(stats, match_history or [])
             
             response = await self.client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="llama-3.1-70b-versatile",
                 messages=[
                     {
                         "role": "system", 
@@ -96,7 +96,7 @@ class OpenAIService:
             """
             
             response = await self.client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model="llama-3.1-70b-versatile",
                 messages=[
                     {"role": "system", "content": "You are a CS2 coach. Reply only in JSON format."},
                     {"role": "user", "content": prompt}
