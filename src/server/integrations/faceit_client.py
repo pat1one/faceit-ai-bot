@@ -91,15 +91,15 @@ class FaceitAPIClient:
         limit: int = 20
     ) -> List[Dict]:
         """
-        Получить историю матчей игрока
+        Получить историю matches игрока
         
         Args:
             player_id: ID игрока
             game: Игра
-            limit: Количество матчей
+            limit: Количество matches
             
         Returns:
-            Список матчей
+            Список matches
         """
         if not self.api_key:
             return []

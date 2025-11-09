@@ -31,7 +31,7 @@ class OpenAIService:
         
         Args:
             stats: Текущая статистика игрока
-            match_history: История последних матчей
+            match_history: История последних matches
             
         Returns:
             Детальный анализ и рекомендации
@@ -124,7 +124,7 @@ class OpenAIService:
         - Avg Damage: {stats.get('avg_damage', 'N/A')}
         - Matches Played: {stats.get('matches_played', 'N/A')}
         
-        История последних матчей: {len(match_history)} матчей
+        История последних matches: {len(match_history)} matches
         
         Дай подробный анализ:
         1. Сильные стороны
@@ -152,5 +152,5 @@ class OpenAIService:
                 "Увеличить точность на 5%",
                 "Улучшить K/D до 1.2"
             ],
-            "estimated_time": "2-3 недели"
+            "estimated_time": "2-3 weeks"
         }

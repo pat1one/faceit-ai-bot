@@ -35,7 +35,7 @@ class AIService:
         Args:
             nickname: Никнейм игрока
             stats: Статистика игрока
-            match_history: История матчей
+            match_history: История matches
             
         Returns:
             Детальный AI-анализ
@@ -73,10 +73,10 @@ class AIService:
         level = stats.get("level", 5)
         
         # Recent matches analysis
-        recent_performance = "Нет данных"
+        recent_performance = "No data"
         if match_history:
             recent_matches = match_history[:5]
-            recent_performance = f"Последние {len(recent_matches)} матчей"
+            recent_performance = f"Last {len(recent_matches)} matches"
         
         prompt = f"""Ты - профессиональный аналитик CS2. Проанализируй игрока и дай конкретные рекомендации.
 
@@ -88,7 +88,7 @@ ELO: {elo}
 - K/D Ratio: {kd}
 - Win Rate: {win_rate}%
 - Headshot %: {hs_pct}%
-- Сыграно матчей: {matches}
+- Сыграно matches: {matches}
 
 {recent_performance}
 
@@ -111,7 +111,7 @@ ELO: {elo}
     "daily_exercises": [
       {{"name": "упражнение", "duration": "время", "description": "описание"}}
     ],
-    "estimated_time": "2-4 недели"
+    "estimated_time": "2-4 weeks"
   }},
   "overall_rating": <1-10>,
   "detailed_analysis": "Детальный анализ игрока на русском языке (2-3 предложения)"
@@ -200,19 +200,19 @@ ELO: {elo}
         recommendations = []
         
         if kd < 1.0:
-            weaknesses.append("прицеливание")
+            weaknesses.append("aim")
             recommendations.append("Практиковать aim на aim_botz и aim_training картах")
         
         if hs_pct < 40:
-            weaknesses.append("точность хедшотов")
+            weaknesses.append("headshot accuracy")
             recommendations.append("Играть в headshot-only режимах")
         
         if win_rate < 50:
-            weaknesses.append("игровое чутье")
+            weaknesses.append("game sense")
             recommendations.append("Изучать профессиональные матчи и тактики")
         
         if not weaknesses:
-            weaknesses = ["стабильность"]
+            weaknesses = ["consistency"]
             recommendations = ["Продолжать поддерживать текущий уровень"]
         
         overall = int((aim_score + game_sense_score + positioning_score + teamwork_score + consistency_score) / 5)
@@ -227,7 +227,7 @@ ELO: {elo}
             },
             "weaknesses": {
                 "areas": weaknesses,
-                "priority": weaknesses[0] if weaknesses else "стабильность",
+                "priority": weaknesses[0] if weaknesses else "consistency",
                 "recommendations": recommendations
             },
             "training_plan": {
@@ -235,11 +235,11 @@ ELO: {elo}
                 "daily_exercises": [
                     {
                         "name": "Aim Training",
-                        "duration": "30 минут",
+                        "duration": "30 minutes",
                         "description": "Тренировка прицеливания"
                     }
                 ],
-                "estimated_time": "2-4 недели"
+                "estimated_time": "2-4 weeks"
             },
             "overall_rating": max(1, overall),
             "detailed_analysis": f"Игрок показывает {'хорошие' if overall >= 6 else 'средние'} результаты. Основные области для улучшения: {', '.join(weaknesses)}."
@@ -287,18 +287,18 @@ ELO: {elo}
         """Basic training plan"""
         exercises = []
         
-        if "прицеливание" in weaknesses or "aim" in weaknesses:
+        if "aim" in weaknesses or "aim" in weaknesses:
             exercises.append({
                 "name": "Aim Training",
-                "duration": "30 минут",
+                "duration": "30 minutes",
                 "description": "Тренировка на aim_botz",
                 "maps": ["aim_botz", "aim_training"]
             })
         
-        if "точность хедшотов" in weaknesses:
+        if "headshot accuracy" in weaknesses:
             exercises.append({
                 "name": "Headshot Practice",
-                "duration": "20 минут",
+                "duration": "20 minutes",
                 "description": "Headshot-only режим",
                 "maps": ["aim_botz"]
             })
@@ -308,11 +308,11 @@ ELO: {elo}
             "daily_exercises": exercises if exercises else [
                 {
                     "name": "General Practice",
-                    "duration": "1 час",
+                    "duration": "1 hour",
                     "description": "Общая практика",
                     "maps": ["de_dust2", "de_mirage"]
                 }
             ],
-            "weekly_goals": ["Улучшить статистику", "Повысить стабильность"],
-            "estimated_time": "2-4 недели"
+            "weekly_goals": ["Улучшить статистику", "Повысить consistency"],
+            "estimated_time": "2-4 weeks"
         }

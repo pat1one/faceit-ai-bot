@@ -85,14 +85,14 @@ async def get_player_matches(
     service: PlayerAnalysisService = Depends()
 ):
     """
-    Получить историю матчей игрока
+    Получить историю matches игрока
     
     Args:
         nickname: Никнейм игрока
-        limit: Количество матчей (по умолчанию 20)
+        limit: Количество matches (по умолчанию 20)
         
     Returns:
-        История матчей
+        История matches
     """
     try:
         matches = await service.get_player_matches(nickname, limit)

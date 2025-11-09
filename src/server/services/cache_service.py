@@ -56,7 +56,7 @@ class CacheService:
         self,
         key: str,
         value: Any,
-        ttl: int = 3600  # 1 час по умолчанию
+        ttl: int = 3600  # 1 hour по умолчанию
     ) -> bool:
         """Save value to cache"""
         if not self.enabled:
