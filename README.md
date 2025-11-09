@@ -1,151 +1,197 @@
-# 👋 Привет! Я Platon (pat1one)
+# 🎮 Faceit AI Bot
 
 <div align="center">
-  
-[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=2E9EF7&center=true&vCenter=true&width=600&lines=IT+Specialist+%F0%9F%92%BB;Data+Science+%26+ML+Engineer+%F0%9F%A4%96;Full+Stack+Developer+%F0%9F%9A%80;CS2+Player+%26+Analyst+%F0%9F%8E%AE)](https://git.io/typing-svg)
 
-</div>
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.2.2-2E9EF7?style=for-the-badge)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-## 🚀 О себе
+**AI-powered анализ игроков CS2 и поиск тиммейтов на платформе Faceit**
 
-- 💼 **IT Specialist** | Moderator of more channels
-- 🎮 **exDota** now **CS2 player**
-- 🤖 Разрабатываю **AI-powered** решения для киберспорта
-- 📊 **Data Science** & **Machine Learning** энтузиаст
-- 💬 Business: [@prdrow](https://t.me/prdrow)
-
----
-
-## 🛠️ Tech Stack
-
-### 🎯 Main
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![SQL](https://img.shields.io/badge/SQL-4479A1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Data Science](https://img.shields.io/badge/Data_Science-FF6F00?style=for-the-badge&logo=jupyter&logoColor=white)
-
-### 💻 Frontend
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-
-### ⚙️ Backend
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-
-### 🤖 AI/ML
-![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
-
-### 🛠️ Tools & DevOps
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-
----
-
-## 🎯 Проекты
-
-### 🤖 [Faceit AI Bot](https://github.com/pat1one/faceit-ai-bot)
-> AI-powered CS2 статистика и анализ игроков с использованием GPT-4
-
-**Технологии:** Python, FastAPI, OpenAI, Next.js, TypeScript, PostgreSQL
-
-**Возможности:**
-- 🎯 AI анализ производительности игроков
-- 📊 Интеграция с Faceit API
-- 💡 Персональные рекомендации и планы тренировок
-- 📈 Анализ демо-файлов CS2
-- 🔮 Предсказание результатов матчей
-
-[![GitHub](https://img.shields.io/badge/View_on_GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pat1one/faceit-ai-bot)
-[![Stars](https://img.shields.io/github/stars/pat1one/faceit-ai-bot?style=for-the-badge&logo=github)](https://github.com/pat1one/faceit-ai-bot)
-
----
-
-## 📊 GitHub Stats
-
-<div align="center">
-  
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=pat1one&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&icon_color=2E9EF7&text_color=C9D1D9)
-
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=pat1one&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&text_color=C9D1D9)
-
-![GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=pat1one&theme=tokyonight&hide_border=true&background=0D1117&ring=2E9EF7&fire=2E9EF7&currStreakLabel=2E9EF7)
+[🚀 Демо](https://pattmsc.online) • [📚 Документация](./docs) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues)
 
 </div>
 
 ---
 
-## 🏆 GitHub Trophies
+## 📋 Описание
 
-<div align="center">
-  
-[![trophy](https://github-profile-trophy.vercel.app/?username=pat1one&theme=tokyonight&no-frame=true&no-bg=true&column=7&margin-w=15&margin-h=15)](https://github.com/ryo-ma/github-profile-trophy)
+**Faceit AI Bot** — это мощный инструмент для анализа статистики игроков CS2 на платформе Faceit с использованием искусственного интеллекта. Проект объединяет современные технологии машинного обучения и веб-разработки для предоставления детального анализа игровой производительности.
 
-</div>
+### ✨ Основные возможности
+
+- 🤖 **AI-анализ игроков** — GPT-4 анализирует статистику и дает персональные рекомендации
+- 📊 **Интеграция с Faceit API** — получение актуальной статистики в реальном времени
+- 📈 **Анализ демо-файлов** — детальный разбор игровых моментов
+- 👥 **Поиск тиммейтов** — умный подбор напарников по стилю игры
+- 💡 **Персональные планы тренировок** — AI создает индивидуальные программы улучшения
+- 🔮 **Предсказание результатов** — прогнозирование исходов матчей
+- 📱 **PWA поддержка** — установка как мобильное приложение
 
 ---
 
-## 📈 Activity Graph
+## 🛠️ Технологический стек
 
-[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=pat1one&theme=tokyo-night&hide_border=true&bg_color=0D1117&color=2E9EF7&line=2E9EF7&point=FFFFFF)](https://github.com/ashutosh00710/github-readme-activity-graph)
+### Backend
+- **Python 3.11+** — основной язык разработки
+- **FastAPI** — современный веб-фреймворк
+- **PostgreSQL** — база данных
+- **OpenAI GPT-4** — AI анализ
+- **LangChain** — работа с LLM
+- **Docker** — контейнеризация
+
+### Frontend
+- **Next.js 14** — React фреймворк
+- **TypeScript** — типизированный JavaScript
+- **TailwindCSS** — стилизация
+- **shadcn/ui** — компоненты UI
+
+### DevOps
+- **Docker Compose** — оркестрация контейнеров
+- **GitHub Actions** — CI/CD
+- **Nginx** — веб-сервер
 
 ---
 
-## 🎮 Gaming & Esports
+## 🚀 Быстрый старт
 
-<div align="center">
+### Предварительные требования
 
-### 🏅 CS2 Stats
-**Faceit Level:** 🔥 High ELO  
-**Role:** Analyst & Player  
-**Specialty:** Data-driven gameplay improvement
+- Python 3.11+
+- Node.js 18+
+- Docker & Docker Compose
+- Git
 
-</div>
+### Установка
+
+```fish
+# Клонируйте репозиторий
+git clone https://github.com/pat1one/faceit-ai-bot.git
+cd faceit-ai-bot
+
+# Скопируйте .env файл
+cp .env.example .env
+
+# Заполните API ключи в .env
+# OPENAI_API_KEY=your_key
+# FACEIT_API_KEY=your_key
+
+# Запустите через Docker
+docker-compose up -d
+
+# Или запустите локально
+# Backend
+cd src/server
+pip install -r requirements.txt
+python main.py
+
+# Frontend
+cd ../..
+npm install
+npm run dev
+```
+
+### 📱 Установка PWA
+
+**iOS:**
+1. Откройте сайт в Safari
+2. Нажмите "Поделиться" → "На экран Домой"
+
+**Android:**
+1. Откройте сайт в Chrome
+2. Меню → "Установить приложение"
+
+Подробнее: [PWA_GUIDE.md](./PWA_GUIDE.md)
+
+---
+
+## 📚 Документация
+
+- [🔧 AI Integration Guide](./AI_INTEGRATION.md) — интеграция AI сервисов
+- [🔑 API Keys Guide](./API_KEYS_GUIDE.md) — получение API ключей
+- [⚙️ AI Setup](./AI_SETUP.md) — настройка AI компонентов
+- [📱 PWA Guide](./PWA_GUIDE.md) — установка мобильного приложения
+- [🎨 Icons Guide](./ICONS_GUIDE.md) — генерация иконок
+
+---
+
+## 🎯 Roadmap
+
+### v0.3.0 (В разработке)
+- [ ] Улучшенный AI анализ с контекстом истории
+- [ ] Интеграция с Steam API
+- [ ] Система достижений
+- [ ] Расширенная аналитика команд
+
+### v0.4.0 (Планируется)
+- [ ] Мобильное приложение (React Native)
+- [ ] Голосовой ассистент
+- [ ] Интеграция с Discord
+- [ ] Турнирная система
+
+### Будущие планы
+- [ ] Поддержка других игр (Dota 2, Valorant)
+- [ ] Marketplace для тренеров
+- [ ] Стриминг интеграция (Twitch, YouTube)
+
+---
+
+## 🤝 Вклад в проект
+
+Мы приветствуем вклад в развитие проекта!
+
+1. Fork репозитория
+2. Создайте feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit изменения (`git commit -m 'Add some AmazingFeature'`)
+4. Push в branch (`git push origin feature/AmazingFeature`)
+5. Откройте Pull Request
+
+### Правила разработки
+
+- Следуйте PEP 8 для Python кода
+- Используйте ESLint/Prettier для TypeScript
+- Пишите тесты для новых функций
+- Обновляйте документацию
+
+---
+
+## 📊 Статистика проекта
+
+![GitHub Stars](https://img.shields.io/github/stars/pat1one/faceit-ai-bot?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/pat1one/faceit-ai-bot?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/pat1one/faceit-ai-bot)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/pat1one/faceit-ai-bot)
+
+---
+
+## 📄 Лицензия
+
+Этот проект лицензирован под MIT License - см. файл [LICENSE](LICENSE) для деталей.
 
 ---
 
 ## 💼 Контакты
 
-<div align="center">
-
-[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/prdrow)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pat1one)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:pat@pattmsc.online)
-
-</div>
+- **Telegram:** [@prdrow](https://t.me/prdrow)
+- **Email:** pat@pattmsc.online
+- **GitHub:** [@pat1one](https://github.com/pat1one)
+- **Website:** [pattmsc.online](https://pattmsc.online)
 
 ---
 
-## 📌 Pinned Repositories
+## 🙏 Благодарности
 
-<div align="center">
-
-[![Faceit AI Bot](https://github-readme-stats.vercel.app/api/pin/?username=pat1one&repo=faceit-ai-bot&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&icon_color=2E9EF7&text_color=C9D1D9)](https://github.com/pat1one/faceit-ai-bot)
-
-</div>
+- [OpenAI](https://openai.com/) за GPT-4 API
+- [Faceit](https://www.faceit.com/) за предоставление API
+- Всем контрибьюторам проекта
 
 ---
 
 <div align="center">
 
-### 💭 Quote of the Day
+**⭐ Если проект понравился, поставьте звезду! ⭐**
 
-![Quote](https://quotes-github-readme.vercel.app/api?type=horizontal&theme=tokyonight)
-
-### 👀 Profile Views
-
-![Visitor Count](https://profile-counter.glitch.me/pat1one/count.svg)
-
----
-
-**⭐ From [pat1one](https://github.com/pat1one) with 💙**
+Made with 💙 by [pat1one](https://github.com/pat1one)
 
 </div>
