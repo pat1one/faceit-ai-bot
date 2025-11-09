@@ -144,7 +144,7 @@ async def get_training_plan(player_id: str):
 
 def _parse_analysis(analysis_text: str) -> tuple[List[str], List[str], List[str]]:
     """
-    Парсинг Analysisа для извлечения структурированных данных
+    Parse analysis to extract structured data
     
     Returns:
         (strengths, weaknesses, recommendations)

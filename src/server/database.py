@@ -1,5 +1,5 @@
 """
-Настройка базы данных и SQLAlchemy
+Database configuration и SQLAlchemy
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
