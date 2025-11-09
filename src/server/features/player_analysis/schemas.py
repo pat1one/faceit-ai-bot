@@ -83,8 +83,8 @@ class PlayerAnalysisResponse(BaseModel):
                     "areas": ["positioning", "economy management"],
                     "priority": "positioning",
                     "recommendations": [
-                        "Практиковать удержание позиций",
-                        "Изучить cardsы детальнее"
+                        "Practice holding positions",
+                        "Study maps in detail"
                     ]
                 },
                 "training_plan": {
