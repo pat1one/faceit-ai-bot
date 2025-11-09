@@ -18,7 +18,7 @@ except ImportError:
 
 
 class CacheService:
-    """Сервис кэширования"""
+    """Caching service"""
     
     def __init__(self):
         self.redis_client = None

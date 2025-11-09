@@ -1,6 +1,6 @@
 """
 Player Analysis Routes
-Роуты для анализа игроков
+Routes for player analysis
 """
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional

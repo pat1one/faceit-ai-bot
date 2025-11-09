@@ -25,26 +25,26 @@ class DemoAnalyzer:
 
     async def analyze_demo(self, demo_file: UploadFile) -> DemoAnalysis:
         try:
-            # Validation файла
+            # File validation
             if not demo_file.filename or not demo_file.filename.endswith('.dem'):
                 raise DemoAnalysisException(
                     detail="Invalid file format. Only .dem files are supported",
                     error_code="INVALID_FILE_FORMAT"
                 )
             
-            # Чтение и парсинг демо файла
+            # Read and parse демо файла
             demo_data = await self._parse_demo_file(demo_file)
             
-            # Анализ производительности игроков
+            # Performance analysis игроков
             player_performances = await self._analyze_player_performance(demo_data)
             
-            # Анализ раундов
+            # Round analysis
             round_analysis = await self._analyze_rounds(demo_data)
             
-            # Определение ключевых моментов
+            # Identify key moments
             key_moments = await self._identify_key_moments(demo_data)
             
-            # Генерация рекомендаций
+            # Generate recommendations
             recommendations = await self._generate_recommendations(
                 player_performances,
                 round_analysis,

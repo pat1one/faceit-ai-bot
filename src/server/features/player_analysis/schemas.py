@@ -1,6 +1,6 @@
 """
 Player Analysis Schemas
-Схемы данных для анализа игроков
+Data schemas for player analysis
 """
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 class PlayerStats(BaseModel):
-    """Статистика игрока"""
+    """Player statistics"""
     kd_ratio: float = Field(..., description="K/D соотношение")
     win_rate: float = Field(..., description="Процент побед")
     headshot_percentage: float = Field(..., description="Процент хедшотов")
@@ -19,7 +19,7 @@ class PlayerStats(BaseModel):
 
 
 class PlayerStrengths(BaseModel):
-    """Сильные стороны игрока"""
+    """Player strengths"""
     aim: int = Field(..., ge=1, le=10, description="Оценка прицеливания")
     game_sense: int = Field(..., ge=1, le=10, description="Игровое чутье")
     positioning: int = Field(..., ge=1, le=10, description="Позиционирование")
@@ -28,27 +28,27 @@ class PlayerStrengths(BaseModel):
 
 
 class PlayerWeaknesses(BaseModel):
-    """Слабые стороны игрока"""
+    """Player weaknesses"""
     areas: List[str] = Field(..., description="Области для улучшения")
     priority: str = Field(..., description="Приоритетная область")
     recommendations: List[str] = Field(..., description="Рекомендации")
 
 
 class TrainingPlan(BaseModel):
-    """План тренировок"""
+    """Training plan"""
     focus_areas: List[str] = Field(..., description="Области фокуса")
     daily_exercises: List[Dict[str, str]] = Field(..., description="Ежедневные упражнения")
     estimated_time: str = Field(..., description="Примерное время улучшения")
 
 
 class PlayerAnalysisRequest(BaseModel):
-    """Запрос на анализ игрока"""
+    """Player analysis request"""
     nickname: str = Field(..., min_length=3, max_length=50, description="Никнейм игрока")
     detailed: bool = Field(default=True, description="Детальный анализ")
 
 
 class PlayerAnalysisResponse(BaseModel):
-    """Ответ с анализом игрока"""
+    """Player analysis response"""
     player_id: str = Field(..., description="ID игрока")
     nickname: str = Field(..., description="Никнейм")
     stats: PlayerStats = Field(..., description="Статистика")

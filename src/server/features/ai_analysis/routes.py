@@ -11,13 +11,13 @@ router = APIRouter(prefix="/ai", tags=["ai-analysis"])
 
 
 class PlayerAnalysisRequest(BaseModel):
-    """Запрос на анализ игрока"""
+    """Player analysis request"""
     player_nickname: str
     faceit_id: str | None = None
 
 
 class PlayerAnalysisResponse(BaseModel):
-    """Ответ с анализом игрока"""
+    """Player analysis response"""
     player_id: str
     nickname: str
     analysis: str
@@ -39,7 +39,7 @@ async def analyze_player(request: PlayerAnalysisRequest):
         from ...ai.openai_service import OpenAIService
         from ...integrations.faceit_client import FaceitAPIClient
         
-        # Initialization сервисов
+        # Service initialization
         ai_service = OpenAIService()
         faceit_client = FaceitAPIClient()
         

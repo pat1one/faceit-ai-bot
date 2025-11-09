@@ -1,6 +1,6 @@
 """
 AI Service для анализа игроков
-Использует Groq API (бесплатный, быстрый)
+Uses Groq API (free, fast)
 """
 import os
 import logging
@@ -15,10 +15,10 @@ class AIService:
     """Service for intelligent analysis"""
     
     def __init__(self):
-        # Groq API (бесплатный, быстрый)
+        # Groq API (free, fast)
         self.groq_api_key = os.getenv("GROQ_API_KEY", "")
         self.groq_base_url = "https://api.groq.com/openai/v1/chat/completions"
-        self.model = "llama-3.1-70b-versatile"  # Бесплатная модель
+        self.model = "llama-3.1-70b-versatile"  # Free model
         
         if not self.groq_api_key:
             logger.warning("GROQ_API_KEY not set, AI analysis will be limited")
@@ -44,7 +44,7 @@ class AIService:
             return self._get_rule_based_analysis(stats)
         
         try:
-            # Create промпт для AI
+            # Create prompt for analysis
             prompt = self._create_analysis_prompt(nickname, stats, match_history)
             
             # Request to Groq API
@@ -64,7 +64,7 @@ class AIService:
     ) -> str:
         """Создание промпта для AI"""
         
-        # Извлекаем ключевые метрики
+        # Extract key metrics
         kd = stats.get("kd_ratio", 1.0)
         win_rate = stats.get("win_rate", 50.0)
         hs_pct = stats.get("headshot_percentage", 40.0)
@@ -72,7 +72,7 @@ class AIService:
         elo = stats.get("elo", 1000)
         level = stats.get("level", 5)
         
-        # Анализ последних матчей
+        # Recent matches analysis
         recent_performance = "Нет данных"
         if match_history:
             recent_matches = match_history[:5]
@@ -162,7 +162,7 @@ ELO: {elo}
     def _parse_ai_response(self, response: str) -> Dict:
         """Парсинг ответа AI"""
         try:
-            # Убираем markdown если есть
+            # Remove markdown if present
             response = response.strip()
             if response.startswith("```json"):
                 response = response[7:]
@@ -189,7 +189,7 @@ ELO: {elo}
         hs_pct = stats.get("headshot_percentage", 40.0)
         matches = stats.get("matches_played", 0)
         
-        # Простые правила для оценки
+        # Simple evaluation rules
         aim_score = min(10, int((kd * 4) + (hs_pct / 10)))
         game_sense_score = min(10, int(win_rate / 10))
         positioning_score = min(10, max(5, int(win_rate / 12)))

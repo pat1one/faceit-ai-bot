@@ -1,6 +1,6 @@
 """
 Rate Limiter Middleware
-Ограничение частоты запросов
+Request rate limiting
 """
 import time
 import logging
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class RateLimiter:
-    """Rate limiter для защиты API"""
+    """Rate limiter for API protection"""
     
     def __init__(
         self,
@@ -22,7 +22,7 @@ class RateLimiter:
         self.requests_per_minute = requests_per_minute
         self.requests_per_hour = requests_per_hour
         
-        # Хранилище запросов: {ip: [(timestamp, count)]}
+        # Request storage: {ip: [(timestamp, count)]}
         self.minute_requests: Dict[str, list] = defaultdict(list)
         self.hour_requests: Dict[str, list] = defaultdict(list)
     
@@ -37,7 +37,7 @@ class RateLimiter:
     
     def _get_client_ip(self, request: Request) -> str:
         """Получить IP клиента"""
-        # Проверяем заголовки прокси
+        # Check proxy headers
         forwarded = request.headers.get("X-Forwarded-For")
         if forwarded:
             return forwarded.split(",")[0].strip()
@@ -46,7 +46,7 @@ class RateLimiter:
         if real_ip:
             return real_ip
         
-        # Fallback на прямой IP
+        # Fallback to direct IP
         if request.client:
             return request.client.host
         
@@ -62,7 +62,7 @@ class RateLimiter:
         client_ip = self._get_client_ip(request)
         current_time = time.time()
         
-        # Очищаем старые запросы
+        # Clean old requests
         self.minute_requests[client_ip] = self._clean_old_requests(
             self.minute_requests[client_ip],
             60  # 1 минута
@@ -72,18 +72,18 @@ class RateLimiter:
             3600  # 1 час
         )
         
-        # Подсчитываем запросы
+        # Count requests
         minute_count = sum(count for _, count in self.minute_requests[client_ip])
         hour_count = sum(count for _, count in self.hour_requests[client_ip])
         
-        # Проверяем лимиты
+        # Check limits
         if minute_count >= self.requests_per_minute:
             return False, f"Rate limit exceeded: {self.requests_per_minute} requests per minute"
         
         if hour_count >= self.requests_per_hour:
             return False, f"Rate limit exceeded: {self.requests_per_hour} requests per hour"
         
-        # Добавляем текущий запрос
+        # Add current request
         self.minute_requests[client_ip].append((current_time, 1))
         self.hour_requests[client_ip].append((current_time, 1))
         
