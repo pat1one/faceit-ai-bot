@@ -79,7 +79,7 @@ class DemoAnalyzer:
             )
 
     async def _parse_demo_file(self, demo_file: UploadFile) -> Dict:
-        """Парсинг демо файла CS2"""
+        """Parse CS2 demo file"""
         # Demo parsing not implemented
         return {
             'match_id': '12345',
@@ -100,7 +100,7 @@ class DemoAnalyzer:
         return []
 
     async def _identify_key_moments(self, demo_data: Dict) -> List[Dict]:
-        """Определение ключевых моментов матча"""
+        """Identify key match moments"""
         # Key moments detection not implemented
         return []
 
@@ -110,22 +110,22 @@ class DemoAnalyzer:
         round_analysis: List[RoundAnalysis],
         key_moments: List[Dict]
     ) -> List[str]:
-        """Генерация рекомендаций по улучшению игры с помощью AI"""
+        """Generate improvement recommendations"""
         try:
-            # Подготовка данных для AI анализа
+            # Prepare data for analysis
             stats_summary = {
                 "total_players": len(player_performances),
                 "rounds_analyzed": len(round_analysis),
                 "key_moments_count": len(key_moments)
             }
             
-            # Получение AI рекомендаций
+            # Get recommendations
             ai_analysis = await self.ai_service.analyze_player_performance(
                 stats=stats_summary,
                 match_history=[]
             )
             
-            # Парсинг рекомендаций из AI ответа
+            # Parse recommendations from response
             recommendations = self._parse_recommendations(ai_analysis)
             
             return recommendations if recommendations else self._get_default_recommendations()
@@ -135,14 +135,14 @@ class DemoAnalyzer:
             return self._get_default_recommendations()
     
     def _parse_recommendations(self, ai_text: str) -> List[str]:
-        """Парсинг рекомендаций из AI текста"""
+        """Parse recommendations from text"""
         lines = ai_text.split('\n')
         recommendations = []
         
         for line in lines:
             line = line.strip()
             if line and (line.startswith('-') or line.startswith('•') or line[0].isdigit()):
-                # Убираем маркеры списка
+                # Remove list markers
                 clean_line = line.lstrip('-•0123456789. ')
                 if clean_line:
                     recommendations.append(clean_line)
@@ -163,12 +163,12 @@ class DemoAnalyzer:
         self,
         player_performances: Dict[str, PlayerPerformance]
     ) -> List[Dict]:
-        """Определение областей для улучшения"""
+        """Identify improvement areas"""
         # Improvement areas analysis not implemented
         return [
             {
                 "area": "aim",
                 "current_level": "medium",
-                "recommendation": "Тренировать точность прицеливания"
+                "recommendation": "Train aiming accuracy"
             }
         ]

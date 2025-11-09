@@ -30,10 +30,10 @@ class PlayerAnalysisResponse(BaseModel):
 @router.post("/analyze-player", response_model=PlayerAnalysisResponse)
 async def analyze_player(request: PlayerAnalysisRequest):
     """
-    AI анализ игрока на основе статистики Faceit
+    AI player analysis based on Faceit statistics
     
-    Использует GPT-4 для глубокого анализа производительности
-    и генерации персональных рекомендаций
+    Uses GPT-4 for deep performance analysis
+    and generating personalized recommendations
     """
     try:
         from ...ai.openai_service import OpenAIService
@@ -43,7 +43,7 @@ async def analyze_player(request: PlayerAnalysisRequest):
         ai_service = OpenAIService()
         faceit_client = FaceitAPIClient()
         
-        # Получение данных игрока
+        # Fetch player data
         player_data = None
         if request.faceit_id:
             stats = await faceit_client.get_player_stats(request.faceit_id)
@@ -57,7 +57,7 @@ async def analyze_player(request: PlayerAnalysisRequest):
         if not stats:
             raise HTTPException(status_code=404, detail="Stats not available")
         
-        # Подготовка статистики для AI
+        # Prepare statistics for analysis
         lifetime_stats = stats.get('lifetime', {})
         player_stats = {
             'kd_ratio': float(lifetime_stats.get('K/D Ratio', '1.0')),
@@ -71,19 +71,19 @@ async def analyze_player(request: PlayerAnalysisRequest):
         player_id = request.faceit_id or player_data['player_id']
         match_history = await faceit_client.get_match_history(player_id, limit=20)
         
-        # AI анализ
+        # Analysis
         analysis = await ai_service.analyze_player_performance(
             stats=player_stats,
             match_history=match_history
         )
         
-        # Генерация плана тренировок
+        # Generate training plan
         training_plan = await ai_service.generate_training_plan(
             player_stats=player_stats,
             focus_areas=['aim', 'positioning', 'game_sense']
         )
         
-        # Парсинг анализа для извлечения сильных/слабых сторон
+        # Parse analysis to extract strengths/weaknesses
         strengths, weaknesses, recommendations = _parse_analysis(analysis)
         
         return PlayerAnalysisResponse(
@@ -106,7 +106,7 @@ async def analyze_player(request: PlayerAnalysisRequest):
 @router.get("/training-plan/{player_id}")
 async def get_training_plan(player_id: str):
     """
-    Получить персональный план тренировок
+    Get personalized training plan
     """
     try:
         from ...ai.openai_service import OpenAIService
@@ -115,7 +115,7 @@ async def get_training_plan(player_id: str):
         ai_service = OpenAIService()
         faceit_client = FaceitAPIClient()
         
-        # Получение статистики
+        # Fetch statistics
         stats = await faceit_client.get_player_stats(player_id)
         if not stats:
             raise HTTPException(status_code=404, detail="Player stats not found")
@@ -127,7 +127,7 @@ async def get_training_plan(player_id: str):
             'hs_percentage': float(lifetime_stats.get('Headshots %', '40'))
         }
         
-        # Генерация плана
+        # Generate plan
         training_plan = await ai_service.generate_training_plan(
             player_stats=player_stats,
             focus_areas=['aim', 'spray_control', 'positioning']
@@ -144,7 +144,7 @@ async def get_training_plan(player_id: str):
 
 def _parse_analysis(analysis_text: str) -> tuple[List[str], List[str], List[str]]:
     """
-    Парсинг AI анализа для извлечения структурированных данных
+    Парсинг Analysisа для извлечения структурированных данных
     
     Returns:
         (strengths, weaknesses, recommendations)
@@ -161,7 +161,7 @@ def _parse_analysis(analysis_text: str) -> tuple[List[str], List[str], List[str]
         if not line:
             continue
         
-        # Определение секции
+        # Determine section
         if 'сильн' in line.lower() or 'strength' in line.lower():
             current_section = 'strengths'
             continue
@@ -172,7 +172,7 @@ def _parse_analysis(analysis_text: str) -> tuple[List[str], List[str], List[str]
             current_section = 'recommendations'
             continue
         
-        # Извлечение пунктов
+        # Extract items
         if line.startswith(('-', '•', '*')) or (line and line[0].isdigit()):
             clean_line = line.lstrip('-•*0123456789. ')
             if clean_line:
