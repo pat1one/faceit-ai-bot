@@ -20,19 +20,25 @@ export default function DemoPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
-  const handleAnalysisComplete = async (file: File) => {
+  const handleAnalysisComplete = async (result: File | AnalysisResult) => {
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('demo', file);
+      // Если это File, отправляем на анализ
+      if (result instanceof File) {
+        const formData = new FormData();
+        formData.append('demo', result);
 
-      const response = await fetch(API_ENDPOINTS.DEMO_ANALYZE, {
-        method: 'POST',
-        body: formData,
-      });
+        const response = await fetch(API_ENDPOINTS.DEMO_ANALYZE, {
+          method: 'POST',
+          body: formData,
+        });
 
-      const result = await response.json();
-      setAnalysisResult(result);
+        const analysisData = await response.json();
+        setAnalysisResult(analysisData);
+      } else {
+        // Если это уже результат анализа
+        setAnalysisResult(result);
+      }
     } catch (error) {
       console.error('Error during analysis:', error);
     } finally {

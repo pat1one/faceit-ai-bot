@@ -7,7 +7,7 @@ type AnalysisResult = {
 };
 
 type Props = {
-  onAnalysisComplete?: (result: File | AnalysisResult) => void;
+  onAnalysisComplete?: (result: File | AnalysisResult) => void | Promise<void>;
 };
 
 export default function DemoUpload({ onAnalysisComplete }: Props) {
