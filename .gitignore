@@ -57,3 +57,8 @@ home
 home.pub
 pat
 pat.pub
+home
+home.pub
+pat
+pat.pub
+*.pub
