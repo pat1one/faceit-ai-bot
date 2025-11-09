@@ -16,3 +16,4 @@ secrets:
   - VPS_USER
   - VPS_PORT
   - VPS_DEPLOY_PATH
+  - DOWNLOADS_PATH
