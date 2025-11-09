@@ -147,7 +147,7 @@ class DemoAnalyzer:
                 if clean_line:
                     recommendations.append(clean_line)
         
-        return recommendations[:10]  # Максимум 10 рекомендаций
+        return recommendations[:10]  # Maximum 10 recommendations
     
     def _get_default_recommendations(self) -> List[str]:
         """Default recommendations"""

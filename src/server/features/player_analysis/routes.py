@@ -20,13 +20,13 @@ async def analyze_player(
     service: PlayerAnalysisService = Depends()
 ):
     """
-    Анализ игрока по никнейму
+    Analyze player by nickname
     
     Args:
         nickname: Player nickname на Faceit
         
     Returns:
-        Детальный анализ игрока с рекомендациями
+        Detailed player analysis with recommendations
     """
     try:
         analysis = await service.analyze_player(nickname)
@@ -52,7 +52,7 @@ async def get_player_stats(
     service: PlayerAnalysisService = Depends()
 ):
     """
-    Получить статистику игрока
+    Get player statistics
     
     Args:
         nickname: Player nickname
@@ -112,14 +112,14 @@ async def search_players(
     service: PlayerAnalysisService = Depends()
 ):
     """
-    Поиск игроков по никнейму
+    Search players by nickname
     
     Args:
-        query: Поисковый запрос
-        limit: Лимит результатов
+        query: Search query
+        limit: Result limit
         
     Returns:
-        Список найденных игроков
+        List of found players
     """
     try:
         players = await service.search_players(query, limit)

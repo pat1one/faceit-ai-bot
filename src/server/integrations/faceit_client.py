@@ -57,7 +57,7 @@ class FaceitAPIClient:
     
     async def get_player_stats(self, player_id: str, game: str = "cs2") -> Optional[Dict]:
         """
-        Получить статистику игрока
+        Get player statistics
         
         Args:
             player_id: ID игрока на Faceit
@@ -126,15 +126,15 @@ class FaceitAPIClient:
         limit: int = 20
     ) -> List[Dict]:
         """
-        Поиск игроков по никнейму
+        Search players by nickname
         
         Args:
             nickname: Никнейм для поиска
             country: Страна (опционально)
-            limit: Лимит результатов
+            limit: Result limit
             
         Returns:
-            Список найденных игроков
+            List of found players
         """
         if not self.api_key:
             return []

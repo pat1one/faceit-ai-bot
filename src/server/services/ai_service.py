@@ -30,7 +30,7 @@ class AIService:
         match_history: List[Dict]
     ) -> Dict[str, any]:
         """
-        Анализ игрока с помощью AI
+        Analyze player with AI
         
         Args:
             nickname: Player nickname
@@ -95,21 +95,21 @@ Statistics:
 Provide analysis in JSON format:
 {{
   "strengths": {{
-    "aim": <оценка 1-10>,
-    "game_sense": <оценка 1-10>,
-    "positioning": <оценка 1-10>,
-    "teamwork": <оценка 1-10>,
-    "consistency": <оценка 1-10>
+    "aim": <rating 1-10>,
+    "game_sense": <rating 1-10>,
+    "positioning": <rating 1-10>,
+    "teamwork": <rating 1-10>,
+    "consistency": <rating 1-10>
   }},
   "weaknesses": {{
-    "areas": ["область1", "область2"],
-    "priority": "главная_проблема",
-    "recommendations": ["совет1", "совет2", "совет3"]
+    "areas": ["area1", "area2"],
+    "priority": "main_issue",
+    "recommendations": ["tip1", "tip2", "tip3"]
   }},
   "training_plan": {{
-    "focus_areas": ["область1", "область2"],
+    "focus_areas": ["area1", "area2"],
     "daily_exercises": [
-      {{"name": "упражнение", "duration": "время", "description": "описание"}}
+      {{"name": "exercise", "duration": "time", "description": "description"}}
     ],
     "estimated_time": "2-4 weeks"
   }},
@@ -261,17 +261,17 @@ Reply ONLY with JSON, no additional text."""
 
 Создай план в формате JSON:
 {{
-  "focus_areas": ["область1", "область2"],
+  "focus_areas": ["area1", "area2"],
   "daily_exercises": [
     {{
       "name": "название",
-      "duration": "время",
-      "description": "детальное описание",
+      "duration": "time",
+      "description": "детальное description",
       "maps": ["карта1", "карта2"]
     }}
   ],
   "weekly_goals": ["цель1", "цель2"],
-  "estimated_time": "время улучшения"
+  "estimated_time": "time улучшения"
 }}
 
 Отвечай ТОЛЬКО JSON."""
