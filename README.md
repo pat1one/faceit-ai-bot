@@ -1,286 +1,151 @@
+# 👋 Привет! Я Platon (pat1one)
+
 <div align="center">
+  
+[![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=2E9EF7&center=true&vCenter=true&width=600&lines=IT+Specialist+%F0%9F%92%BB;Data+Science+%26+ML+Engineer+%F0%9F%A4%96;Full+Stack+Developer+%F0%9F%9A%80;CS2+Player+%26+Analyst+%F0%9F%8E%AE)](https://git.io/typing-svg)
 
-# 🎮 Faceit Stats Bot
+</div>
 
-### Анализ статистики и поиск нормальных тиммейтов в CS2
+## 🚀 О себе
 
-[![CI/CD](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml)
-[![Tests](https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml)
-[![Deploy](https://github.com/pat1one/faceit-ai-bot/actions/workflows/deploy-to-vps.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/deploy-to-vps.yml)
-
-[![Version](https://img.shields.io/github/v/release/pat1one/faceit-ai-bot?label=version)](https://github.com/pat1one/faceit-ai-bot/releases)
-[![Downloads](https://img.shields.io/github/downloads/pat1one/faceit-ai-bot/total?label=downloads)](https://github.com/pat1one/faceit-ai-bot/releases)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
-[![Next.js](https://img.shields.io/badge/next.js-15-black.svg)](https://nextjs.org/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
-
-[![Website](https://img.shields.io/badge/🌐-pattmsc.online-blue)](https://pattmsc.online)
-[![Twitch](https://img.shields.io/badge/📺-Twitch-9146FF)](https://www.twitch.tv/pattmsc)
-[![Telegram](https://img.shields.io/badge/💬-Telegram-26A5E4)](https://t.me/mscpatt)
+- 💼 **IT Specialist** | Moderator of more channels
+- 🎮 **exDota** now **CS2 player**
+- 🤖 Разрабатываю **AI-powered** решения для киберспорта
+- 📊 **Data Science** & **Machine Learning** энтузиаст
+- 💬 Business: [@prdrow](https://t.me/prdrow)
 
 ---
 
-[🌐 **Демо**](https://pattmsc.online) • [📚 **API Docs**](https://api.pattmsc.online/docs) • [⬇️ **Скачать**](DOWNLOAD.md) • [🗺️ **Roadmap**](ROADMAP.md)
+## 🛠️ Tech Stack
 
-**Автор:** [pattmsc](https://taplink.cc/mscpat)
+### 🎯 Main
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-4479A1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Data Science](https://img.shields.io/badge/Data_Science-FF6F00?style=for-the-badge&logo=jupyter&logoColor=white)
+
+### 💻 Frontend
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+### ⚙️ Backend
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+
+### 🤖 AI/ML
+![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
+
+### 🛠️ Tools & DevOps
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+
+---
+
+## 🎯 Проекты
+
+### 🤖 [Faceit AI Bot](https://github.com/pat1one/faceit-ai-bot)
+> AI-powered CS2 статистика и анализ игроков с использованием GPT-4
+
+**Технологии:** Python, FastAPI, OpenAI, Next.js, TypeScript, PostgreSQL
+
+**Возможности:**
+- 🎯 AI анализ производительности игроков
+- 📊 Интеграция с Faceit API
+- 💡 Персональные рекомендации и планы тренировок
+- 📈 Анализ демо-файлов CS2
+- 🔮 Предсказание результатов матчей
+
+[![GitHub](https://img.shields.io/badge/View_on_GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pat1one/faceit-ai-bot)
+[![Stars](https://img.shields.io/github/stars/pat1one/faceit-ai-bot?style=for-the-badge&logo=github)](https://github.com/pat1one/faceit-ai-bot)
+
+---
+
+## 📊 GitHub Stats
+
+<div align="center">
+  
+![GitHub Stats](https://github-readme-stats.vercel.app/api?username=pat1one&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&icon_color=2E9EF7&text_color=C9D1D9)
+
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=pat1one&layout=compact&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&text_color=C9D1D9)
+
+![GitHub Streak](https://github-readme-streak-stats.herokuapp.com/?user=pat1one&theme=tokyonight&hide_border=true&background=0D1117&ring=2E9EF7&fire=2E9EF7&currStreakLabel=2E9EF7)
 
 </div>
 
 ---
 
-## ✨ Возможности
-
-<table>
-<tr>
-<td width="33%" align="center">
-
-### 📊 Анализ статистики
-
-Детальный анализ матчей<br/>
-Отслеживание прогресса<br/>
-Сравнение с другими игроками
-
-</td>
-<td width="33%" align="center">
-
-### 👥 Поиск тиммейтов
-
-Умные фильтры поиска<br/>
-Статистика игроков<br/>
-Удобная коммуникация
-
-</td>
-<td width="33%" align="center">
-
-### 🔔 Уведомления
-
-Новые матчи<br/>
-Обновления статистики<br/>
-Интеграция с Faceit
-
-</td>
-</tr>
-</table>
-
-## 🚀 Быстрый старт
-
-### Установка
-
-```bash
-# Клонировать репозиторий
-git clone https://github.com/pat1one/faceit-ai-bot.git
-cd faceit-ai-bot
-
-# Настроить окружение
-cp .env.example .env
-# Отредактируйте .env файл
-
-# Запустить через Docker
-docker-compose up -d
-```
-
-### 🌐 Доступные сервисы
-
-После запуска доступны:
-
-| Сервис | URL | Описание |
-|--------|-----|----------|
-| 🎨 Frontend | http://localhost:3000 | Web интерфейс |
-| ⚡ API | http://localhost:8000 | Backend API |
-| 📖 API Docs | http://localhost:8000/docs | Swagger документация |
-| 🗄️ PostgreSQL | localhost:5432 | База данных |
-
-## 📦 Скачать
-
-<table>
-<tr>
-<td width="33%" align="center">
-
-### 🧩 Расширение
-
-**Для браузера**
-
-Легкая интеграция с Faceit  
-Анализ прямо на сайте  
-Быстрый доступ к статистике
-
-[![Chrome](https://img.shields.io/badge/Chrome-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
-[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
-[![Edge](https://img.shields.io/badge/Edge-0078D7?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
-
-[📖 Инструкция](DOWNLOAD.md#-расширение-для-браузера)
-
-</td>
-<td width="33%" align="center">
-
-### 🌐 Веб-версия
-
-**Онлайн сервис**
-
-Все функции в одном месте  
-Работает без установки  
-Доступ с любого устройства
-
-[![Website](https://img.shields.io/badge/Открыть-pattmsc.online-4CAF50?style=for-the-badge&logo=google-chrome&logoColor=white)](https://pattmsc.online)
-
-[![API Docs](https://img.shields.io/badge/API-Документация-009688?style=for-the-badge&logo=swagger&logoColor=white)](https://api.pattmsc.online/docs)
-
-</td>
-<td width="33%" align="center">
-
-### 🐳 Docker
-
-**Для разработчиков**
-
-Полная локальная установка  
-Все сервисы в контейнерах  
-Готово к продакшену
-
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
-
-[📖 Инструкция](DOWNLOAD.md#-веб-приложение)
-
-</td>
-</tr>
-</table>
+## 🏆 GitHub Trophies
 
 <div align="center">
-
-**📥 [Все релизы на GitHub](https://github.com/pat1one/faceit-ai-bot/releases)**
+  
+[![trophy](https://github-profile-trophy.vercel.app/?username=pat1one&theme=tokyonight&no-frame=true&no-bg=true&column=7&margin-w=15&margin-h=15)](https://github.com/ryo-ma/github-profile-trophy)
 
 </div>
 
-### 💻 Для разработчиков
+---
 
-Локальная установка через Docker:
+## 📈 Activity Graph
 
-```bash
-# Клонировать репозиторий
-git clone https://github.com/pat1one/faceit-ai-bot.git
-cd faceit-ai-bot
+[![Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=pat1one&theme=tokyo-night&hide_border=true&bg_color=0D1117&color=2E9EF7&line=2E9EF7&point=FFFFFF)](https://github.com/ashutosh00710/github-readme-activity-graph)
 
-# Настроить окружение
-cp .env.example .env
+---
 
-# Запустить
-docker-compose up -d
-```
+## 🎮 Gaming & Esports
 
-## 🛠️ Технологии
+<div align="center">
 
-<table>
-<tr>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" width="48" height="48" alt="Next.js"/>
-<br><strong>Next.js 15</strong>
-<br>React 19
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" width="48" height="48" alt="FastAPI"/>
-<br><strong>FastAPI</strong>
-<br>Python 3.9+
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" width="48" height="48" alt="PostgreSQL"/>
-<br><strong>PostgreSQL</strong>
-<br>Database
-</td>
-<td align="center" width="25%">
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="48" height="48" alt="Docker"/>
-<br><strong>Docker</strong>
-<br>Deployment
-</td>
-</tr>
-</table>
+### 🏅 CS2 Stats
+**Faceit Level:** 🔥 High ELO  
+**Role:** Analyst & Player  
+**Specialty:** Data-driven gameplay improvement
 
-## 🔧 Основные команды
+</div>
 
-```bash
-docker-compose up -d        # 🚀 Запустить все сервисы
-docker-compose down         # ⏹️ Остановить сервисы
-docker-compose logs -f      # 📝 Показать логи
-docker-compose restart      # 🔄 Перезапустить
-docker-compose ps           # 📊 Статус сервисов
-```
+---
 
-## 📁 Структура проекта
+## 💼 Контакты
 
-```text
-faceit-ai-bot/
-├── 📱 app/                 # Next.js приложение
-├── ⚙️ src/                 # Backend + Browser Extension
-│   ├── api/               # FastAPI endpoints
-│   ├── ai/                # ML модели
-│   └── services/          # Бизнес-логика
-├── 🎨 public/             # Статические файлы
-├── 🐳 docker-compose.yml  # Оркестрация сервисов
-└── 📚 docs/               # Документация
-```
+<div align="center">
 
-## 📖 Документация
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/prdrow)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/pat1one)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:pat@pattmsc.online)
 
-| Документ | Описание |
-|----------|----------|
-| 🗺️ [ROADMAP.md](ROADMAP.md) | План развития проекта |
-| ⬇️ [DOWNLOAD.md](DOWNLOAD.md) | Скачать расширение и приложение |
-| 📜 [LICENSE](LICENSE) | Лицензия ([Русская версия](LICENSE.ru.md)) |
+</div>
 
-## 🎯 Как использовать
+---
 
-1. **Установка** - Скачайте расширение или разверните полную версию
-2. **Авторизация** - Войдите через Faceit аккаунт
-3. **Анализ** - Начните анализировать статистику и искать тиммейтов
+## 📌 Pinned Repositories
 
-## 🤝 Вклад в проект
+<div align="center">
 
-Мы приветствуем вклад в развитие проекта!
+[![Faceit AI Bot](https://github-readme-stats.vercel.app/api/pin/?username=pat1one&repo=faceit-ai-bot&theme=tokyonight&hide_border=true&bg_color=0D1117&title_color=2E9EF7&icon_color=2E9EF7&text_color=C9D1D9)](https://github.com/pat1one/faceit-ai-bot)
 
-1. Fork репозитория
-2. Создайте feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit изменения (`git commit -m 'добавил крутую фичу'`)
-4. Push в branch (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-## 📄 Лицензия
-
-**MIT (но с нюансами по деньгам)**
-
-**Copyright © 2025 pattmsc (Platon)**
-
-Короче, это платный сервис с подписками (FREE, BASIC, PRO, ELITE).
-
-Можно:
-- ✅ Форкать и менять для себя или учёбы
-- ✅ Использовать в своих некоммерческих проектах
-- ✅ Встраивать в свой продукт
-
-Нельзя:
-- ❌ Делать свой платный сервис на этом коде
-- ❌ Продавать подписки
-- ❌ Зарабатывать без разрешения
-- ❌ Вырезать систему оплаты
-
-Официальный сервис: https://pattmsc.online
-
-Подробнее: [LICENSE](LICENSE) ([по-русски](LICENSE.ru.md))
+</div>
 
 ---
 
 <div align="center">
 
-**Сделано с ❤️ для CS2 комьюнити**
+### 💭 Quote of the Day
 
-### 💝 Поддержать проект
+![Quote](https://quotes-github-readme.vercel.app/api?type=horizontal&theme=tokyonight)
 
-[⭐ Star на GitHub](https://github.com/pat1one/faceit-ai-bot) • [💰 Донат](https://taplink.cc/mscpat) • [📺 Twitch](https://www.twitch.tv/pattmsc) • [💬 Telegram](https://t.me/mscpatt)
+### 👀 Profile Views
 
-[🐛 Сообщить об ошибке](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Предложить функцию](https://github.com/pat1one/faceit-ai-bot/issues)
+![Visitor Count](https://profile-counter.glitch.me/pat1one/count.svg)
 
 ---
 
-**Если проект помог - поставь ⭐ звезду и расскажи друзьям!**
+**⭐ From [pat1one](https://github.com/pat1one) with 💙**
 
 </div>
