@@ -53,3 +53,7 @@ Thumbs.db
 # Testing
 coverage/
 .nyc_output/
+home
+home.pub
+pat
+pat.pub
