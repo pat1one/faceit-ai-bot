@@ -1,8 +1,6 @@
-<div align="center">
+# ⬇️ Скачать Faceit Stats Bot
 
-# ⬇️ Скачать Faceit AI Bot
-
-### Готовые сборки для быстрой установки
+## Готовые сборки для быстрой установки
 
 [![Version](https://img.shields.io/badge/version-v0.2.0-blue.svg)](https://github.com/pat1one/faceit-ai-bot/releases)
 [![Downloads](https://img.shields.io/github/downloads/pat1one/faceit-ai-bot/total.svg)](https://github.com/pat1one/faceit-ai-bot/releases)
@@ -10,73 +8,40 @@
 
 [🌐 Официальный сайт](https://pattmsc.online) • [📚 Документация](README.md) • [🐛 Сообщить об ошибке](https://github.com/pat1one/faceit-ai-bot/issues)
 
-</div>
-
 ---
 
 ## 🎯 Что доступно для скачивания
 
-<table>
-<tr>
-<td width="50%" align="center">
-
 ### 🧩 Browser Extension
 
-**Расширение для браузера**
+Расширение для браузера
 
-Легкая интеграция с Faceit<br/>
-Анализ прямо на сайте<br/>
-Быстрый доступ к статистике
+- Легкая интеграция с Faceit
+- Анализ прямо на сайте
+- Быстрый доступ к статистике
 
-[⬇️ Скачать расширение](#browser-extension)
-
-</td>
-<td width="50%" align="center">
+[⬇️ Скачать расширение](#-расширение-для-браузера)
 
 ### 🌐 Web Application
 
-**Полная версия сайта**
+Полная версия сайта
 
-Все функции в одном месте<br/>
-Работает без установки<br/>
-Доступ с любого устройства
+- Все функции в одном месте
+- Работает без установки
+- Доступ с любого устройства
 
 [🌐 Открыть сайт](https://pattmsc.online)
 
-</td>
-</tr>
-</table>
-
 ---
 
-## 🧩 Browser Extension
+## 🧩 Расширение для браузера
 
 ### Доступные версии
 
-<table>
-<tr>
-<td width="25%" align="center">
-<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" width="48" height="48" alt="Chrome"/>
-<br><strong>Chrome</strong>
-<br><a href="https://pattmsc.online/downloads/faceit-ai-bot-chrome.zip">Скачать</a>
-</td>
-<td width="25%" align="center">
-<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" width="48" height="48" alt="Firefox"/>
-<br><strong>Firefox</strong>
-<br><a href="https://pattmsc.online/downloads/faceit-ai-bot-firefox.xpi">Скачать</a>
-</td>
-<td width="25%" align="center">
-<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" width="48" height="48" alt="Edge"/>
-<br><strong>Edge</strong>
-<br><a href="https://pattmsc.online/downloads/faceit-ai-bot-edge.zip">Скачать</a>
-</td>
-<td width="25%" align="center">
-<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_48x48.png" width="48" height="48" alt="Opera"/>
-<br><strong>Opera</strong>
-<br><a href="https://pattmsc.online/downloads/faceit-ai-bot-opera.zip">Скачать</a>
-</td>
-</tr>
-</table>
+| Chrome | Firefox | Edge | Opera |
+|:------:|:-------:|:----:|:-----:|
+| ![Chrome](https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png) | ![Firefox](https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png) | ![Edge](https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png) | ![Opera](https://raw.githubusercontent.com/alrra/browser-logos/master/src/opera/opera_48x48.png) |
+| [Скачать Chrome](https://pattmsc.online/downloads/faceit-ai-bot-chrome.zip) | [Скачать Firefox](https://pattmsc.online/downloads/faceit-ai-bot-firefox.xpi) | [Скачать Edge](https://pattmsc.online/downloads/faceit-ai-bot-edge.zip) | [Скачать Opera](https://pattmsc.online/downloads/faceit-ai-bot-opera.zip) |
 
 ### 📦 Что включено
 
@@ -112,19 +77,15 @@
 
 ---
 
-## 🌐 Web Application
+## 🌐 Веб-приложение
 
 ### Онлайн версия
 
-**Используйте прямо сейчас без установки:**
+Используйте прямо сейчас без установки:
 
-<div align="center">
+[🚀 Открыть pattmsc.online](https://pattmsc.online)
 
-### [🚀 Открыть pattmsc.online](https://pattmsc.online)
-
-**API Документация:** [api.pattmsc.online/docs](https://api.pattmsc.online/docs)
-
-</div>
+API Документация: [api.pattmsc.online/docs](https://api.pattmsc.online/docs)
 
 ### 💻 Локальная установка (Docker)
 
@@ -146,24 +107,21 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-**Доступно на:**
-- Frontend: http://localhost:3000
-- API: http://localhost:8000
-- Docs: http://localhost:8000/docs
+Доступно на:
+
+- Frontend: <http://localhost:3000>
+- API: <http://localhost:8000>
+- Docs: <http://localhost:8000/docs>
 
 ---
 
 ## 📱 Мобильное приложение
-
-<div align="center">
 
 ### 🚧 В разработке
 
 Мобильные приложения для iOS и Android будут доступны в Q2 2025
 
 [📋 Следить за прогрессом](ROADMAP.md#q2-2025---улучшение-ux-и-социальные-функции)
-
-</div>
 
 ---
 
@@ -181,7 +139,7 @@ docker-compose up -d
 
 - ⭐ [Star на GitHub](https://github.com/pat1one/faceit-ai-bot) - получайте уведомления о релизах
 - 📧 [Email рассылка](mailto:support@pattmsc.online?subject=Subscribe) - новости и обновления
-- 💬 [Telegram канал](#) - анонсы и новости (скоро)
+- 💬 Telegram канал - анонсы и новости (скоро)
 
 ---
 
@@ -213,43 +171,29 @@ docker-compose up -d
 
 ### Возникли проблемы?
 
-<table>
-<tr>
-<td width="33%" align="center">
-
-### 📖 Документация
+#### 📖 Документация
 
 [Читать документацию](README.md)
 
-Подробные инструкции<br/>
-FAQ и решения<br/>
-Примеры использования
+- Подробные инструкции
+- FAQ и решения
+- Примеры использования
 
-</td>
-<td width="33%" align="center">
-
-### 🐛 Баг-репорты
+#### 🐛 Баг-репорты
 
 [Сообщить об ошибке](https://github.com/pat1one/faceit-ai-bot/issues)
 
-Опишите проблему<br/>
-Приложите скриншоты<br/>
-Получите помощь
+- Опишите проблему
+- Приложите скриншоты
+- Получите помощь
 
-</td>
-<td width="33%" align="center">
-
-### 💬 Сообщество
+#### 💬 Сообщество
 
 [Обсуждения](https://github.com/pat1one/faceit-ai-bot/discussions)
 
-Задайте вопрос<br/>
-Поделитесь опытом<br/>
-Найдите решение
-
-</td>
-</tr>
-</table>
+- Задайте вопрос
+- Поделитесь опытом
+- Найдите решение
 
 ### Контакты
 
@@ -281,15 +225,11 @@ FAQ и решения<br/>
 
 ## 📊 Статистика проекта
 
-<div align="center">
-
 ![GitHub stars](https://img.shields.io/github/stars/pat1one/faceit-ai-bot?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/pat1one/faceit-ai-bot?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/pat1one/faceit-ai-bot?style=social)
 
 **Активных пользователей:** 1,000+ • **Проанализировано матчей:** 50,000+ • **Найдено тиммейтов:** 2,500+
-
-</div>
 
 ---
 
@@ -297,50 +237,29 @@ FAQ и решения<br/>
 
 Если вам нравится Faceit AI Bot, поддержите разработку:
 
-<table>
-<tr>
-<td width="25%" align="center">
-
 ### ⭐ Star на GitHub
 
 [Поставить звезду](https://github.com/pat1one/faceit-ai-bot)
 
-Это бесплатно и<br/>
-очень мотивирует!
-
-</td>
-<td width="25%" align="center">
+Это бесплатно и очень мотивирует!
 
 ### 💰 Донат
 
 [Поддержать проект](https://taplink.cc/mscpat)
 
-Помогите развитию<br/>
-и новым функциям
-
-</td>
-<td width="25%" align="center">
+Помогите развитию и новым функциям
 
 ### 📺 Twitch
 
 [Смотреть стримы](https://www.twitch.tv/pattmsc)
 
-CS2, Valorant, PUBG<br/>
-синглы и общение
-
-</td>
-<td width="25%" align="center">
+CS2, Valorant, PUBG синглы и общение
 
 ### 💬 Telegram
 
 [Подписаться](https://t.me/mscpatt)
 
-Новости, обновления<br/>
-и общение
-
-</td>
-</tr>
-</table>
+Новости, обновления и общение
 
 ### 📢 Расскажите друзьям
 
@@ -348,12 +267,8 @@ CS2, Valorant, PUBG<br/>
 
 ---
 
-<div align="center">
-
-**Спасибо что выбрали Faceit AI Bot! 🎮**
+Спасибо что выбрали Faceit AI Bot! 🎮
 
 [⬅️ Назад к README](README.md) • [🗺️ Роадмап](ROADMAP.md) • [🤝 Вклад в проект](README.md#-вклад-в-проект)
 
-**Сделано с ❤️ для CS2 комьюнити**
-
-</div>
+Сделано с ❤️ для CS2 комьюнити

@@ -1,18 +1,31 @@
 <div align="center">
 
-# 🎮 Faceit AI Bot
+# 🎮 Faceit Stats Bot
 
-### Анализ статы и поиск нормальных тиммейтов в CS2
+### Анализ статистики и поиск нормальных тиммейтов в CS2
 
+[![CI/CD](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml)
+[![Tests](https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml)
+[![Deploy](https://github.com/pat1one/faceit-ai-bot/actions/workflows/deploy-to-vps.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/deploy-to-vps.yml)
+
+[![Version](https://img.shields.io/github/v/release/pat1one/faceit-ai-bot?label=version)](https://github.com/pat1one/faceit-ai-bot/releases)
+[![Downloads](https://img.shields.io/github/downloads/pat1one/faceit-ai-bot/total?label=downloads)](https://github.com/pat1one/faceit-ai-bot/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Copyright](https://img.shields.io/badge/copyright-pattmsc-blue.svg)](https://pattmsc.online)
+
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/next.js-15-black.svg)](https://nextjs.org/)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
 
-[🌐 Демо](https://pattmsc.online) • [📚 Документация](https://api.pattmsc.online/docs) • [⬇️ Скачать](DOWNLOAD.md)
+[![Website](https://img.shields.io/badge/🌐-pattmsc.online-blue)](https://pattmsc.online)
+[![Twitch](https://img.shields.io/badge/📺-Twitch-9146FF)](https://www.twitch.tv/pattmsc)
+[![Telegram](https://img.shields.io/badge/💬-Telegram-26A5E4)](https://t.me/mscpatt)
 
-**Автор:** [pattmsc](https://taplink.cc/mscpat) • [📺 Twitch](https://www.twitch.tv/pattmsc) • [💬 Telegram](https://t.me/mscpatt)
+---
+
+[🌐 **Демо**](https://pattmsc.online) • [📚 **API Docs**](https://api.pattmsc.online/docs) • [⬇️ **Скачать**](DOWNLOAD.md) • [🗺️ **Roadmap**](ROADMAP.md)
+
+**Автор:** [pattmsc](https://taplink.cc/mscpat)
 
 </div>
 
@@ -84,28 +97,61 @@ docker-compose up -d
 
 <table>
 <tr>
-<td width="50%" align="center">
+<td width="33%" align="center">
 
-### 🧩 Browser Extension
+### 🧩 Расширение
 
-Легкая интеграция с Faceit<br/>
-Работает прямо на сайте
+**Для браузера**
 
-[⬇️ Скачать расширение](DOWNLOAD.md#-browser-extension)
+Легкая интеграция с Faceit  
+Анализ прямо на сайте  
+Быстрый доступ к статистике
+
+[![Chrome](https://img.shields.io/badge/Chrome-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
+[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
+[![Edge](https://img.shields.io/badge/Edge-0078D7?style=for-the-badge&logo=microsoft-edge&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
+
+[📖 Инструкция](DOWNLOAD.md#-расширение-для-браузера)
 
 </td>
-<td width="50%" align="center">
+<td width="33%" align="center">
 
-### 🌐 Web Application
+### 🌐 Веб-версия
 
-Полная версия со всеми функциями<br/>
+**Онлайн сервис**
+
+Все функции в одном месте  
+Работает без установки  
 Доступ с любого устройства
 
-[🌐 Открыть сайт](https://pattmsc.online)
+[![Website](https://img.shields.io/badge/Открыть-pattmsc.online-4CAF50?style=for-the-badge&logo=google-chrome&logoColor=white)](https://pattmsc.online)
+
+[![API Docs](https://img.shields.io/badge/API-Документация-009688?style=for-the-badge&logo=swagger&logoColor=white)](https://api.pattmsc.online/docs)
+
+</td>
+<td width="33%" align="center">
+
+### 🐳 Docker
+
+**Для разработчиков**
+
+Полная локальная установка  
+Все сервисы в контейнерах  
+Готово к продакшену
+
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/pat1one/faceit-ai-bot/releases/latest)
+
+[📖 Инструкция](DOWNLOAD.md#-веб-приложение)
 
 </td>
 </tr>
 </table>
+
+<div align="center">
+
+**📥 [Все релизы на GitHub](https://github.com/pat1one/faceit-ai-bot/releases)**
+
+</div>
 
 ### 💻 Для разработчиков
 

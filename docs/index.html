@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faceit Stats Bot - Анализ статистики и поиск нормальных тиммейтов в CS2">
+    <meta name="keywords" content="faceit, cs2, counter-strike, bot, teammates, статистика, аналитика">
+    <meta name="author" content="pattmsc">
+    <title>Faceit Stats Bot - Анализ статистики и поиск тиммейтов в CS2</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --border-color: #30363d;
+            --success: #238636;
+            --warning: #f85149;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0a0e14 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        /* Badges */
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .badge img {
+            vertical-align: middle;
+        }
+
+        /* Navigation */
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        /* Download Section */
+        .download-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 60px;
+        }
+
+        .download-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .download-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .download-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-5px);
+        }
+
+        .download-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .download-card .subtitle-small {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .download-card ul {
+            list-style: none;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .download-card li {
+            padding: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .download-card li::before {
+            content: "✓ ";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .download-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .tech-stack h2 {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-5px);
+        }
+
+        .tech-item img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 10px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .social-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .download-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">🎮</div>
+            <h1>Faceit Stats Bot</h1>
+            <p class="subtitle">Анализ статистики и поиск нормальных тиммейтов в CS2</p>
+            
+            <div class="badges">
+                <a href="https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml" class="badge">
+                    <img src="https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci-cd.yml/badge.svg" alt="CI/CD">
+                </a>
+                <a href="https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml" class="badge">
+                    <img src="https://github.com/pat1one/faceit-ai-bot/actions/workflows/test.yml/badge.svg" alt="Tests">
+                </a>
+                <a href="https://github.com/pat1one/faceit-ai-bot/releases" class="badge">
+                    <img src="https://img.shields.io/github/v/release/pat1one/faceit-ai-bot?label=version" alt="Version">
+                </a>
+                <a href="https://github.com/pat1one/faceit-ai-bot/releases" class="badge">
+                    <img src="https://img.shields.io/github/downloads/pat1one/faceit-ai-bot/total?label=downloads" alt="Downloads">
+                </a>
+            </div>
+
+            <div class="nav-links">
+                <a href="https://pattmsc.online" class="nav-link">🌐 Демо</a>
+                <a href="https://api.pattmsc.online/docs" class="nav-link">📚 API Docs</a>
+                <a href="https://github.com/pat1one/faceit-ai-bot" class="nav-link">📖 GitHub</a>
+                <a href="https://github.com/pat1one/faceit-ai-bot/releases" class="nav-link">⬇️ Скачать</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Features -->
+        <section class="features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Анализ статистики</h3>
+                <p>Детальный анализ матчей, отслеживание прогресса и сравнение с другими игроками</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Поиск тиммейтов</h3>
+                <p>Умные фильтры поиска, статистика игроков и удобная коммуникация</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>Уведомления</h3>
+                <p>Новые матчи, обновления статистики и интеграция с Faceit</p>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section class="download-section">
+            <h2>📦 Скачать</h2>
+            <div class="download-grid">
+                <!-- Browser Extension -->
+                <div class="download-card">
+                    <h3>🧩 Расширение</h3>
+                    <p class="subtitle-small">Для браузера</p>
+                    <ul>
+                        <li>Легкая интеграция с Faceit</li>
+                        <li>Анализ прямо на сайте</li>
+                        <li>Быстрый доступ к статистике</li>
+                    </ul>
+                    <div class="download-buttons">
+                        <a href="https://github.com/pat1one/faceit-ai-bot/releases/latest" class="btn btn-primary">Chrome</a>
+                        <a href="https://github.com/pat1one/faceit-ai-bot/releases/latest" class="btn btn-primary">Firefox</a>
+                        <a href="https://github.com/pat1one/faceit-ai-bot/releases/latest" class="btn btn-primary">Edge</a>
+                    </div>
+                </div>
+
+                <!-- Web Version -->
+                <div class="download-card">
+                    <h3>🌐 Веб-версия</h3>
+                    <p class="subtitle-small">Онлайн сервис</p>
+                    <ul>
+                        <li>Все функции в одном месте</li>
+                        <li>Работает без установки</li>
+                        <li>Доступ с любого устройства</li>
+                    </ul>
+                    <div class="download-buttons">
+                        <a href="https://pattmsc.online" class="btn btn-primary">Открыть сайт</a>
+                        <a href="https://api.pattmsc.online/docs" class="btn btn-secondary">API Документация</a>
+                    </div>
+                </div>
+
+                <!-- Docker -->
+                <div class="download-card">
+                    <h3>🐳 Docker</h3>
+                    <p class="subtitle-small">Для разработчиков</p>
+                    <ul>
+                        <li>Полная локальная установка</li>
+                        <li>Все сервисы в контейнерах</li>
+                        <li>Готово к продакшену</li>
+                    </ul>
+                    <div class="download-buttons">
+                        <a href="https://github.com/pat1one/faceit-ai-bot/releases/latest" class="btn btn-primary">Docker Compose</a>
+                        <a href="https://github.com/pat1one/faceit-ai-bot" class="btn btn-secondary">Инструкция</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="tech-stack">
+            <h2>🛠️ Технологии</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js">
+                    <p><strong>Next.js 15</strong></p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary);">React 19</p>
+                </div>
+                <div class="tech-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" alt="FastAPI">
+                    <p><strong>FastAPI</strong></p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Python 3.9+</p>
+                </div>
+                <div class="tech-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL">
+                    <p><strong>PostgreSQL</strong></p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Database</p>
+                </div>
+                <div class="tech-item">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker">
+                    <p><strong>Docker</strong></p>
+                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Deployment</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p><strong>Сделано с ❤️ для CS2 комьюнити</strong></p>
+            <p style="margin-top: 10px;">Автор: <a href="https://taplink.cc/mscpat" style="color: var(--accent-primary);">pattmsc</a></p>
+            <div class="social-links">
+                <a href="https://pattmsc.online" class="social-link">🌐 Website</a>
+                <a href="https://www.twitch.tv/pattmsc" class="social-link">📺 Twitch</a>
+                <a href="https://t.me/mscpatt" class="social-link">💬 Telegram</a>
+                <a href="https://github.com/pat1one/faceit-ai-bot" class="social-link">⭐ GitHub</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 0.875rem;">
+                <a href="https://github.com/pat1one/faceit-ai-bot/blob/main/LICENSE" style="color: var(--text-secondary);">MIT License</a> • 
+                Copyright © 2025 pattmsc
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
