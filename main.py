@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 app = FastAPI(
     title="Faceit Bot API Service",
-    version="0.2.2",
+    version="0.3.0",
     description="API для анализа игроков CS2 на платформе Faceit"
 )
 

@@ -2,14 +2,14 @@
 
 <div align="center">
 
-![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.2.2-2E9EF7?style=for-the-badge)
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.3.0-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 **Анализ игроков CS2 и поиск тиммейтов на платформе Faceit**
 
-[🚀 Демо](https://pattmsc.online) • [📚 Документация](./docs) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues)
+[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://github.com/pat1one/faceit-ai-bot) • [📦 Релиз v0.3.0](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.3.0) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues)
 
 </div>
 
