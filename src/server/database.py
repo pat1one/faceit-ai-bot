@@ -29,13 +29,13 @@ else:
 # Creation session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Базовый класс for моделей
+# Base class for models
 Base = declarative_base()
 
 
 def get_db():
     """
-    Dependency for получения сессии database
+    Dependency for getting database session
     """
     db = SessionLocal()
     try:

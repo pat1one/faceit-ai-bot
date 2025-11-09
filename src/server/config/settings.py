@@ -47,7 +47,7 @@ class Settings(BaseSettings):
             raise ValueError('SECRET_KEY must be at least 32 characters long for security')
         return v
     
-    # СБП API settings
+    # SBP API settings
     SBP_TINKOFF_API_URL: str = "https://securepay.tinkoff.ru/v2"
     SBP_TINKOFF_TOKEN: Optional[str] = None
     SBP_TINKOFF_TERMINAL_KEY: Optional[str] = None

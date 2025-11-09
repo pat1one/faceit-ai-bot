@@ -1,1 +1,1 @@
-# Пакет Python
+# Python package

@@ -36,7 +36,7 @@ demo_analyzer = DemoAnalyzer()
             }
         },
         500: {
-            "description": "Внутренняя ошибка сервера"
+            "description": "Internal server error"
         }
     }
 )
@@ -44,7 +44,7 @@ async def analyze_demo(demo: UploadFile = File(...)):
     """
     CS2 demo file analysis
     
-    Принимает демо-файл в формате .dem и возвращает детальный анализ игры,
-    включая производительность игроков, анализ раундов и рекомендации.
+    Accepts demo file in .dem format and returns detailed game analysis,
+    including player performance, round analysis and recommendations.
     """
     return await demo_analyzer.analyze_demo(demo)

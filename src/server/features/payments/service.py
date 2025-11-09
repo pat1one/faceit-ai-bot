@@ -31,7 +31,7 @@ class PaymentService:
         }
 
     async def create_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Создание payment через выбранную платежную систему"""
+        """Create payment through selected payment system"""
         try:
             if request.provider not in self.providers:
                 raise HTTPException(
@@ -39,10 +39,10 @@ class PaymentService:
                     detail=f"Unsupported payment provider: {request.provider}"
                 )
 
-            # Проверяем доступность метода оплаты for региона
+            # Check payment method availability for region
             self._validate_payment_method(request)
 
-            # Processing payment через соответствующий провайдер
+            # Process payment through corresponding provider
             return await self.providers[request.provider](request)
 
         except Exception as e:
@@ -63,7 +63,7 @@ class PaymentService:
                 return await self._check_sbp_status(payment_id)
             elif provider == PaymentProvider.YOOKASSA:
                 return await self._check_yookassa_status(payment_id)
-            # ... другие провайдеры
+            # ... other providers
 
             raise HTTPException(
                 status_code=400,
@@ -78,7 +78,7 @@ class PaymentService:
             )
 
     async def _process_sbp_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Обработка payment через СБП"""
+        """Process payment through SBP"""
         try:
             headers = {
                 "Authorization": f"Bearer {self.settings.SBP_TOKEN}",
@@ -228,7 +228,7 @@ class PaymentService:
                 await self._handle_sbp_webhook(data)
             elif provider == PaymentProvider.YOOKASSA:
                 await self._handle_yookassa_webhook(data)
-            # ... другие провайдеры
+            # ... other providers
         except Exception as e:
             logger.exception(f"Webhook processing failed: {str(e)}")
             raise HTTPException(

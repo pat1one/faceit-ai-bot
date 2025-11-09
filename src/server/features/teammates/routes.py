@@ -12,13 +12,13 @@ teammate_service = TeammateService()
 @router.post("/search", response_model=List[TeammateProfile])
 async def search_teammates(preferences: TeammatePreferences, user_id: str):
     """
-    Поиск тиммейтов на основе предпочтений
+    Search teammates based on preferences
     """
     return await teammate_service.find_teammates(user_id, preferences)
 
 @router.put("/preferences", response_model=TeammatePreferences)
 async def update_preferences(preferences: TeammatePreferences, user_id: str):
     """
-    Обновление предпочтений search тиммейтов
+    Update teammate search preferences
     """
     return await teammate_service.update_preferences(user_id, preferences)

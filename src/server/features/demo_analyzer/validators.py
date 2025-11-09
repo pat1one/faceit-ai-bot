@@ -1,12 +1,12 @@
 """
-Валидаторы for демо-анализа
+Validators for demo analysis
 """
 from pydantic import BaseModel, validator
 from typing import Optional
 
 
 class DemoFileValidator(BaseModel):
-    """Валидатор for демо-файлов"""
+    """Validator for demo files"""
     filename: str
     content_type: str
     size: int
@@ -30,7 +30,7 @@ class DemoFileValidator(BaseModel):
     def validate_content_type(cls, v):
         allowed_types = ['application/octet-stream', 'application/x-demo', 'application/demo']
         if v and v not in allowed_types:
-            # Не строгая проверка, так как браузеры могут отправлять разные типы
+            # Not strict validation, as browsers may send different types
             pass
         return v
 

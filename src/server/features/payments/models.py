@@ -44,7 +44,7 @@ class PaymentRequest(BaseModel):
     currency: Currency
     payment_method: PaymentMethod
     provider: PaymentProvider
-    description: str = "Подписка на Faceit AI Bot"
+    description: str = "Faceit AI Bot subscription"
     meta: Optional[Dict] = None
 
 class PaymentResponse(BaseModel):
@@ -67,7 +67,7 @@ class PaymentStatus(BaseModel):
     created_at: datetime
     paid_at: Optional[datetime]
 
-# Региональные настройки payments
+# Regional payment settings
 REGION_PAYMENT_CONFIG = {
     "RU": RegionPaymentMethods(
         region="RU",

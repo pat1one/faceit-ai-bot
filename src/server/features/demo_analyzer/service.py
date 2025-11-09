@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class DemoAnalyzer:
     def __init__(self):
-        # Initialization AI сервисов
+        # AI services initialization
         from ...services.ai_service import AIService
         from ...integrations.faceit_client import FaceitAPIClient
         
@@ -32,10 +32,10 @@ class DemoAnalyzer:
                     error_code="INVALID_FILE_FORMAT"
                 )
             
-            # Read and parse демо файла
+            # Read and parse demo file
             demo_data = await self._parse_demo_file(demo_file)
             
-            # Performance analysis игроков
+            # Player performance analysis
             player_performances = await self._analyze_player_performance(demo_data)
             
             # Round analysis
