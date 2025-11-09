@@ -5,7 +5,7 @@ import os
 import logging
 import requests
 
-app = FastAPI(title="Faceit AI Bot Service", version="0.2.2")
+app = FastAPI(title="Faceit Bot API Service", version="0.2.2")
 
 # Configure CORS for development and production
 origins = [
@@ -26,7 +26,7 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# ML model loading commented out - uncomment when needed
+# Model loading commented out - uncomment when needed
 # import torch
 # from torchvision import transforms
 # from PIL import Image
@@ -40,16 +40,16 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "Faceit AI Bot service running", "status": "healthy"}
+    return {"message": "Faceit Bot API service running", "status": "healthy"}
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "ai-ml"}
+    return {"status": "healthy", "service": "analysis"}
 
 @app.post("/analyze-demo")
 async def analyze_demo(demo: UploadFile = File(...)):
     """
-    CS2 demo analysis using machine learning model
+    CS2 demo file analysis and statistics extraction
     """
     if not demo.filename.endswith('.dem'):
         return {"error": "Invalid file format. Only .dem files are supported"}
