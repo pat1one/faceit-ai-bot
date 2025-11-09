@@ -1,65 +1,65 @@
 # 🛠️ Development Guide
 
-Руководство по разработке Faceit AI Bot v0.2.2
+Development guide for Faceit AI Bot v0.2.2
 
-**[English version](DEVELOPMENT.en.md)**
+**[Русская версия](DEVELOPMENT.md)**
 
-## 📋 Требования
+## 📋 Requirements
 
-- **Node.js**: 18.x или выше
-- **Python**: 3.9 или выше
-- **Docker**: 20.10+ (опционально)
-- **PostgreSQL**: 16+ (или через Docker)
+- **Node.js**: 18.x or higher
+- **Python**: 3.9 or higher
+- **Docker**: 20.10+ (optional)
+- **PostgreSQL**: 16+ (or via Docker)
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### 1. Клонирование и установка
+### 1. Clone and Install
 
 ```bash
-# Клонировать репозиторий
+# Clone the repository
 git clone https://github.com/pat1one/faceit-ai-bot.git
 cd faceit-ai-bot
 
-# Установить Node.js зависимости
+# Install Node.js dependencies
 npm install
 
-# Установить Python зависимости
+# Install Python dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Настройка окружения
+### 2. Environment Setup
 
 ```bash
-# Создать .env файл
+# Create .env file
 cp .env.example .env
 
-# Отредактировать .env и установить:
-# - SECRET_KEY (минимум 32 символа)
+# Edit .env and set:
+# - SECRET_KEY (minimum 32 characters)
 # - DATABASE_URL
-# - API ключи для платежей (опционально)
+# - Payment API keys (optional)
 ```
 
-### 3. Запуск
+### 3. Running
 
-#### Через Docker (рекомендуется)
+#### Via Docker (Recommended)
 
 ```bash
-# Запустить все сервисы
+# Start all services
 docker-compose up -d
 
-# Проверить статус
+# Check status
 docker-compose ps
 
-# Посмотреть логи
+# View logs
 docker-compose logs -f
 ```
 
-Доступно на:
+Available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
-#### Локально
+#### Locally
 
 ```bash
 # Terminal 1: Frontend
@@ -68,11 +68,11 @@ npm run dev
 # Terminal 2: Backend
 python main.py
 
-# Terminal 3: Database (если не используете Docker)
-# Запустите PostgreSQL локально
+# Terminal 3: Database (if not using Docker)
+# Run PostgreSQL locally
 ```
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 faceit-ai-bot/
@@ -81,10 +81,10 @@ faceit-ai-bot/
 │   ├── page.tsx           # Home page
 │   └── globals.css        # Global styles
 ├── src/
-│   ├── components/        # React компоненты
-│   ├── config/           # Конфигурация (API endpoints)
+│   ├── components/        # React components
+│   ├── config/           # Configuration (API endpoints)
 │   ├── server/           # FastAPI backend
-│   │   ├── features/     # Модульные фичи
+│   │   ├── features/     # Modular features
 │   │   │   ├── demo_analyzer/
 │   │   │   ├── payments/
 │   │   │   ├── subscriptions/
@@ -92,26 +92,26 @@ faceit-ai-bot/
 │   │   ├── models/       # Database models
 │   │   ├── config/       # Settings
 │   │   └── main.py       # FastAPI app
-│   └── ai/              # AI/ML сервис
+│   └── ai/              # AI/ML service
 ├── main.py              # Backend entry point
 ├── docker-compose.yml   # Docker orchestration
 └── .env                # Environment variables
 ```
 
-## 🔧 Основные команды
+## 🔧 Main Commands
 
 ### NPM Scripts
 
 ```bash
 # Development
-npm run dev              # Запуск Next.js dev server
+npm run dev              # Run Next.js dev server
 npm run build            # Production build
 npm run start            # Production server
 
 # Testing
 npm run test             # Run tests
-npm run type-check       # TypeScript проверка
-npm run lint             # ESLint проверка
+npm run type-check       # TypeScript check
+npm run lint             # ESLint check
 
 # Docker
 npm run docker:build     # Build Docker images
@@ -128,12 +128,12 @@ pytest tests/unit -v                    # Unit tests
 pytest tests/integration -v             # Integration tests
 pytest tests --cov=src/server          # With coverage
 
-# Database migrations (когда будут добавлены)
+# Database migrations (when added)
 alembic upgrade head                    # Apply migrations
 alembic revision --autogenerate -m ""   # Create migration
 ```
 
-## 🧪 Тестирование
+## 🧪 Testing
 
 ### Frontend Tests
 
@@ -144,13 +144,13 @@ npm run test
 ### Backend Tests
 
 ```bash
-# Все тесты
+# All tests
 pytest tests -v
 
-# С coverage
+# With coverage
 pytest tests --cov=src/server --cov-report=html
 
-# Только unit tests
+# Only unit tests
 pytest tests/unit -v
 ```
 
@@ -158,42 +158,42 @@ pytest tests/unit -v
 
 ### TypeScript/React
 
-- **Strict mode** включён
-- **ESLint** для проверки кода
-- **Prettier** для форматирования
-- Используйте **TypeScript** типы везде
+- **Strict mode** enabled
+- **ESLint** for code checking
+- **Prettier** for formatting
+- Use **TypeScript** types everywhere
 
 ### Python
 
 - **PEP 8** style guide
-- **Type hints** обязательны
-- **Docstrings** для всех публичных функций
-- **Pydantic** для валидации данных
+- **Type hints** required
+- **Docstrings** for all public functions
+- **Pydantic** for data validation
 
 ## 🔍 Debugging
 
 ### Frontend
 
 ```bash
-# Next.js dev mode с подробными ошибками
+# Next.js dev mode with detailed errors
 npm run dev
 ```
 
 ### Backend
 
 ```bash
-# FastAPI с auto-reload
+# FastAPI with auto-reload
 uvicorn main:app --reload --log-level debug
 ```
 
 ### Docker
 
 ```bash
-# Логи конкретного сервиса
+# Logs for specific service
 docker-compose logs -f api
 docker-compose logs -f web
 
-# Войти в контейнер
+# Enter container
 docker-compose exec api bash
 docker-compose exec web sh
 ```
@@ -212,7 +212,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ### Environment Variables
 
-Обязательные для production:
+Required for production:
 
 ```env
 NODE_ENV=production
@@ -222,36 +222,36 @@ DATABASE_URL=postgresql://user:password@host:5432/db
 
 ## 📚 API Documentation
 
-После запуска доступна по адресу:
+Available after startup at:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
 ## 🤝 Contributing
 
-1. Создайте feature branch
-2. Сделайте изменения
-3. Напишите тесты
-4. Проверьте линтеры: `npm run lint && npm run type-check`
-5. Создайте Pull Request
+1. Create a feature branch
+2. Make changes
+3. Write tests
+4. Check linters: `npm run lint && npm run type-check`
+5. Create a Pull Request
 
 ## 🐛 Troubleshooting
 
 ### Port already in use
 
 ```bash
-# Найти процесс на порту 3000
+# Find process on port 3000
 lsof -i :3000
-# Убить процесс
+# Kill process
 kill -9 <PID>
 ```
 
 ### Docker issues
 
 ```bash
-# Пересобрать без кеша
+# Rebuild without cache
 docker-compose build --no-cache
 
-# Очистить всё
+# Clean everything
 docker-compose down -v
 docker system prune -a
 ```
@@ -259,7 +259,7 @@ docker system prune -a
 ### TypeScript errors
 
 ```bash
-# Удалить кеш и пересобрать
+# Remove cache and rebuild
 rm -rf .next node_modules
 npm install
 npm run build
@@ -273,4 +273,4 @@ npm run build
 
 ---
 
-Сделано с ❤️ для CS2 комьюнити
+Made with ❤️ for the CS2 community

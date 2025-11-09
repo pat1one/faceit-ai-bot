@@ -11,6 +11,8 @@
 
 [🚀 Демо](https://pattmsc.online) • [📚 Документация](https://github.com/pat1one/faceit-ai-bot) • [📦 Релиз v0.3.0](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.3.0) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues)
 
+**[English version](README.en.md)**
+
 </div>
 
 ---

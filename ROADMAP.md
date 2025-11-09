@@ -9,6 +9,8 @@
 
 **Последнее обновление:** Ноябрь 2025
 
+**[English version](ROADMAP.en.md)**
+
 </div>
 
 ---
