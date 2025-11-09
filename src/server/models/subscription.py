@@ -1,5 +1,5 @@
 """
-Модели подписок
+Subscription models
 """
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer, Float
 from sqlalchemy.sql import func

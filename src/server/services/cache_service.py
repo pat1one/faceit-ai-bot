@@ -1,6 +1,6 @@
 """
 Cache Service
-Сервис кэширования с Redis
+Redis caching service
 """
 import json
 import logging

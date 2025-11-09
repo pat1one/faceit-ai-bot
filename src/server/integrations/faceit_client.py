@@ -1,6 +1,6 @@
 """
 Faceit API Client
-Клиент для работы с Faceit API
+Client for Faceit API integration
 """
 import aiohttp
 from typing import Optional, Dict, List
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class FaceitAPIClient:
-    """Клиент для Faceit API"""
+    """Client for Faceit API"""
     
     BASE_URL = "https://open.faceit.com/data/v4"
     

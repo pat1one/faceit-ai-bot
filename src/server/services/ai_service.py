@@ -1,5 +1,5 @@
 """
-AI Service для анализа игроков
+AI Service for player analysis
 Uses Groq API (free, fast)
 """
 import os
@@ -133,7 +133,7 @@ Reply ONLY with JSON, no additional text."""
             "messages": [
                 {
                     "role": "system",
-                    "content": "Ты профессиональный аналитик CS2. Отвечай только в формате JSON."
+                    "content": "You are a professional CS2 analyst. Reply only in JSON format."
                 },
                 {
                     "role": "user",

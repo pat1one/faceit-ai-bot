@@ -1,3 +1,3 @@
 """
-AI/ML services для анализа игры и генерации рекомендаций
+AI/ML services for game analysis and recommendation generation
 """

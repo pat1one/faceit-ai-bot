@@ -1,5 +1,5 @@
 """
-Модель пользователя
+User model
 """
 from sqlalchemy import Column, String, DateTime, Boolean, Integer
 from sqlalchemy.sql import func

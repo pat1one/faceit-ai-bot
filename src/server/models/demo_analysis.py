@@ -1,5 +1,5 @@
 """
-Модель анализа демо
+Demo analysis model
 """
 from sqlalchemy import Column, String, DateTime, ForeignKey, JSON, Text
 from sqlalchemy.sql import func
@@ -23,7 +23,7 @@ class DemoAnalysis(Base):
     key_moments = Column(JSON, nullable=True)
     recommendations = Column(JSON, nullable=True)
     improvement_areas = Column(JSON, nullable=True)
-    raw_data = Column(Text, nullable=True)  # Для хранения сырых данных демо
+    raw_data = Column(Text, nullable=True)  # For storing raw demo data
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     

@@ -1,6 +1,6 @@
 """
 OpenAI Integration Service
-Сервис для работы с GPT-4 и другими моделями OpenAI
+Service for GPT-4 and other OpenAI models
 """
 from typing import Dict, List, Optional
 import logging
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenAIService:
-    """Сервис для работы с OpenAI API"""
+    """Service for OpenAI API"""
     
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or getattr(settings, 'OPENAI_API_KEY', None)
@@ -27,14 +27,14 @@ class OpenAIService:
         match_history: Optional[List[Dict]] = None
     ) -> str:
         """
-        Анализ производительности игрока с помощью GPT-4
+        Analyze player performance with GPT-4
         
         Args:
-            stats: Текущая статистика игрока
-            match_history: История последних matches
+            stats: Current player statistics
+            match_history: Recent match history
             
         Returns:
-            Детальный анализ и рекомендации
+            Detailed analysis and recommendations
         """
         if not self.client:
             return "AI analysis unavailable - API key not configured"
@@ -47,9 +47,9 @@ class OpenAIService:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "Ты профессиональный CS2 тренер с опытом более 10 лет. "
-                                 "Анализируй статистику игроков и давай конкретные, "
-                                 "действенные рекомендации по улучшению игры."
+                        "content": "You are a professional CS2 coach with over 10 years of experience. "
+                                 "Analyze player statistics and provide specific, "
+                                 "actionable recommendations for improvement."
                     },
                     {"role": "user", "content": prompt}
                 ],
@@ -69,36 +69,36 @@ class OpenAIService:
         focus_areas: List[str]
     ) -> Dict:
         """
-        Генерация персонального плана тренировок
+        Generate personalized training plan
         
         Args:
             player_stats: Player statistics
-            focus_areas: Области для улучшения
+            focus_areas: Areas for improvement
             
         Returns:
-            Структурированный план тренировок
+            Structured training plan
         """
         if not self.client:
             return self._get_default_training_plan()
         
         try:
             prompt = f"""
-            Создай детальный план тренировок для CS2 игрока:
+            Create detailed training plan for CS2 player:
             
             Statistics:
             - K/D: {player_stats.get('kd_ratio', 'N/A')}
             - Headshot %: {player_stats.get('hs_percentage', 'N/A')}
             - Win Rate: {player_stats.get('win_rate', 'N/A')}
             
-            Фокус на: {', '.join(focus_areas)}
+            Focus on: {', '.join(focus_areas)}
             
-            Верни JSON с полями: daily_exercises, weekly_goals, estimated_time
+            Return JSON with fields: daily_exercises, weekly_goals, estimated_time
             """
             
             response = await self.client.chat.completions.create(
                 model="gpt-4-turbo-preview",
                 messages=[
-                    {"role": "system", "content": "Ты CS2 тренер. Отвечай только в JSON формате."},
+                    {"role": "system", "content": "You are a CS2 coach. Reply only in JSON format."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.5,
@@ -113,44 +113,44 @@ class OpenAIService:
             return self._get_default_training_plan()
     
     def _build_analysis_prompt(self, stats: Dict, match_history: List[Dict]) -> str:
-        """Построение промпта для анализа"""
+        """Build analysis prompt"""
         return f"""
-        Проанализируй статистику CS2 игрока:
+        Analyze CS2 player statistics:
         
-        Текущие показатели:
+        Current metrics:
         - K/D Ratio: {stats.get('kd_ratio', 'N/A')}
         - Headshot %: {stats.get('hs_percentage', 'N/A')}
         - Win Rate: {stats.get('win_rate', 'N/A')}
         - Avg Damage: {stats.get('avg_damage', 'N/A')}
         - Matches Played: {stats.get('matches_played', 'N/A')}
         
-        История последних matches: {len(match_history)} matches
+        Recent match history: {len(match_history)} matches
         
-        Дай подробный анализ:
-        1. Сильные стороны
-        2. Слабые стороны
-        3. Конкретные рекомендации по улучшению
-        4. План действий на ближайшую неделю
+        Provide detailed analysis:
+        1. Strengths
+        2. Weaknesses
+        3. Specific recommendations for improvement
+        4. Action plan for the next week
         """
     
     def _get_default_training_plan(self) -> Dict:
-        """Дефолтный план тренировок"""
+        """Default training plan"""
         return {
             "daily_exercises": [
                 {
                     "name": "Aim Training",
                     "duration": 30,
-                    "description": "Aim training на aim_botz"
+                    "description": "Aim training on aim_botz"
                 },
                 {
                     "name": "Spray Control",
                     "duration": 20,
-                    "description": "Контроль отдачи AK-47 и M4A4"
+                    "description": "Recoil control for AK-47 and M4A4"
                 }
             ],
             "weekly_goals": [
-                "Увеличить точность на 5%",
-                "Улучшить K/D до 1.2"
+                "Increase accuracy by 5%",
+                "Improve K/D to 1.2"
             ],
             "estimated_time": "2-3 weeks"
         }

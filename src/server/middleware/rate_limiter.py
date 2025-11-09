@@ -54,7 +54,7 @@ class RateLimiter:
     
     async def check_rate_limit(self, request: Request) -> Tuple[bool, str]:
         """
-        Проверить лимит запросов
+        Check rate limit
         
         Returns:
             (allowed, message)
@@ -90,7 +90,7 @@ class RateLimiter:
         return True, "OK"
     
     async def __call__(self, request: Request):
-        """Middleware для FastAPI"""
+        """Middleware for FastAPI"""
         allowed, message = await self.check_rate_limit(request)
         
         if not allowed:
