@@ -52,6 +52,8 @@ jobs:
           mkdir -p ./out/download
           cp -r ./docs/* ./out/download/
           echo "✅ Landing page copied to /download"
+          echo "Output contents:"
+          ls -la ./out/
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

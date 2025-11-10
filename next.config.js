@@ -6,8 +6,6 @@ const nextConfig = {
   
   // GitHub Pages configuration
   output: 'export',
-  basePath: process.env.NODE_ENV === 'production' ? '/faceit-ai-bot' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/faceit-ai-bot/' : '',
   trailingSlash: true,
   
   // Disable image optimization for static export
