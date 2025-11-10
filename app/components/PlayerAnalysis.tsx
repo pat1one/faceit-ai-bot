@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PlayerStats {
   kd_ratio: number;
@@ -48,6 +49,7 @@ interface PlayerAnalysisData {
 }
 
 export default function PlayerAnalysis() {
+  const { t } = useTranslation();
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,7 +57,7 @@ export default function PlayerAnalysis() {
 
   const analyzePlayer = async () => {
     if (!nickname.trim()) {
-      setError('Enter player nickname');
+      setError(t('player_analysis.error_enter_nickname'));
       return;
     }
 
@@ -68,13 +70,13 @@ export default function PlayerAnalysis() {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Player analysis error');
+        throw new Error(errorData.detail || t('player_analysis.error_analysis'));
       }
 
       const data = await response.json();
       setAnalysis(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : t('player_analysis.error_occurred'));
     } finally {
       setLoading(false);
     }
@@ -103,10 +105,10 @@ export default function PlayerAnalysis() {
       {/* Search Section */}
       <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-lg p-8 mb-8 shadow-xl">
         <h1 className="text-4xl font-bold text-white mb-4">
-          🎮 CS2 Player Analysis
+          🎮 {t('player_analysis.title')}
         </h1>
         <p className="text-white/90 mb-6">
-          Get detailed stats analysis and personal recommendations
+          {t('player_analysis.subtitle')}
         </p>
         
         <div className="flex gap-4">
@@ -115,7 +117,7 @@ export default function PlayerAnalysis() {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter Faceit nickname..."
+            placeholder={t('player_analysis.placeholder')}
             className="flex-1 px-6 py-4 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-white"
             disabled={loading}
           />
@@ -124,7 +126,7 @@ export default function PlayerAnalysis() {
             disabled={loading}
             className="px-8 py-4 bg-white text-orange-600 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? '⏳ Analyzing...' : '🔍 Analyze'}
+            {loading ? `⏳ ${t('player_analysis.analyzing')}` : `🔍 ${t('player_analysis.analyze_button')}`}
           </button>
         </div>
 
@@ -146,45 +148,45 @@ export default function PlayerAnalysis() {
                   {analysis.nickname}
                 </h2>
                 <p className="text-gray-600">
-                  Level {analysis.stats.level} • ELO {analysis.stats.elo}
+                  {t('player_analysis.level')} {analysis.stats.level} • ELO {analysis.stats.elo}
                 </p>
               </div>
               <div className="text-center">
                 <div className={`text-6xl font-bold ${getRatingColor(analysis.overall_rating)}`}>
                   {analysis.overall_rating}/10
                 </div>
-                <p className="text-gray-600 mt-2">Overall Rating</p>
+                <p className="text-gray-600 mt-2">{t('player_analysis.overall_rating')}</p>
               </div>
             </div>
           </div>
 
           {/* Stats */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Statistics</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📊 {t('player_analysis.statistics')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.stats.kd_ratio.toFixed(2)}
                 </div>
-                <div className="text-gray-600 mt-1">K/D Ratio</div>
+                <div className="text-gray-600 mt-1">{t('common.kd_ratio')}</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.stats.win_rate.toFixed(1)}%
                 </div>
-                <div className="text-gray-600 mt-1">Win Rate</div>
+                <div className="text-gray-600 mt-1">{t('common.win_rate')}</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.stats.headshot_percentage.toFixed(1)}%
                 </div>
-                <div className="text-gray-600 mt-1">Headshots</div>
+                <div className="text-gray-600 mt-1">{t('common.headshots')}</div>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.stats.matches_played}
                 </div>
-                <div className="text-gray-600 mt-1">Matches</div>
+                <div className="text-gray-600 mt-1">{t('player_analysis.matches')}</div>
               </div>
             </div>
           </div>

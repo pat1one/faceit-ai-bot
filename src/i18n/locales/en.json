@@ -1,0 +1,61 @@
+{
+  "player_analysis": {
+    "title": "CS2 Player Analysis",
+    "subtitle": "Get detailed stats analysis and personal recommendations",
+    "placeholder": "Enter Faceit nickname...",
+    "analyze_button": "Analyze",
+    "analyzing": "Analyzing...",
+    "error_enter_nickname": "Enter player nickname",
+    "error_analysis": "Player analysis error",
+    "error_occurred": "An error occurred",
+    "level": "Level",
+    "overall_rating": "Overall Rating",
+    "statistics": "Statistics",
+    "matches": "Matches",
+    "strengths": "Strengths",
+    "aim": "Aim",
+    "game_sense": "Game Sense",
+    "positioning": "Positioning",
+    "teamwork": "Teamwork",
+    "consistency": "Consistency",
+    "improvement": "Areas for Improvement",
+    "priority": "Priority",
+    "training_plan": "Training Plan",
+    "estimated_time": "Estimated improvement time"
+  },
+  "demo": {
+    "title": "Demo File Analysis",
+    "subtitle": "Upload demo for detailed analysis",
+    "upload_label": "Upload demo file",
+    "upload_button": "Upload and Analyze",
+    "analyzing": "Analyzing demo...",
+    "results": "Analysis Results",
+    "pay_yookassa": "Pay via YooKassa",
+    "pay_sbp": "Pay via SBP",
+    "payment_link": "Go to payment link",
+    "pay": "Pay",
+    "error_sbp": "SBP payment error. Please try again."
+  },
+  "teammate": {
+    "title": "Teammate Search",
+    "placeholder": "Enter skill, name or rank",
+    "no_results": "No results found"
+  },
+  "ranking": {
+    "title": "Player Rankings",
+    "rank": "Rank",
+    "name": "Name",
+    "score": "Score"
+  },
+  "subscription": {
+    "title": "Subscriptions",
+    "price": "Price",
+    "month": "month",
+    "select": "Select"
+  },
+  "common": {
+    "kd_ratio": "K/D",
+    "win_rate": "Win Rate",
+    "headshots": "Headshots"
+  }
+}

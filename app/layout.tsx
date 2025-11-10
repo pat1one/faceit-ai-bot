@@ -1,6 +1,7 @@
 import React from 'react';
 import './globals.css';
 import Navigation from '../src/components/Navigation';
+import { Providers } from './providers';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
@@ -40,8 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-152x152.png" />
       </head>
       <body>
-        <Navigation />
-        <main style={{ paddingTop: '80px' }}>{children}</main>
+        <Providers>
+          <Navigation />
+          <main style={{ paddingTop: '80px' }}>{children}</main>
+        </Providers>
         <script dangerouslySetInnerHTML={{
           __html: `
             if ('serviceWorker' in navigator) {
