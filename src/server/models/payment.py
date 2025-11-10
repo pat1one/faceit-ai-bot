@@ -34,7 +34,7 @@ class Payment(Base):
     
     id = Column(String, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.id"), index=True)
-    payment_id = Column(String, unique=True, index=True)  # ID от платежного провайдера
+    payment_id = Column(String, unique=True, index=True)  # Payment provider ID
     provider = Column(SQLEnum(PaymentProvider), index=True)
     amount = Column(Float)
     currency = Column(String, default="RUB")

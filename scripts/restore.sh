@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Скрипт восстановления из бэкапа
+# Database restore script
 
 set -e
 
@@ -17,7 +17,7 @@ DB_USER="faceit"
 
 echo "Starting restore from $BACKUP_DATE..."
 
-# Проверить что бэкапы существуют
+# Check that backups exist
 DB_BACKUP="$BACKUP_DIR/db_$BACKUP_DATE.sql.gz"
 REDIS_BACKUP="$BACKUP_DIR/redis_$BACKUP_DATE.rdb"
 
@@ -31,19 +31,19 @@ if [ ! -f "$REDIS_BACKUP" ]; then
     exit 1
 fi
 
-# Остановить сервисы
+# Stop services
 echo "Stopping services..."
 docker compose down
 
-# Восстановить PostgreSQL
+# Restore PostgreSQL
 echo "Restoring PostgreSQL..."
 gunzip < $DB_BACKUP | PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER $DB_NAME
 
-# Восстановить Redis
+# Restore Redis
 echo "Restoring Redis..."
 cp $REDIS_BACKUP /var/lib/redis/dump.rdb
 
-# Запустить сервисы
+# Start services
 echo "Starting services..."
 docker compose up -d
 

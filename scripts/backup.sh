@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Скрипт резервного копирования БД
+# Database backup script
 
 set -e
 
@@ -11,19 +11,19 @@ DB_USER="faceit"
 
 echo "Starting backup at $DATE..."
 
-# Создать директорию для бэкапов
+# Create backup directory
 mkdir -p $BACKUP_DIR
 
-# Бэкап PostgreSQL
+# Backup PostgreSQL
 echo "Backing up PostgreSQL..."
 PGPASSWORD=$DB_PASSWORD pg_dump -h localhost -U $DB_USER $DB_NAME | gzip > $BACKUP_DIR/db_$DATE.sql.gz
 
-# Бэкап Redis
+# Backup Redis
 echo "Backing up Redis..."
 redis-cli SAVE
 cp /var/lib/redis/dump.rdb $BACKUP_DIR/redis_$DATE.rdb
 
-# Удалить старые бэкапы (старше 30 дней)
+# Remove old backups (older than 30 days)
 echo "Cleaning old backups..."
 find $BACKUP_DIR -name "db_*.sql.gz" -mtime +30 -delete
 find $BACKUP_DIR -name "redis_*.rdb" -mtime +30 -delete

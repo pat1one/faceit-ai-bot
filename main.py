@@ -6,13 +6,13 @@ import logging
 import requests
 import sys
 
-# Добавляем путь к src для импортов
+# Add src path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 app = FastAPI(
     title="Faceit Bot API Service",
     version="0.3.0",
-    description="API для анализа игроков CS2 на платформе Faceit"
+    description="API for CS2 player analysis on Faceit platform"
 )
 
 # Configure CORS for development and production
@@ -34,17 +34,17 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Подключаем middleware
+# Connect middleware
 try:
     from src.server.middleware.rate_limiter import rate_limiter
     
     @app.middleware("http")
     async def rate_limit_middleware(request: Request, call_next):
-        # Пропускаем health check
+        # Skip health check
         if request.url.path in ["/", "/health", "/docs", "/redoc", "/openapi.json"]:
             return await call_next(request)
         
-        # Проверяем rate limit
+        # Check rate limit
         await rate_limiter(request)
         return await call_next(request)
     
@@ -52,7 +52,7 @@ try:
 except Exception as e:
     logging.warning(f"Could not load rate limiter: {e}")
 
-# Подключаем роутеры
+# Connect routers
 try:
     from src.server.features.player_analysis import router as player_router
     app.include_router(player_router)
