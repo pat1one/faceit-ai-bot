@@ -20,7 +20,7 @@
     "npm": ">=9.0.0"
   },
   "dependencies": {
-    "@mswjs/interceptors": "^0.39.7",
+    "@mswjs/interceptors": "^0.40.0",
     "@swc/core": "^1.13.5",
     "@swc/helpers": "^0.5.17",
     "next": "^15.5.4",
