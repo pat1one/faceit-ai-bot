@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartOptions,
 } from 'chart.js';
 
 ChartJS.register(
@@ -21,24 +22,33 @@ ChartJS.register(
   Legend
 );
 
-const AnalysisResultsChart = ({ data }) => {
+interface DataPoint {
+  label: string;
+  value: number;
+}
+
+interface AnalysisResultsChartProps {
+  data: DataPoint[];
+}
+
+const AnalysisResultsChart: React.FC<AnalysisResultsChartProps> = ({ data }) => {
   const chartData = {
-    labels: data.map((item) => item.label),
+    labels: data.map((item: DataPoint) => item.label),
     datasets: [
       {
         label: 'Analysis Results',
-        data: data.map((item) => item.value),
+        data: data.map((item: DataPoint) => item.value),
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
       },
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        position: 'top' as const,
       },
       title: {
         display: true,
