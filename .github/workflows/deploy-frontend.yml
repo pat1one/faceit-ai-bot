@@ -42,8 +42,8 @@ jobs:
           cp .env.github-pages .env.production
           echo "NEXT_PUBLIC_API_URL=${{ secrets.RENDER_API_URL || 'https://faceit-bot-api.onrender.com' }}" >> .env.production
       
-      - name: Build Next.js
-        run: npm run build
+      - name: Build Next.js (static export)
+        run: npm run build:static
         env:
           NODE_ENV: production
       
