@@ -15,7 +15,7 @@
 
 [🚀 Демо](https://pattmsc.online) • [📚 Документация](https://github.com/pat1one/faceit-ai-bot) • [📦 Релизы](https://github.com/pat1one/faceit-ai-bot/releases) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
 
-**[English version](README.en.md)** | **[Contributing](CONTRIBUTING.md)** | **[Changelog](CHANGELOG.md)**
+**[English version](README.en.md)** | **[Contributing](CONTRIBUTING.md)** | **[Changelog](CHANGELOG.md)** | **[FAQ](FAQ.md)**
 
 </div>
 

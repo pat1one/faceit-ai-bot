@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Вопросы и обсуждения
+    url: https://github.com/pat1one/faceit-ai-bot/discussions
+    about: Задайте вопрос или начните обсуждение
+  - name: Проблемы безопасности
+    url: https://github.com/pat1one/faceit-ai-bot/security/advisories/new
+    about: Сообщить о проблеме безопасности приватно

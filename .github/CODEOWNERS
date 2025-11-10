@@ -1,0 +1,30 @@
+# Владелец кода
+# Все изменения требуют review от владельца
+
+# Default owner
+* @pat1one
+
+# Documentation
+*.md @pat1one
+docs/ @pat1one
+
+# GitHub workflows
+.github/ @pat1one
+
+# Configuration files
+*.json @pat1one
+*.yml @pat1one
+*.yaml @pat1one
+
+# Frontend
+/app/ @pat1one
+/src/components/ @pat1one
+
+# Backend
+/src/server/ @pat1one
+main.py @pat1one
+requirements.txt @pat1one
+
+# Docker
+Dockerfile* @pat1one
+docker-compose.yml @pat1one

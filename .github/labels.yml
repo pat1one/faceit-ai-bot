@@ -1,0 +1,67 @@
+- name: bug
+  description: Что-то работает не так
+  color: d73a4a
+
+- name: enhancement
+  description: Новая функция или улучшение
+  color: a2eeef
+
+- name: documentation
+  description: Улучшение документации
+  color: 0075ca
+
+- name: good first issue
+  description: Хорошая задача для новичков
+  color: 7057ff
+
+- name: help wanted
+  description: Нужна помощь
+  color: 008672
+
+- name: invalid
+  description: Невалидный issue
+  color: e4e669
+
+- name: question
+  description: Вопрос
+  color: d876e3
+
+- name: wontfix
+  description: Не будет исправлено
+  color: ffffff
+
+- name: duplicate
+  description: Дубликат
+  color: cfd3d7
+
+- name: dependencies
+  description: Обновление зависимостей
+  color: 0366d6
+
+- name: security
+  description: Проблема безопасности
+  color: ee0701
+
+- name: performance
+  description: Проблема производительности
+  color: f9d0c4
+
+- name: refactor
+  description: Рефакторинг кода
+  color: fbca04
+
+- name: frontend
+  description: Frontend изменения
+  color: 1d76db
+
+- name: backend
+  description: Backend изменения
+  color: 5319e7
+
+- name: docker
+  description: Docker изменения
+  color: 0db7ed
+
+- name: ci/cd
+  description: CI/CD изменения
+  color: 2ea44f
