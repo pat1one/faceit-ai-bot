@@ -39,7 +39,6 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:static": "mv app/api app/_api_temp 2>/dev/null || true && NODE_ENV=production next build && mv app/_api_temp app/api 2>/dev/null || true",
     "start": "next start",
     "webpack:build": "npx webpack --config webpack.config.js",
     "test": "jest --passWithNoTests",

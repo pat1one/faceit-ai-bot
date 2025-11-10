@@ -4,14 +4,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // GitHub Pages configuration
-  output: 'export',
-  trailingSlash: true,
-  
-  // Disable image optimization for static export
-  images: {
-    unoptimized: true,
-  },
   
   // Performance optimizations
   webpack: (config, { dev, isServer }) => {
@@ -71,19 +63,20 @@ const nextConfig = {
     ]
   },
 
+  // Image optimization
+  images: {
+    domains: ['localhost'],
+    formats: ['image/webp', 'image/avif'],
+  },
+
   // TypeScript config
   typescript: {
-    ignoreBuildErrors: true, // Allow build for GitHub Pages
+    ignoreBuildErrors: false,
   },
 
   // ESLint config  
   eslint: {
-    ignoreDuringBuilds: true, // Allow build for GitHub Pages
-  },
-  
-  // Experimental features for static export
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
+    ignoreDuringBuilds: false,
   },
 };
 
