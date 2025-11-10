@@ -31,8 +31,9 @@ COPY . /app
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8000
+EXPOSE 8000 8080
 
-HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD curl -f http://127.0.0.1:8000/health || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD curl -f http://127.0.0.1:${API_PORT:-8000}/health || exit 1
 
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use environment variable for port (Fly.io uses 8080 by default)
+CMD python -m uvicorn main:app --host 0.0.0.0 --port ${API_PORT:-8000}
