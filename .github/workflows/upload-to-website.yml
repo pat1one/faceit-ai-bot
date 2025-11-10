@@ -1,5 +1,7 @@
 name: Upload Downloads to Website
 
+# NOTE: IDE warnings about actions resolution are false positives - workflows work correctly on GitHub
+
 on:
   release:
     types: [published]
