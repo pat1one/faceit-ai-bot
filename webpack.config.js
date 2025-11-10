@@ -19,19 +19,19 @@ module.exports = {
     {
       apply: (compiler) => {
         compiler.hooks.done.tap('AfterBuildPlugin', (stats) => {
-          // Создаем структуру для Chrome/Edge/Opera
+          // Create structure for Chrome/Edge/Opera
           const chromeDir = path.resolve(__dirname, 'dist/chrome');
           if (!fs.existsSync(chromeDir)) {
             fs.mkdirSync(chromeDir, { recursive: true });
           }
           
-          // Создаем структуру для Firefox
+          // Create structure for Firefox
           const firefoxDir = path.resolve(__dirname, 'dist/firefox');
           if (!fs.existsSync(firefoxDir)) {
             fs.mkdirSync(firefoxDir, { recursive: true });
           }
           
-          // Копируем собранные файлы
+          // Copy built files
           const distDir = path.resolve(__dirname, 'dist');
           ['background.js', 'popup.js'].forEach(file => {
             const src = path.join(distDir, file);
@@ -41,12 +41,12 @@ module.exports = {
             }
           });
           
-          // Создаем manifest.json для Chrome
+          // Create manifest.json for Chrome
           const chromeManifest = {
             manifest_version: 3,
             name: "Faceit Stats Bot",
             version: "0.2.1",
-            description: "Анализ статистики и поиск тиммейтов в CS2",
+            description: "Stats analysis and teammate search for CS2",
             permissions: ["storage", "tabs"],
             host_permissions: ["https://www.faceit.com/*"],
             background: {
@@ -67,12 +67,12 @@ module.exports = {
             }
           };
           
-          // Создаем manifest.json для Firefox
+          // Create manifest.json for Firefox
           const firefoxManifest = {
             manifest_version: 2,
             name: "Faceit Stats Bot",
             version: "0.2.1",
-            description: "Анализ статистики и поиск тиммейтов в CS2",
+            description: "Stats analysis and teammate search for CS2",
             permissions: ["storage", "tabs", "https://www.faceit.com/*"],
             background: {
               scripts: ["background.js"]
@@ -102,7 +102,7 @@ module.exports = {
             JSON.stringify(firefoxManifest, null, 2)
           );
           
-          // Создаем простой popup.html
+          // Create simple popup.html
           const popupHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -130,8 +130,8 @@ module.exports = {
 </head>
 <body>
   <h1>🎮 Faceit Stats Bot</h1>
-  <p>Анализ статистики игроков на Faceit</p>
-  <p><a href="https://pattmsc.online" target="_blank">Открыть веб-версию</a></p>
+  <p>Player stats analysis on Faceit</p>
+  <p><a href="https://pattmsc.online" target="_blank">Open web version</a></p>
   <script src="popup.js"></script>
 </body>
 </html>`;

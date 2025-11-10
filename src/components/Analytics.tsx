@@ -1,5 +1,5 @@
 /**
- * Analytics компонент для отслеживания
+ * Analytics component for tracking
  */
 
 import Script from 'next/script';
@@ -43,7 +43,7 @@ export function Analytics() {
   );
 }
 
-// Хелперы для отслеживания событий
+// Event tracking helpers
 export const analytics = {
   pageview: (url: string) => {
     if (typeof window !== 'undefined' && (window as any).gtag) {

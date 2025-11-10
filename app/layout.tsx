@@ -4,8 +4,8 @@ import Navigation from '../src/components/Navigation';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Faceit AI Bot - Анализ статистики и поиск тиммейтов',
-  description: 'Инструмент для анализа игровой статистики и поиска тиммейтов на платформе Faceit. Скачайте расширение для браузера или полную версию на нашем сайте.',
+  title: 'Faceit AI Bot - Stats Analysis and Teammate Search',
+  description: 'Tool for game stats analysis and teammate search on Faceit platform. Download browser extension or full version on our website.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
