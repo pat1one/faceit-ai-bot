@@ -162,13 +162,13 @@ def _parse_analysis(analysis_text: str) -> tuple[List[str], List[str], List[str]
             continue
         
         # Determine section
-        if 'сильн' in line.lower() or 'strength' in line.lower():
+        if 'strength' in line.lower():
             current_section = 'strengths'
             continue
-        elif 'слаб' in line.lower() or 'weakness' in line.lower():
+        elif 'weakness' in line.lower():
             current_section = 'weaknesses'
             continue
-        elif 'рекоменд' in line.lower() or 'recommend' in line.lower():
+        elif 'recommend' in line.lower():
             current_section = 'recommendations'
             continue
         

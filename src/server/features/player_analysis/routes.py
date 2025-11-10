@@ -23,7 +23,7 @@ async def analyze_player(
     Analyze player by nickname
     
     Args:
-        nickname: Player nickname на Faceit
+        nickname: Player nickname on Faceit
         
     Returns:
         Detailed player analysis with recommendations

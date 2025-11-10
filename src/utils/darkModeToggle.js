@@ -1,9 +1,9 @@
-// Реализация переключателя тёмного режима
+// Dark mode toggle implementation
 export function toggleDarkMode() {
   const body = document.body;
   body.classList.toggle('dark-mode');
 
-  // Сохранение состояния в localStorage
+  // Save state to localStorage
   if (body.classList.contains('dark-mode')) {
     localStorage.setItem('theme', 'dark');
   } else {
@@ -11,7 +11,7 @@ export function toggleDarkMode() {
   }
 }
 
-// Установка темы при загрузке страницы
+// Initialize theme on page load
 export function initializeDarkMode() {
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') {

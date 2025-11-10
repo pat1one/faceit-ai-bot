@@ -1,6 +1,6 @@
 """
 Player Analysis Feature
-Модуль анализа игроков
+Player analysis module
 """
 from .routes import router
 from .service import PlayerAnalysisService

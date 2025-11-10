@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header
 from typing import Optional, Dict
 from .service import PaymentService
 from .models import (
@@ -21,13 +21,13 @@ router = APIRouter(prefix="/payments", tags=["payments"])
 
 
 def get_payment_service() -> PaymentService:
-    """Dependency for получения сервиса payments"""
+    """Dependency for payment service"""
     return PaymentService(settings)
 
 @router.get("/methods/{region}")
 async def get_payment_methods(region: str) -> RegionPaymentMethods:
     """
-    Получение доступных способов оплаты for региона
+    Get available payment methods for region
     """
     if region not in REGION_PAYMENT_CONFIG:
         raise HTTPException(
@@ -42,7 +42,7 @@ async def create_payment(
     payment_service: PaymentService = Depends(get_payment_service)
 ):
     """
-    Создание нового payment
+    Create new payment
     """
     return await payment_service.create_payment(request)
 
@@ -64,7 +64,7 @@ async def sbp_webhook(
     payment_service: PaymentService = Depends(get_payment_service)
 ):
     """
-    Вебхук for СБП payments
+    Webhook for SBP payments
     """
     await payment_service.process_webhook(PaymentProvider.SBP, data)
     return {"status": "success"}
@@ -76,7 +76,7 @@ async def yookassa_webhook(
     payment_service: PaymentService = Depends(get_payment_service)
 ):
     """
-    Вебхук for ЮKassa payments
+    Webhook for YooKassa payments
     """
     await payment_service.process_webhook(PaymentProvider.YOOKASSA, data)
     return {"status": "success"}
@@ -88,7 +88,7 @@ async def qiwi_webhook(
     payment_service: PaymentService = Depends(get_payment_service)
 ):
     """
-    Вебхук for QIWI payments
+    Webhook for QIWI payments
     """
     await payment_service.process_webhook(PaymentProvider.QIWI, data)
     return {"status": "success"}

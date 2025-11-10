@@ -60,7 +60,7 @@ class SubscriptionService:
         }
 
     async def get_subscription_plans(self) -> Dict[str, Subscription]:
-        """Получение информации о доступных планах subscription"""
+        """Get available subscription plans"""
         try:
             return {
                 tier.value: Subscription(
@@ -79,7 +79,7 @@ class SubscriptionService:
             )
 
     async def get_user_subscription(self, user_id: str) -> Optional[UserSubscription]:
-        """Получение информации о подписке пользователя"""
+        """Get user subscription information"""
         try:
             # Database query not implemented
             return UserSubscription(
@@ -102,7 +102,7 @@ class SubscriptionService:
         user_id: str,
         tier: SubscriptionTier
     ) -> UserSubscription:
-        """Создание новой subscription"""
+        """Create new subscription"""
         try:
             plan = self.subscription_plans[tier]
             subscription = UserSubscription(
@@ -137,11 +137,11 @@ class SubscriptionService:
             return False
 
     def _get_plan_description(self, tier: SubscriptionTier) -> str:
-        """Получение описания плана subscription"""
+        """Get subscription plan description"""
         descriptions = {
-            SubscriptionTier.FREE: "Базовый анализ демок и ограниченный функционал",
-            SubscriptionTier.BASIC: "Расширенный анализ и поиск тиммейтов",
-            SubscriptionTier.PRO: "Полный анализ, приоритетная поддержка и командный анализ",
-            SubscriptionTier.ELITE: "Безлимитный доступ ко всем функциям и персональный AI-коуч"
+            SubscriptionTier.FREE: "Basic demo analysis and limited features",
+            SubscriptionTier.BASIC: "Extended analysis and teammate search",
+            SubscriptionTier.PRO: "Full analysis, priority support and team analysis",
+            SubscriptionTier.ELITE: "Unlimited access to all features and personal coach"
         }
         return descriptions.get(tier, "")

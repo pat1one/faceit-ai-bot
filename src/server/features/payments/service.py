@@ -1,4 +1,4 @@
-﻿from typing import Optional, Dict
+from typing import Optional, Dict
 from fastapi import HTTPException
 import httpx
 import logging
@@ -128,7 +128,7 @@ class PaymentService:
             raise
 
     async def _process_yookassa_payment(self, request: PaymentRequest) -> PaymentResponse:
-        """Обработка payment через ЮKassa"""
+        """Process payment via YooKassa"""
         try:
             headers = {
                 "Authorization": f"Basic {self.settings.YOOKASSA_AUTH}",
@@ -210,7 +210,7 @@ class PaymentService:
             )
 
     def _detect_region(self, request: PaymentRequest) -> str:
-        """Определение региона пользователя"""
+        """Detect user region"""
         # Region detection not implemented
         if request.currency == Currency.RUB:
             return "RU"
@@ -219,10 +219,10 @@ class PaymentService:
         elif request.currency == Currency.EUR:
             return "EU"
         else:
-            return "US"  # значение by default
+            return "US"  # Default value
 
     async def process_webhook(self, provider: PaymentProvider, data: Dict) -> None:
-        """Обработка вебхуков от платежных систем"""
+        """Process webhooks from payment systems"""
         try:
             if provider == PaymentProvider.SBP:
                 await self._handle_sbp_webhook(data)

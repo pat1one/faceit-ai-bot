@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from typing import Dict, Optional
 from ..subscriptions.service import SubscriptionService
 from ..subscriptions.models import Subscription, UserSubscription, SubscriptionTier
@@ -12,21 +12,21 @@ subscription_service = SubscriptionService()
 @router.get("/plans", response_model=Dict[str, Subscription])
 async def get_subscription_plans():
     """
-    Получение информации о доступных планах subscription
+    Get available subscription plans information
     """
     return await subscription_service.get_subscription_plans()
 
 @router.get("/{user_id}", response_model=Optional[UserSubscription])
 async def get_user_subscription(user_id: str):
     """
-    Получение информации о текущей подписке пользователя
+    Get user current subscription information
     """
     return await subscription_service.get_user_subscription(user_id)
 
 @router.post("/{user_id}", response_model=UserSubscription)
 async def create_subscription(user_id: str, tier: SubscriptionTier):
     """
-    Создание новой subscription for пользователя
+    Create new subscription for user
     """
     return await subscription_service.create_subscription(user_id, tier)
 
