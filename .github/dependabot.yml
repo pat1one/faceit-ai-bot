@@ -8,8 +8,6 @@ updates:
       day: "monday"
       time: "09:00"
     open-pull-requests-limit: 10
-    reviewers:
-      - "pat1one"
     labels:
       - "dependencies"
       - "npm"
@@ -25,8 +23,6 @@ updates:
       day: "monday"
       time: "09:00"
     open-pull-requests-limit: 10
-    reviewers:
-      - "pat1one"
     labels:
       - "dependencies"
       - "python"
@@ -40,8 +36,6 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 5
-    reviewers:
-      - "pat1one"
     labels:
       - "dependencies"
       - "github-actions"
@@ -55,8 +49,6 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
-    reviewers:
-      - "pat1one"
     labels:
       - "dependencies"
       - "docker"
