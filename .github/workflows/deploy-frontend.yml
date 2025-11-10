@@ -1,14 +1,16 @@
 name: Deploy Frontend to GitHub Pages
 
+# Manual deployment only (to avoid conflicts with VPS deployment)
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'app/**'
-      - 'public/**'
-      - 'next.config.js'
-      - 'package.json'
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'github-pages'
+        type: choice
+        options:
+          - github-pages
 
 permissions:
   contents: read
