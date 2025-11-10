@@ -47,6 +47,12 @@ jobs:
         env:
           NODE_ENV: production
       
+      - name: Copy landing page to output
+        run: |
+          mkdir -p ./out/download
+          cp -r ./docs/* ./out/download/
+          echo "✅ Landing page copied to /download"
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
