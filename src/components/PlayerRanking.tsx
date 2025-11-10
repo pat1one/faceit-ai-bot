@@ -1,22 +1,22 @@
 import React from 'react';
 
 const mockRankings = [
-  { id: 1, name: 'Алексей', score: 1500 },
-  { id: 2, name: 'Мария', score: 1450 },
-  { id: 3, name: 'Иван', score: 1400 },
-  { id: 4, name: 'Денис', score: 1350 },
+  { id: 1, name: 'Player1', score: 1500 },
+  { id: 2, name: 'Player2', score: 1450 },
+  { id: 3, name: 'Player3', score: 1400 },
+  { id: 4, name: 'Player4', score: 1350 },
 ];
 
 const PlayerRanking = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Рейтинг игроков</h1>
+      <h1>Player Rankings</h1>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Место</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Имя</th>
-            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Очки</th>
+            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Rank</th>
+            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Name</th>
+            <th style={{ border: '1px solid #ddd', padding: '8px' }}>Score</th>
           </tr>
         </thead>
         <tbody>

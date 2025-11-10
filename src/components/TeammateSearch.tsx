@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 const mockTeammates = [
-  { id: 1, name: 'Алексей', skill: 'Снайпер', rank: 'Высокий' },
-  { id: 2, name: 'Иван', skill: 'Штурмовик', rank: 'Средний' },
-  { id: 3, name: 'Мария', skill: 'Саппорт', rank: 'Высокий' },
-  { id: 4, name: 'Денис', skill: 'Лидер', rank: 'Низкий' },
+  { id: 1, name: 'Player1', skill: 'Sniper', rank: 'High' },
+  { id: 2, name: 'Player2', skill: 'Rifler', rank: 'Medium' },
+  { id: 3, name: 'Player3', skill: 'Support', rank: 'High' },
+  { id: 4, name: 'Player4', skill: 'Leader', rank: 'Low' },
 ];
 
 const TeammateSearch = () => {
@@ -26,17 +26,17 @@ const TeammateSearch = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Поиск тиммейтов</h1>
+      <h1>Teammate Search</h1>
       <input
         type="text"
         value={query}
         onChange={handleSearch}
-        placeholder="Введите навык, имя или ранг"
+        placeholder="Enter skill, name or rank"
         style={{ padding: '10px', width: '300px', marginBottom: '20px', borderRadius: '5px', border: '1px solid #ccc' }}
       />
       <div>
         {results.length === 0 ? (
-          <p>Ничего не найдено</p>
+          <p>No results found</p>
         ) : (
           results.map((t) => (
             <div key={t.id} className="card" style={{ marginBottom: '10px' }}>

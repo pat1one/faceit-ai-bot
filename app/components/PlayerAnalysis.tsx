@@ -103,10 +103,10 @@ export default function PlayerAnalysis() {
       {/* Search Section */}
       <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-lg p-8 mb-8 shadow-xl">
         <h1 className="text-4xl font-bold text-white mb-4">
-          🎮 Анализ игрока CS2
+          🎮 CS2 Player Analysis
         </h1>
         <p className="text-white/90 mb-6">
-          Получи детальный анализ статистики и персональные рекомендации
+          Get detailed stats analysis and personal recommendations
         </p>
         
         <div className="flex gap-4">
@@ -115,7 +115,7 @@ export default function PlayerAnalysis() {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Введи никнейм Faceit..."
+            placeholder="Enter Faceit nickname..."
             className="flex-1 px-6 py-4 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-white"
             disabled={loading}
           />
@@ -124,7 +124,7 @@ export default function PlayerAnalysis() {
             disabled={loading}
             className="px-8 py-4 bg-white text-orange-600 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? '⏳ Анализ...' : '🔍 Анализировать'}
+            {loading ? '⏳ Analyzing...' : '🔍 Analyze'}
           </button>
         </div>
 
@@ -146,21 +146,21 @@ export default function PlayerAnalysis() {
                   {analysis.nickname}
                 </h2>
                 <p className="text-gray-600">
-                  Уровень {analysis.stats.level} • ELO {analysis.stats.elo}
+                  Level {analysis.stats.level} • ELO {analysis.stats.elo}
                 </p>
               </div>
               <div className="text-center">
                 <div className={`text-6xl font-bold ${getRatingColor(analysis.overall_rating)}`}>
                   {analysis.overall_rating}/10
                 </div>
-                <p className="text-gray-600 mt-2">Общая оценка</p>
+                <p className="text-gray-600 mt-2">Overall Rating</p>
               </div>
             </div>
           </div>
 
           {/* Stats */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Статистика</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Statistics</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-3xl font-bold text-orange-600">
@@ -184,24 +184,24 @@ export default function PlayerAnalysis() {
                 <div className="text-3xl font-bold text-orange-600">
                   {analysis.stats.matches_played}
                 </div>
-                <div className="text-gray-600 mt-1">Матчей</div>
+                <div className="text-gray-600 mt-1">Matches</div>
               </div>
             </div>
           </div>
 
           {/* Strengths */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">💪 Сильные стороны</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">💪 Strengths</h3>
             <div className="space-y-3">
               {Object.entries(analysis.strengths).map(([key, value]) => (
                 <div key={key}>
                   <div className="flex justify-between mb-1">
                     <span className="text-gray-700 capitalize">
-                      {key === 'aim' ? '🎯 Прицеливание' :
-                       key === 'game_sense' ? '🧠 Игровое чутье' :
-                       key === 'positioning' ? '📍 Позиционирование' :
-                       key === 'teamwork' ? '👥 Командная игра' :
-                       '⚡ Стабильность'}
+                      {key === 'aim' ? '🎯 Aim' :
+                       key === 'game_sense' ? '🧠 Game Sense' :
+                       key === 'positioning' ? '📍 Positioning' :
+                       key === 'teamwork' ? '👥 Teamwork' :
+                       '⚡ Consistency'}
                     </span>
                     <span className="font-bold">{value}/10</span>
                   </div>
@@ -218,10 +218,10 @@ export default function PlayerAnalysis() {
 
           {/* Weaknesses */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">🎯 Области для улучшения</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">🎯 Areas for Improvement</h3>
             <div className="mb-4">
               <span className="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                Приоритет: {analysis.weaknesses.priority}
+                Priority: {analysis.weaknesses.priority}
               </span>
             </div>
             <div className="space-y-2">
@@ -236,10 +236,10 @@ export default function PlayerAnalysis() {
 
           {/* Training Plan */}
           <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">📅 План тренировок</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📅 Training Plan</h3>
             <div className="mb-4">
               <p className="text-gray-600">
-                ⏱️ Примерное время улучшения: <span className="font-semibold">{analysis.training_plan.estimated_time}</span>
+                ⏱️ Estimated improvement time: <span className="font-semibold">{analysis.training_plan.estimated_time}</span>
               </p>
             </div>
             <div className="space-y-4">

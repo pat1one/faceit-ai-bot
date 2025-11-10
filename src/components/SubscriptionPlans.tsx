@@ -9,7 +9,7 @@ const SubscriptionPlans = () => {
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Подписки</h1>
+      <h1>Subscriptions</h1>
       <div style={{ display: 'flex', gap: '20px' }}>
         {plans.map((plan) => (
           <div
@@ -23,7 +23,7 @@ const SubscriptionPlans = () => {
             }}
           >
             <h2>{plan.level}</h2>
-            <p>Цена: ${plan.price}/мес</p>
+            <p>Price: ${plan.price}/month</p>
             <ul>
               {plan.features.map((feature, index) => (
                 <li key={index}>{feature}</li>
@@ -39,7 +39,7 @@ const SubscriptionPlans = () => {
                 cursor: 'pointer',
               }}
             >
-              Выбрать
+              Select
             </button>
           </div>
         ))}
