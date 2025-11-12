@@ -1,0 +1,35 @@
+documentation:
+  - '**/*.md'
+  - 'docs/**/*'
+
+frontend:
+  - 'app/**/*'
+  - 'src/components/**/*'
+  - '**/*.tsx'
+  - '**/*.jsx'
+
+backend:
+  - 'src/server/**/*'
+  - 'main.py'
+  - '**/*.py'
+
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'
+  - 'requirements.txt'
+
+docker:
+  - 'Dockerfile*'
+  - 'docker-compose*.yml'
+  - '.dockerignore'
+
+ci/cd:
+  - '.github/workflows/**/*'
+
+config:
+  - '**/*.json'
+  - '**/*.yaml'
+  - '**/*.yml'
+  - '.editorconfig'
+  - '.prettierrc'
+  - '.eslintrc*'

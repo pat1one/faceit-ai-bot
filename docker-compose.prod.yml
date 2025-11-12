@@ -1,0 +1,143 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - api
+      - web
+    networks:
+      - faceit-network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - faceit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - faceit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - SECRET_KEY=${SECRET_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - FACEIT_API_KEY=${FACEIT_API_KEY}
+    networks:
+      - faceit-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:8000/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: celery -A src.server.celery_app worker --loglevel=info --concurrency=4 --queues=demo_analysis,notifications,webhooks
+    restart: always
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - SECRET_KEY=${SECRET_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    networks:
+      - faceit-network
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: celery -A src.server.celery_app beat --loglevel=info
+    restart: always
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - SECRET_KEY=${SECRET_KEY}
+    networks:
+      - faceit-network
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    command: celery -A src.server.celery_app flower --port=5555 --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+    restart: always
+    depends_on:
+      - redis
+      - celery_worker
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    networks:
+      - faceit-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: always
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN}/api
+    networks:
+      - faceit-network
+
+networks:
+  faceit-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  redis_data:

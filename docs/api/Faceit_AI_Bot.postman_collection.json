@@ -1,0 +1,106 @@
+{
+  "info": {
+    "name": "Faceit AI Bot API",
+    "description": "API коллекция для Faceit AI Bot",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Players",
+      "item": [
+        {
+          "name": "Get Player Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{API_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/players/:nickname/stats",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "players", ":nickname", "stats"],
+              "variable": [
+                {
+                  "key": "nickname",
+                  "value": "s1mple"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Analyze Player",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{API_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/players/:nickname/analyze",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "players", ":nickname", "analyze"],
+              "variable": [
+                {
+                  "key": "nickname",
+                  "value": "s1mple"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teammates",
+      "item": [
+        {
+          "name": "Search Teammates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{API_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"min_level\": 7,\n  \"max_level\": 10,\n  \"min_elo\": 2000,\n  \"region\": \"EU\",\n  \"languages\": [\"ru\", \"en\"]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/teammates/search",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "teammates", "search"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "API_KEY",
+      "value": "your_api_key_here",
+      "type": "string"
+    }
+  ]
+}

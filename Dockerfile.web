@@ -1,0 +1,31 @@
+FROM node:20-slim AS builder
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Copy source
+COPY . .
+
+# Build
+RUN npm run build
+
+# Production image
+FROM node:20-slim
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.* ./
+COPY --from=builder /app/app ./app
+COPY --from=builder /app/src ./src
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

@@ -1,0 +1,10 @@
+# Auto-assign configuration
+
+# Assignees
+addReviewers: true
+addAssignees: author
+
+reviewers:
+  - pat1one
+
+numberOfReviewers: 1

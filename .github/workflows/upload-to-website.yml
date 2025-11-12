@@ -1,0 +1,78 @@
+name: Upload Downloads to Website
+
+# NOTE: IDE warnings about actions resolution are false positives - workflows work correctly on GitHub
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  upload-to-vps:
+    name: Upload to pattmsc.online
+    runs-on: ubuntu-latest
+    env:
+      VPS_HOST: pattmsc.online
+      VPS_USER: root
+      VPS_PORT: 22
+      DOWNLOADS_PATH: /var/www/pattmsc.online/public/downloads
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download release assets
+        run: |
+          # Получить последний релиз
+          RELEASE_TAG=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "Latest release: $RELEASE_TAG"
+          
+          # Создать папку для загрузок
+          mkdir -p downloads
+          
+          # Скачать все assets из последнего релиза
+          curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest \
+            | grep "browser_download_url.*\.\(zip\|xpi\|tar\.gz\)" \
+            | cut -d : -f 2,3 \
+            | tr -d \" \
+            | wget -P downloads -i -
+          
+          echo "📦 Downloaded files:"
+          ls -lah downloads/
+      
+      - name: Setup SSH
+        continue-on-error: true
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          # Secret настраивается в Settings -> Secrets and variables -> Actions
+          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY || '' }}
+      
+      - name: Upload to VPS
+        continue-on-error: true
+        run: |
+          # Добавить VPS в known hosts
+          ssh-keyscan -p ${VPS_PORT} $VPS_HOST >> ~/.ssh/known_hosts
+          
+          # Создать папку downloads на VPS если её нет
+          ssh -p ${VPS_PORT} $VPS_USER@$VPS_HOST "mkdir -p ${DOWNLOADS_PATH}"
+          
+          # Загрузить файлы на VPS
+          rsync -avz --progress \
+            -e "ssh -p ${VPS_PORT}" \
+            downloads/ \
+            $VPS_USER@$VPS_HOST:${DOWNLOADS_PATH}/
+          
+          echo "✅ Files uploaded to https://$VPS_HOST/downloads/"
+      
+      - name: Verify upload
+        run: |
+          echo "📋 Files on server:"
+          ssh -p ${VPS_PORT} $VPS_USER@$VPS_HOST "ls -lah ${DOWNLOADS_PATH}/"
+          
+          echo ""
+          echo "✅ Downloads available at:"
+          echo "🌐 https://$VPS_HOST/downloads/faceit-ai-bot-chrome.zip"
+          echo "🌐 https://$VPS_HOST/downloads/faceit-ai-bot-firefox.xpi"
+          echo "🌐 https://$VPS_HOST/downloads/faceit-ai-bot-edge.zip"
+          echo "🌐 https://$VPS_HOST/downloads/faceit-ai-bot-opera.zip"
+          echo "🌐 https://$VPS_HOST/downloads/faceit-ai-bot-docker.tar.gz"

@@ -1,0 +1,214 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - release
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/release'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Get version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build extension
+        run: npm run webpack:build
+      
+      - name: Create extension packages
+        run: |
+          mkdir -p dist/releases
+          
+          # Chrome/Edge/Opera (ZIP)
+          if [ -d "dist/chrome" ]; then
+            cd dist
+            zip -r releases/faceit-ai-bot-chrome-${{ steps.version.outputs.version }}.zip chrome/
+            zip -r releases/faceit-ai-bot-edge-${{ steps.version.outputs.version }}.zip chrome/
+            zip -r releases/faceit-ai-bot-opera-${{ steps.version.outputs.version }}.zip chrome/
+            cd ..
+          fi
+          
+          # Firefox (XPI)
+          if [ -d "dist/firefox" ]; then
+            cd dist/firefox
+            zip -r ../releases/faceit-ai-bot-firefox-${{ steps.version.outputs.version }}.xpi *
+            cd ../..
+          fi
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/api:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository }}/api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.web
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/web:${{ steps.version.outputs.version }}
+            ghcr.io/${{ github.repository }}/web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Create Docker Compose package
+        run: |
+          mkdir -p dist/docker
+          cp docker-compose.yml dist/docker/
+          cp .env.example dist/docker/
+          cp README.md dist/docker/
+          cd dist/docker
+          tar -czf ../faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz *
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          ## 🎮 Faceit Stats Bot ${{ steps.version.outputs.version }}
+          
+          ### ⬇️ Скачать
+          
+          #### 🧩 Расширение для браузера
+          
+          - **Chrome**: `faceit-ai-bot-chrome-${{ steps.version.outputs.version }}.zip`
+          - **Firefox**: `faceit-ai-bot-firefox-${{ steps.version.outputs.version }}.xpi`
+          - **Edge**: `faceit-ai-bot-edge-${{ steps.version.outputs.version }}.zip`
+          - **Opera**: `faceit-ai-bot-opera-${{ steps.version.outputs.version }}.zip`
+          
+          #### 🐳 Docker
+          
+          - **Docker Compose**: `faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz`
+          
+          ```bash
+          # Скачать и запустить
+          tar -xzf faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz
+          cd faceit-ai-bot
+          cp .env.example .env
+          # Отредактируйте .env
+          docker-compose up -d
+          ```
+          
+          #### 🐳 Docker Images
+          
+          ```bash
+          docker pull ghcr.io/${{ github.repository }}/api:${{ steps.version.outputs.version }}
+          docker pull ghcr.io/${{ github.repository }}/web:${{ steps.version.outputs.version }}
+          ```
+          
+          ---
+          
+          **🌐 [Демо](https://pattmsc.online)** • **📚 [API Docs](https://api.pattmsc.online/docs)** • **📖 [Документация](https://github.com/pat1one/faceit-ai-bot)**
+          
+          **Сделано с ❤️ для CS2 комьюнити**
+          EOF
+      
+      - name: Create or update release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          files: |
+            dist/releases/*.zip
+            dist/releases/*.xpi
+            dist/*.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload to website
+        if: success()
+        run: |
+          # Создать структуру для загрузки
+          mkdir -p website-upload/downloads
+          
+          # Копировать все релизы
+          cp dist/releases/*.zip website-upload/downloads/ 2>/dev/null || true
+          cp dist/releases/*.xpi website-upload/downloads/ 2>/dev/null || true
+          cp dist/*.tar.gz website-upload/downloads/ 2>/dev/null || true
+          
+          # Переименовать файлы для постоянных ссылок (latest)
+          if [ -f "dist/releases/faceit-ai-bot-chrome-${{ steps.version.outputs.version }}.zip" ]; then
+            cp dist/releases/faceit-ai-bot-chrome-${{ steps.version.outputs.version }}.zip website-upload/downloads/faceit-ai-bot-chrome.zip
+          fi
+          
+          if [ -f "dist/releases/faceit-ai-bot-firefox-${{ steps.version.outputs.version }}.xpi" ]; then
+            cp dist/releases/faceit-ai-bot-firefox-${{ steps.version.outputs.version }}.xpi website-upload/downloads/faceit-ai-bot-firefox.xpi
+          fi
+          
+          if [ -f "dist/releases/faceit-ai-bot-edge-${{ steps.version.outputs.version }}.zip" ]; then
+            cp dist/releases/faceit-ai-bot-edge-${{ steps.version.outputs.version }}.zip website-upload/downloads/faceit-ai-bot-edge.zip
+          fi
+          
+          if [ -f "dist/releases/faceit-ai-bot-opera-${{ steps.version.outputs.version }}.zip" ]; then
+            cp dist/releases/faceit-ai-bot-opera-${{ steps.version.outputs.version }}.zip website-upload/downloads/faceit-ai-bot-opera.zip
+          fi
+          
+          if [ -f "dist/faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz" ]; then
+            cp dist/faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz website-upload/downloads/faceit-ai-bot-docker.tar.gz
+          fi
+          
+          echo "📦 Files prepared for upload to pattmsc.online"
+          ls -lah website-upload/downloads/
+      
+      - name: Upload artifacts for website
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-downloads
+          path: website-upload/downloads/
+          retention-days: 90
+      
+      - name: Deploy notification
+        run: |
+          echo "✅ Release ${{ steps.version.outputs.version }} created!"
+          echo "📦 Docker images pushed to ghcr.io"
+          echo "🌐 GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.version }}"
+          echo "⬇️ Downloads ready for pattmsc.online"

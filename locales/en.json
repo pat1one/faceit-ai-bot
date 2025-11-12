@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "Faceit AI Bot - Statistics Analysis and Teammate Finder",
+    "description": "Tool for analyzing game statistics and finding teammates on Faceit platform. Download browser extension or full version on our website."
+  },
+  "demo": {
+    "title": "Demo File Analysis",
+    "upload": "Upload demo for detailed analysis",
+    "analyzing": "Analyzing demo...",
+    "results": "Analysis Results",
+    "payYookassa": "Pay via YooKassa",
+    "paySBP": "Pay via SBP",
+    "paymentDescription": "Demo analysis payment",
+    "paymentDescriptionSBP": "Demo analysis payment via SBP",
+    "paymentLink": "Follow the link to pay:",
+    "payButton": "Pay"
+  },
+  "player": {
+    "title": "CS2 Player Analysis",
+    "subtitle": "Get detailed statistics analysis and personalized recommendations",
+    "placeholder": "Enter Faceit nickname...",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "error": {
+      "enterNickname": "Enter player nickname",
+      "analysisError": "Error analyzing player",
+      "genericError": "An error occurred"
+    },
+    "level": "Level",
+    "overallRating": "Overall Rating",
+    "stats": {
+      "title": "Statistics",
+      "kd": "K/D",
+      "winrate": "Win Rate",
+      "headshots": "Headshots",
+      "matches": "Matches"
+    },
+    "strengths": {
+      "title": "Strengths",
+      "aim": "🎯 Aim",
+      "game_sense": "🧠 Game Sense",
+      "positioning": "📍 Positioning",
+      "teamwork": "👥 Teamwork",
+      "consistency": "⚡ Consistency"
+    },
+    "weaknesses": {
+      "title": "Areas for Improvement",
+      "priority": "Priority"
+    },
+    "training": {
+      "title": "Training Plan",
+      "focus": "Focus",
+      "exercises": "Exercises",
+      "duration": "Duration",
+      "expectedImprovement": "Expected Improvement"
+    },
+    "recommendations": {
+      "title": "Recommendations"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "next": "Next"
+  }
+}

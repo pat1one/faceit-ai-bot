@@ -1,0 +1,20 @@
+[Unit]
+Description=Faceit AI Bot Celery Beat Scheduler
+After=network.target redis.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/faceit-ai-bot
+Environment="PATH=/opt/faceit-ai-bot/venv/bin"
+EnvironmentFile=/opt/faceit-ai-bot/.env
+ExecStart=/opt/faceit-ai-bot/venv/bin/celery -A src.server.celery_app beat --loglevel=info --logfile=/var/log/faceit/celery-beat.log
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

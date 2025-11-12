@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-[#0c0c0c] to-[#1a1a1a] text-white min-h-screen;
+  }
+}
+
+@layer utilities {
+  .glass-effect {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent;
+  }
+}
