@@ -56,3 +56,6 @@ coverage/
 *.pem
 *.key
 .deploy_keys/
+.env.new
+.env.production
+routes_*.py
