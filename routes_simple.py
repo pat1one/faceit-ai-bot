@@ -94,8 +94,8 @@ async def analyze_player(request: PlayerAnalysisRequest):
             strengths = ["potential"]
             weaknesses = ["aim", "positioning", "game_sense"]
             recommendations = [
-                "Practice aim training", 
-                "Study positioning", 
+                "Practice aim training",
+                "Study positioning",
                 "Watch pro matches"
             ]
 

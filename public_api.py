@@ -4,10 +4,9 @@ Public API endpoints for testing
 """
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import asyncio
-import aiohttp
 
 app = FastAPI(title="Public Faceit API")
+
 
 class PlayerRequest(BaseModel):
     nickname: str
@@ -15,6 +14,7 @@ class PlayerRequest(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/analyze")
 async def analyze_player(request: PlayerRequest):
@@ -32,6 +32,7 @@ async def analyze_player(request: PlayerRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
