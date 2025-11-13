@@ -63,25 +63,39 @@ async def analyze_player(request: PlayerAnalysisRequest):
         lifetime_stats = stats.get('lifetime', {})
         kd_ratio = float(lifetime_stats.get('K/D Ratio', '1.0'))
         win_rate = float(lifetime_stats.get('Win Rate %', '50'))
-        hs_percentage = float(lifetime_stats.get('Headshots %', '40'))
-        matches = int(lifetime_stats.get('Matches', '0'))
 
         # Simple analysis based on stats
         if kd_ratio >= 1.5:
-            analysis = f"Excellent player with K/D {kd_ratio:.2f} and win rate {win_rate:.1f}%"
+            analysis = (
+                f"Excellent player with K/D {kd_ratio:.2f} "
+                f"and win rate {win_rate:.1f}%"
+            )
             strengths = ["aim", "game_sense", "positioning"]
             weaknesses = ["consistency"]
-            recommendations = ["Maintain current performance", "Focus on team coordination"]
+            recommendations = [
+                "Maintain current performance", 
+                "Focus on team coordination"
+            ]
         elif kd_ratio >= 1.2:
-            analysis = f"Good player with K/D {kd_ratio:.2f} and win rate {win_rate:.1f}%"
+            analysis = (
+                f"Good player with K/D {kd_ratio:.2f} "
+                f"and win rate {win_rate:.1f}%"
+            )
             strengths = ["aim", "game_sense"]
             weaknesses = ["positioning", "consistency"]
             recommendations = ["Practice positioning", "Improve consistency"]
         else:
-            analysis = f"Developing player with K/D {kd_ratio:.2f} and win rate {win_rate:.1f}%"
+            analysis = (
+                f"Developing player with K/D {kd_ratio:.2f} "
+                f"and win rate {win_rate:.1f}%"
+            )
             strengths = ["potential"]
             weaknesses = ["aim", "positioning", "game_sense"]
-            recommendations = ["Practice aim training", "Study positioning", "Watch pro matches"]
+            recommendations = [
+                "Practice aim training", 
+                "Study positioning", 
+                "Watch pro matches"
+            ]
 
         # Simple training plan
         training_plan = {
