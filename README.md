@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.3.0-2E9EF7?style=for-the-badge)
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.0-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
@@ -209,9 +209,9 @@ npm run dev
 ## 🗺️ Roadmap
 
 <details>
-<summary><b>📍 Текущая версия: v0.3.0</b></summary>
+<summary><b>📍 Текущая версия: v0.4.0</b></summary>
 
-### ✅ Реализовано в v0.3.0
+### ✅ Реализовано в v0.4.0
 
 - [x] Интеграция с Faceit API
 - [x] Умный анализ с Groq AI
@@ -226,10 +226,14 @@ npm run dev
 - [x] **📱 Адаптивный дизайн с Tailwind CSS**
 - [x] **📤 Загрузка демо-файлов**
 - [x] **👥 Поиск тиммейтов**
+- [x] **🎨 Современный UI с анимациями**
+- [x] **🔧 Nginx reverse proxy**
+- [x] **📊 Улучшенная аналитика**
+- [x] **🔄 Автоматический деплой**
 
 </details>
 
-### 🚧 v0.4.0 - В разработке (Q1 2025)
+### 🚧 v0.5.0 - В разработке (Q1 2025)
 
 **Основные фичи:**
 - [ ] 📊 **Расширенная аналитика**
