@@ -1,10 +1,35 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 
 const SubscriptionPlans = () => {
+  const [loading, setLoading] = useState(false);
+  
   const plans = [
-    { level: 'Basic', price: 10, features: ['Feature 1', 'Feature 2'] },
-    { level: 'Pro', price: 20, features: ['Feature 1', 'Feature 2', 'Feature 3'] },
-    { level: 'Premium', price: 30, features: ['Feature 1', 'Feature 2', 'Feature 3', 'Feature 4'] },
+    { 
+      level: 'FREE', 
+      price: 0, 
+      features: ['5 анализов в месяц', 'Базовая статистика', 'Поиск тиммейтов'],
+      popular: false
+    },
+    { 
+      level: 'BASIC', 
+      price: 299, 
+      features: ['50 анализов в месяц', 'Детальная статистика', 'Анализ демок', 'AI рекомендации'],
+      popular: false
+    },
+    { 
+      level: 'PRO', 
+      price: 599, 
+      features: ['Безлимитные анализы', 'Продвинутая аналитика', 'Приоритетная поддержка', 'Экспорт данных'],
+      popular: true
+    },
+    { 
+      level: 'ELITE', 
+      price: 999, 
+      features: ['Все функции PRO', 'Персональный тренер', 'API доступ', 'Белый лейбл'],
+      popular: false
+    },
   ];
 
   return (

@@ -53,7 +53,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         }
     )
 
-# Include routers
+# Include routers (nginx adds /api prefix)
 app.include_router(auth_router)
 app.include_router(demo_router)
 app.include_router(payments_router)
