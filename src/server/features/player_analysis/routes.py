@@ -2,12 +2,12 @@
 Player Analysis Routes
 Routes for player analysis
 """
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Optional
 import logging
 
+from fastapi import APIRouter, HTTPException, Depends
+
 from .service import PlayerAnalysisService
-from .schemas import PlayerAnalysisRequest, PlayerAnalysisResponse
+from .schemas import PlayerAnalysisResponse
 
 logger = logging.getLogger(__name__)
 

@@ -212,7 +212,7 @@ async def generate_training(user_stats: dict):
             ]
         }
 
-    except Exception as e:
+    except Exception:
         # Fallback to basic analysis if AI fails
         return {
             "player_level": "intermediate",

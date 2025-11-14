@@ -27,7 +27,10 @@ class PlayerAnalysisService:
         self.faceit_client = FaceitAPIClient()
         self.ai_service = AIService()
 
-    async def analyze_player(self, nickname: str) -> Optional[PlayerAnalysisResponse]:
+    async def analyze_player(
+        self,
+        nickname: str
+    ) -> Optional[PlayerAnalysisResponse]:
         """
         Complete player analysis
 
@@ -39,22 +42,34 @@ class PlayerAnalysisService:
         """
         try:
             # Check cache
-            cache_key = cache_service.get_player_cache_key(nickname)
+            cache_key = cache_service.get_player_cache_key(
+                nickname
+            )
             cached = await cache_service.get(cache_key)
             if cached:
                 logger.info(f"Cache hit for player {nickname}")
                 return PlayerAnalysisResponse(**cached)
 
-            logger.info(f"Cache miss for player {nickname}, analyzing...")
+            logger.info(
+                f"Cache miss for player {nickname}, analyzing..."
+            )
             # Fetch player data
-            player = await self.faceit_client.get_player_by_nickname(nickname)
+            player = (
+                await self.faceit_client.get_player_by_nickname(
+                    nickname
+                )
+            )
             if not player:
                 return None
 
             player_id = player.get("player_id")
 
             # Fetch statistics
-            stats_data = await self.faceit_client.get_player_stats(player_id)
+            stats_data = (
+                await self.faceit_client.get_player_stats(
+                    player_id
+                )
+            )
             if not stats_data:
                 return None
 
@@ -62,19 +77,32 @@ class PlayerAnalysisService:
             stats = self._parse_stats(stats_data, player)
 
             # Fetch match history for analysis
-            match_history = await self.faceit_client.get_match_history(player_id, limit=10)
+            match_history = (
+                await self.faceit_client.get_match_history(
+                    player_id,
+                    limit=10
+                )
+            )
 
             # Use intelligent analysis
-            ai_analysis = await self.ai_service.analyze_player_with_ai(
-                nickname,
-                stats.dict(),
-                match_history
+            ai_analysis = (
+                await self.ai_service.analyze_player_with_ai(
+                    nickname,
+                    stats.dict(),
+                    match_history
+                )
             )
 
             # Parse analysis results
-            strengths = PlayerStrengths(**ai_analysis["strengths"])
-            weaknesses = PlayerWeaknesses(**ai_analysis["weaknesses"])
-            training_plan = TrainingPlan(**ai_analysis["training_plan"])
+            strengths = PlayerStrengths(
+                **ai_analysis["strengths"]
+            )
+            weaknesses = PlayerWeaknesses(
+                **ai_analysis["weaknesses"]
+            )
+            training_plan = TrainingPlan(
+                **ai_analysis["training_plan"]
+            )
             overall_rating = ai_analysis["overall_rating"]
 
             result = PlayerAnalysisResponse(
@@ -89,68 +117,131 @@ class PlayerAnalysisService:
             )
 
             # Save to cache (1 hour)
-            await cache_service.set(cache_key, result.dict(), ttl=3600)
+            await cache_service.set(
+                cache_key,
+                result.dict(),
+                ttl=3600
+            )
 
             return result
 
-        except Exception as e:
-            logger.error(f"Error analyzing player {nickname}: {str(e)}")
+        except Exception:
+            logger.exception(
+                f"Error analyzing player {nickname}"
+            )
             return None
 
-    async def get_player_stats(self, nickname: str) -> Optional[Dict]:
+    async def get_player_stats(
+        self,
+        nickname: str
+    ) -> Optional[Dict]:
         """Get player statistics"""
         try:
-            player = await self.faceit_client.get_player_by_nickname(nickname)
+            player = (
+                await self.faceit_client.get_player_by_nickname(
+                    nickname
+                )
+            )
             if not player:
                 return None
 
             player_id = player.get("player_id")
-            stats = await self.faceit_client.get_player_stats(player_id)
+            stats = (
+                await self.faceit_client.get_player_stats(
+                    player_id
+                )
+            )
 
+            game_data = player.get("games", {}).get("cs2", {})
             return {
                 "player_id": player_id,
                 "nickname": nickname,
                 "stats": stats,
-                "level": player.get("games", {}).get("cs2", {}).get("skill_level"),
-                "elo": player.get("games", {}).get("cs2", {}).get("faceit_elo")
+                "level": game_data.get("skill_level"),
+                "elo": game_data.get("faceit_elo")
             }
-        except Exception as e:
-            logger.error(f"Error fetching stats for {nickname}: {str(e)}")
+        except Exception:
+            logger.exception(
+                f"Error fetching stats for {nickname}"
+            )
             return None
 
-    async def get_player_matches(self, nickname: str, limit: int = 20) -> List[Dict]:
+    async def get_player_matches(
+        self,
+        nickname: str,
+        limit: int = 20
+    ) -> List[Dict]:
         """Get match history"""
         try:
-            player = await self.faceit_client.get_player_by_nickname(nickname)
+            player = (
+                await self.faceit_client.get_player_by_nickname(
+                    nickname
+                )
+            )
             if not player:
                 return []
 
             player_id = player.get("player_id")
-            matches = await self.faceit_client.get_match_history(player_id, limit=limit)
+            matches = (
+                await self.faceit_client.get_match_history(
+                    player_id,
+                    limit=limit
+                )
+            )
 
             return matches
-        except Exception as e:
-            logger.error(f"Error fetching matches for {nickname}: {str(e)}")
+        except Exception:
+            logger.exception(
+                f"Error fetching matches for {nickname}"
+            )
             return []
 
-    async def search_players(self, query: str, limit: int = 20) -> List[Dict]:
+    async def search_players(
+        self,
+        query: str,
+        limit: int = 20
+    ) -> List[Dict]:
         """Search players"""
         try:
-            players = await self.faceit_client.search_players(query, limit=limit)
+            players = (
+                await self.faceit_client.search_players(
+                    query,
+                    limit=limit
+                )
+            )
             return players
-        except Exception as e:
-            logger.error(f"Error searching players: {str(e)}")
+        except Exception:
+            logger.exception("Error searching players")
             return []
 
-    def _parse_stats(self, stats_data: Dict, player: Dict) -> PlayerStats:
+    def _parse_stats(
+        self,
+        stats_data: Dict,
+        player: Dict
+    ) -> PlayerStats:
         """Parse statistics from Faceit API"""
         lifetime = stats_data.get("lifetime", {})
 
         # Safe value extraction
-        kd_ratio = float(lifetime.get("Average K/D Ratio", lifetime.get("K/D Ratio", "1.0")))
+        kd_ratio = float(
+            lifetime.get(
+                "Average K/D Ratio",
+                lifetime.get("K/D Ratio", "1.0")
+            )
+        )
         win_rate = float(lifetime.get("Win Rate %", "50"))
-        headshot_pct = float(lifetime.get("Headshots %", lifetime.get("Average Headshots %", "40")))
-        avg_kills = float(lifetime.get("Average Kills", lifetime.get("Kills", "15")))
+        headshot_pct = float(
+            lifetime.get(
+                "Headshots %",
+                lifetime.get("Average Headshots %", "40")
+            )
+        )
+        avg_kills = float(
+            lifetime.get(
+                "Average Kills",
+                lifetime.get("Kills", "15")
+            )
+        )
         matches = int(lifetime.get("Matches", "0"))
 
         # Data from player profile
@@ -168,22 +259,43 @@ class PlayerAnalysisService:
             level=level
         )
 
-    def _analyze_strengths(self, stats: PlayerStats) -> PlayerStrengths:
+    def _analyze_strengths(
+        self,
+        stats: PlayerStats
+    ) -> PlayerStrengths:
         """Analyze player strengths based on statistics"""
         # Aim score based on K/D and headshot%
-        aim_score = min(10, int((stats.kd_ratio * 4) + (stats.headshot_percentage / 10)))
+        aim_score = min(
+            10,
+            int(
+                (stats.kd_ratio * 4) +
+                (stats.headshot_percentage / 10)
+            )
+        )
 
         # Game sense score based on win rate
         game_sense_score = min(10, int(stats.win_rate / 10))
 
         # Positioning (basic evaluation)
-        positioning_score = min(10, max(5, int(stats.win_rate / 12)))
+        positioning_score = min(
+            10,
+            max(5, int(stats.win_rate / 12))
+        )
 
         # Teamwork (evaluation based on win rate and match count)
-        teamwork_score = min(10, int((stats.win_rate / 10) + (min(stats.matches_played, 100) / 20)))
+        teamwork_score = min(
+            10,
+            int(
+                (stats.win_rate / 10) +
+                (min(stats.matches_played, 100) / 20)
+            )
+        )
 
         # Consistency (based on match count)
-        consistency_score = min(10, int(min(stats.matches_played, 500) / 50))
+        consistency_score = min(
+            10,
+            int(min(stats.matches_played, 500) / 50)
+        )
 
         return PlayerStrengths(
             aim=max(1, aim_score),
@@ -193,26 +305,37 @@ class PlayerAnalysisService:
             consistency=max(1, consistency_score)
         )
 
-    def _analyze_weaknesses(self, stats: PlayerStats) -> PlayerWeaknesses:
+    def _analyze_weaknesses(
+        self,
+        stats: PlayerStats
+    ) -> PlayerWeaknesses:
         """Analyze player weaknesses"""
         weaknesses = []
         recommendations = []
 
         if stats.kd_ratio < 1.0:
             weaknesses.append("aim")
-            recommendations.append("Practice aiming on aim_botz and aim_training maps")
+            recommendations.append(
+                "Practice aiming on aim_botz and aim_training maps"
+            )
 
         if stats.headshot_percentage < 40:
             weaknesses.append("headshot accuracy")
-            recommendations.append("Focus on headshot-only modes")
+            recommendations.append(
+                "Focus on headshot-only modes"
+            )
 
         if stats.win_rate < 50:
             weaknesses.append("game sense")
-            recommendations.append("Study professional matches and strategies")
+            recommendations.append(
+                "Study professional matches and strategies"
+            )
 
         if stats.matches_played < 50:
             weaknesses.append("experience")
-            recommendations.append("Play more matches to gain experience")
+            recommendations.append(
+                "Play more matches to gain experience"
+            )
 
         # Determine priority area
         priority = weaknesses[0] if weaknesses else "consistency"

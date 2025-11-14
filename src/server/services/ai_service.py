@@ -31,7 +31,6 @@ class AIService:
         """Enhanced rule-based analysis"""
         kd = float(stats.get("kd_ratio", 1.0))
         win_rate = float(stats.get("win_rate", 50.0))
-        level = int(stats.get("level", 5))
 
         # Scoring system
         aim_score = min(10, max(1, int(kd * 4)))
