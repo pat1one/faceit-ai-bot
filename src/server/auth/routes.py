@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register")
 async def register(
     request: Request,
     db: Session = Depends(get_db)
@@ -29,27 +29,22 @@ async def register(
         password = None
         faceit_id = None
 
-        # Try to parse as FormData first
-        try:
+        # Parse request body - try FormData first, then JSON
+        content_type = request.headers.get("content-type", "")
+
+        if ("multipart/form-data" in content_type or
+                "application/x-www-form-urlencoded" in content_type):
             form = await request.form()
             email = form.get("email")
             username = form.get("username")
             password = form.get("password")
             faceit_id = form.get("faceit_id")
-        except Exception:
-            # Fallback to JSON
-            try:
-                body = await request.json()
-                email = body.get("email")
-                username = body.get("username")
-                password = body.get("password")
-                faceit_id = body.get("faceit_id")
-            except Exception as e:
-                logger.error(f"Failed to parse request body: {str(e)}")
-                raise HTTPException(
-                    status_code=400,
-                    detail="Invalid request format"
-                )
+        else:
+            body = await request.json()
+            email = body.get("email")
+            username = body.get("username")
+            password = body.get("password")
+            faceit_id = body.get("faceit_id")
 
         if not email or not username or not password:
             raise HTTPException(
@@ -101,7 +96,8 @@ async def register(
         db.commit()
 
         logger.info(f"New user registered: {new_user.email}")
-        return new_user
+
+        return UserResponse.model_validate(new_user)
     except HTTPException:
         raise
     except Exception as e:
