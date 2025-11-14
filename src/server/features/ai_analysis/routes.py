@@ -91,11 +91,9 @@ async def analyze_player(request: PlayerAnalysisRequest):
         )
 
         # Generate training plan
-        weaknesses = analysis.get("weaknesses", {}).get("areas", ["aim"])
-        player_level = stats.get('level', 5)
-        training_plan = await ai_service.generate_training_plan(
-            weaknesses=weaknesses,
-            player_level=player_level
+        training_plan = ai_service.generate_training_plan(
+            nickname=request.player_nickname,
+            stats=player_stats
         )
 
         # Parse analysis to extract strengths/weaknesses
@@ -155,9 +153,9 @@ async def get_training_plan(player_id: str):
         }
 
         # Generate plan
-        training_plan = await ai_service.generate_training_plan(
-            player_stats=player_stats,
-            focus_areas=['aim', 'spray_control', 'positioning']
+        training_plan = ai_service.generate_training_plan(
+            nickname=player_id,
+            stats=player_stats
         )
 
         return training_plan

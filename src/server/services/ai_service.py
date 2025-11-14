@@ -22,6 +22,53 @@ class AIService:
         logger.info(f"Analyzing player {nickname}")
         return self._get_analysis(stats, nickname, language)
 
+    def generate_training_plan(
+        self,
+        nickname: str,
+        stats: Dict,
+        language: str = "ru"
+    ) -> Dict:
+        """Generate personalized training plan for player"""
+        kd = float(stats.get("kd_ratio", 1.0))
+        win_rate = float(stats.get("win_rate", 50.0))
+        
+        if language == "en":
+            plan = {
+                "player": nickname,
+                "duration": "4 weeks",
+                "focus_areas": ["Aim training", "Map control", "Positioning"],
+                "daily_routine": [
+                    "Aim practice: 30 minutes",
+                    "Demo review: 20 minutes",
+                    "Competitive matches: 2-3 hours"
+                ],
+                "weekly_goals": [
+                    "Week 1: Improve aim consistency",
+                    "Week 2: Master 2 maps",
+                    "Week 3: Improve game sense",
+                    "Week 4: Competitive play"
+                ]
+            }
+        else:
+            plan = {
+                "player": nickname,
+                "duration": "4 недели",
+                "focus_areas": ["Тренировка прицеливания", "Контроль карты", "Позиционирование"],
+                "daily_routine": [
+                    "Тренировка прицеливания: 30 минут",
+                    "Разбор демо: 20 минут",
+                    "Соревновательные матчи: 2-3 часа"
+                ],
+                "weekly_goals": [
+                    "Неделя 1: Улучшить консистентность прицеливания",
+                    "Неделя 2: Освоить 2 карты",
+                    "Неделя 3: Улучшить игровое чутье",
+                    "Неделя 4: Соревновательная игра"
+                ]
+            }
+        
+        return plan
+
     def _get_analysis(
         self,
         stats: Dict,
