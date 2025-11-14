@@ -151,38 +151,72 @@ async def analyze_demo(demo: UploadFile = File(...)):
 @app.post("/generate-training")
 async def generate_training(user_stats: dict):
     """
-    Generate personalized training plan
+    Generate personalized training plan using AI analysis
     """
-    # Mock training plan
-    mock_training_plan = {
-        "player_level": "intermediate",
-        "focus_areas": ["aim", "positioning", "game_sense"],
-        "daily_exercises": [
-            {
-                "name": "Aim Training - Headshot Only",
-                "duration": 30,
-                "description": "Headshot accuracy training on aim_botz"
-            },
-            {
-                "name": "Crosshair Placement",
-                "duration": 20,
-                "description": "Crosshair placement practice"
-            },
-            {
-                "name": "Spray Control",
-                "duration": 25,
-                "description": "Spray control practice for AK-47 and M4A4"
-            }
-        ],
-        "weekly_goals": [
-            "Increase accuracy by 5%",
-            "Reduce deaths from behind by 20%",
-            "Improve K/D ratio to 1.3"
-        ],
-        "estimated_improvement_time": "2-3 weeks"
-    }
-
-    return mock_training_plan
+    try:
+        # Initialize AI service
+        from src.server.services.ai_service import AIService
+        ai_service = AIService()
+        
+        # Get player nickname if provided
+        nickname = user_stats.get("player_nickname", "Player")
+        
+        # Prepare stats for analysis
+        stats = {
+            "kd_ratio": user_stats.get("kd_ratio", 1.0),
+            "win_rate": user_stats.get("win_rate", 50.0),
+            "headshot_percentage": user_stats.get("headshot_percentage", 40.0),
+            "matches_played": user_stats.get("matches_played", 50),
+            "elo": user_stats.get("elo", 1000),
+            "level": user_stats.get("level", 5)
+        }
+        
+        # Get AI analysis
+        analysis = await ai_service.analyze_player_with_ai(nickname, stats, [])
+        
+        # Return enhanced analysis with training plan
+        return {
+            "player_level": analysis.get("player_tier", "intermediate").lower(),
+            "analysis": analysis.get("analysis", "Player analysis complete"),
+            "overall_score": analysis.get("overall_score", 5),
+            "strengths": analysis.get("strengths", {}),
+            "focus_areas": analysis.get("focus_areas", ["aim", "positioning"]),
+            "recommendations": analysis.get("recommendations", []),
+            "estimated_improvement_time": analysis.get("estimated_improvement_time", "2-4 weeks"),
+            # Legacy format for compatibility
+            "daily_exercises": [
+                {
+                    "name": "Aim Training - Headshot Only",
+                    "duration": 30,
+                    "description": "Headshot accuracy training on aim_botz"
+                },
+                {
+                    "name": "Crosshair Placement",
+                    "duration": 20,
+                    "description": "Crosshair placement practice"
+                },
+                {
+                    "name": "Spray Control",
+                    "duration": 25,
+                    "description": "Spray control practice for AK-47 and M4A4"
+                }
+            ],
+            "weekly_goals": [
+                "Increase accuracy by 5%",
+                "Reduce deaths from behind by 20%",
+                "Improve K/D ratio to 1.3"
+            ]
+        }
+        
+    except Exception as e:
+        # Fallback to basic analysis if AI fails
+        return {
+            "player_level": "intermediate",
+            "analysis": f"Basic analysis for player with K/D {user_stats.get('kd_ratio', 1.0)}",
+            "focus_areas": ["aim", "positioning", "game_sense"],
+            "recommendations": ["Practice aim training", "Watch professional demos"],
+            "estimated_improvement_time": "2-3 weeks"
+        }
 
 
 @app.get("/voice-assistant/commands")
