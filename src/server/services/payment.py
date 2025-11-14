@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class PaymentService:
     def __init__(self):
         self.yookassa_url = settings.YOOKASSA_API_URL
@@ -15,7 +16,9 @@ class PaymentService:
         if not all([self.yookassa_shop_id, self.yookassa_secret_key]):
             logger.warning("YooKassa credentials not configured!")
 
-    async def create_yookassa_payment(self, payment: PaymentRequest) -> PaymentResponse:
+    async def create_yookassa_payment(
+        self, payment: PaymentRequest
+    ) -> PaymentResponse:
         if not all([self.yookassa_shop_id, self.yookassa_secret_key]):
             raise HTTPException(
                 status_code=503,
@@ -36,7 +39,9 @@ class PaymentService:
                         },
                         "confirmation": {
                             "type": "redirect",
-                            "return_url": "http://localhost:3000/payment-success",
+                            "return_url": (
+                                "http://localhost:3000/payment-success"
+                            ),
                         },
                         "description": payment.description,
                     },
@@ -53,8 +58,11 @@ class PaymentService:
                     )
 
                 payment_data = response.json()
+                confirmation_url = (
+                    payment_data["confirmation"]["confirmation_url"]
+                )
                 return PaymentResponse(
-                    payment_url=payment_data["confirmation"]["confirmation_url"],
+                    payment_url=confirmation_url,
                     status=payment_data["status"],
                     payment_id=payment_data["id"]
                 )

@@ -10,6 +10,7 @@ from ..config.settings import settings
 
 logger = logging.getLogger(__name__)
 
+
 class MLService:
     def __init__(self):
         self.model = None
@@ -27,7 +28,9 @@ class MLService:
         if self.model is None:
             try:
                 # Ensure cache directory exists
-                Path(settings.MODEL_CACHE_DIR).mkdir(parents=True, exist_ok=True)
+                Path(settings.MODEL_CACHE_DIR).mkdir(
+                    parents=True, exist_ok=True
+                )
 
                 self.model = torch.hub.load(
                     'pytorch/vision:v0.10.0',
@@ -37,7 +40,7 @@ class MLService:
                     cache_dir=settings.MODEL_CACHE_DIR
                 )
                 self.model.eval()
-            except Exception as e:
+            except Exception:
                 logger.exception("Failed to load ML model")
                 raise HTTPException(
                     status_code=500,
