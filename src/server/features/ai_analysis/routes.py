@@ -126,7 +126,7 @@ async def analyze_player(request: PlayerAnalysisRequest):
         )
 
 
-@router.get("/training-plan/{player_id}")
+@router.post("/training-plan/{player_id}")
 async def get_training_plan(player_id: str):
     """
     Get personalized training plan

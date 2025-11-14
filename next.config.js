@@ -4,14 +4,12 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   
-  // TypeScript config
   typescript: {
-    ignoreBuildErrors: true,  // Игнорируем ошибки TypeScript при билде
+    ignoreBuildErrors: true,
   },
 
-  // ESLint config  
   eslint: {
-    ignoreDuringBuilds: true,  // Игнорируем ESLint при билде
+    ignoreDuringBuilds: true,
   },
 
   images: {

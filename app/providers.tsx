@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import '../src/i18n/config';
-import { AuthProvider } from '../src/contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from 'next-themes';
 
 export function Providers({ children }: { children: React.ReactNode }) {

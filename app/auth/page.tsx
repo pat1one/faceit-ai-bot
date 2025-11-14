@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../src/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +26,7 @@ export default function AuthPage() {
       } else {
         await register(email, username, password);
       }
-      router.push('/dashboard');
+      router.push('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage || (isLogin ? 'Login failed. Check your credentials.' : 'Registration failed. Try again.'));

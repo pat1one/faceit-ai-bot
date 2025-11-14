@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../app/contexts/AuthContext';
 
 const Navigation = () => {
   const { user, logout } = useAuth();
