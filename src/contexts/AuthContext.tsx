@@ -20,6 +20,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Get API URL based on environment
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    
+    // For localhost development, use direct API port
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      return 'http://localhost:8000';
+    }
+    
+    // For production domain, use same domain (Nginx will route to API)
+    return `${protocol}//${host}`;
+  }
+  return 'http://localhost:8000';
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -38,7 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async (authToken: string) => {
     try {
-      const response = await fetch('/api/auth/me', {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
         },
@@ -63,7 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     formData.append('username', email);
     formData.append('password', password);
 
-    const response = await fetch('/api/auth/login', {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/auth/login`, {
       method: 'POST',
       body: formData,
     });
@@ -80,7 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (email: string, username: string, password: string) => {
-    const response = await fetch('/api/auth/register', {
+    const apiUrl = getApiUrl();
+    const response = await fetch(`${apiUrl}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
