@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faceit-celery-beat
+  labels:
+    app: faceit-celery-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faceit-celery-beat
+  template:
+    metadata:
+      labels:
+        app: faceit-celery-beat
+    spec:
+      containers:
+        - name: celery-beat
+          image: faceit-api:latest
+          command: ['celery', '-A', 'src.server.celery_app', 'beat', '--loglevel=info']
+          envFrom:
+            - configMapRef:
+                name: faceit-config
+            - secretRef:
+                name: faceit-secrets
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+              cpu: '200m'
+          volumeMounts:
+            - name: temp-storage
+              mountPath: /tmp
+      volumes:
+        - name: temp-storage
+          emptyDir: {}

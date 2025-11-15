@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faceit-api
+spec:
+  replicas: 3
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faceit-web
+spec:
+  replicas: 2
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faceit-celery-worker
+spec:
+  replicas: 4
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: faceit-postgres
+spec:
+  replicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faceit-redis
+spec:
+  replicas: 1

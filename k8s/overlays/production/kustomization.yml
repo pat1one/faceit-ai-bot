@@ -2,20 +2,38 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
-- ../../base
+  - ../../base
 
 patchesStrategicMerge:
-- deployment-patch.yml
+  - replica-patch.yml
+  - resource-limits-patch.yml
+
+commonLabels:
+  environment: production
 
 images:
-- name: faceit-api
-  newTag: v0.4.1
-- name: faceit-web
-  newTag: v0.4.1
+  - name: faceit-api
+    newTag: v1.0.0
+  - name: faceit-web
+    newTag: v1.0.0
 
 configMapGenerator:
-- name: faceit-config
-  behavior: merge
-  literals:
-  - ENVIRONMENT=production
-  - DOMAIN=pattmsc.online
+  - name: faceit-config
+    behavior: replace
+    literals:
+      - DATABASE_URL=postgresql://faceit_user:$(DB_PASSWORD)@faceit-postgres:5432/faceit_user
+      - REDIS_URL=redis://faceit-redis:6379
+      - SECRET_KEY=$(SECRET_KEY)
+      - FACEIT_API_KEY=$(FACEIT_API_KEY)
+      - GROQ_API_KEY=$(GROQ_API_KEY)
+      - SENTRY_DSN=$(SENTRY_DSN)
+
+secretGenerator:
+  - name: faceit-secrets
+    behavior: replace
+    literals:
+      - DB_PASSWORD=change_me_in_production
+      - SECRET_KEY=change_me_in_production
+      - FACEIT_API_KEY=change_me_in_production
+      - GROQ_API_KEY=change_me_in_production
+      - SENTRY_DSN=change_me_in_production
