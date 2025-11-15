@@ -449,3 +449,5 @@ sentry.properties
 redis-data/
 postgres-data/
 mongo-data/
+*.rpm
+*.rpm
