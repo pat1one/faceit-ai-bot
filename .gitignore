@@ -1,61 +1,451 @@
-# Node
+# ============================================
+# FACEIT AI BOT - GITIGNORE
+# Обновлено: 2025-01-15
+# ============================================
+
+# ============================================
+# PYTHON
+# ============================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+pytestdebug.log
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ============================================
+# NODE.JS / NPM
+# ============================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Next.js
+# ============================================
+# NEXT.JS
+# ============================================
 .next/
 out/
 build/
+.next/cache/
+next-env.d.ts
 
-# Production
-dist/
+# ============================================
+# TYPESCRIPT
+# ============================================
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+*.js.map
+*.d.ts.map
 
-# Env
+# ============================================
+# DATABASES
+# ============================================
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+faceit_bot.db
+
+# PostgreSQL dumps
+*.sql
+*.dump
+
+# Database migrations (keep tracked but ignore temp files)
+alembic/versions/*.pyc
+migrations/__pycache__/
+
+# ============================================
+# REDIS & CELERY
+# ============================================
+# Celery beat schedule
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule.db
+
+# Celery worker state
+celery.pid
+worker.pid
+
+# ============================================
+# DOCKER
+# ============================================
+.dockerignore
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# Docker volumes data (local)
+.docker-data/
+volumes/
+
+# ============================================
+# ENVIRONMENT VARIABLES
+# ============================================
 .env
 .env.local
 .env.*.local
+.env.production
+.env.staging
+.env.new
+.env.backup
+*.env
 
-# Logs
+# Keep examples
+!.env.example
+!.env.production.example
+
+# ============================================
+# LOGS
+# ============================================
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log.log
 
-# Python
-venv/
-.venv/
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-*.egg-info/
-.coverage
-htmlcov/
+# Application logs
+app.log
+error.log
+access.log
+combined.log
+exceptions.log
 
-# Editor
+# PM2 logs
+pm2-logs/
+.pm2/
+
+# ============================================
+# SECRETS & KEYS
+# ============================================
+# SSH keys
+*.pem
+*.key
+*.pub
+id_rsa
+id_rsa.pub
+.ssh/
+
+# SSL certificates
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+
+# Deployment keys
+.deploy_keys/
+deploy_keys/
+
+# GPG keys
+*.gpg
+secring.*
+
+# API keys and tokens
+secrets.yml
+secrets.yaml
+credentials.json
+service-account.json
+
+# ============================================
+# IDE & EDITORS
+# ============================================
+# VSCode
 .vscode/
+!.vscode/settings.json.example
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs
 .idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Sublime Text
 *.sublime-workspace
+*.sublime-project
+
+# Vim
 *.swp
 *.swo
 *~
+.vim/
 
-# Misc
+# Emacs
+*~
+\#*\#
+.\#*
+.emacs.desktop
+.emacs.desktop.lock
+
+# ============================================
+# OPERATING SYSTEMS
+# ============================================
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
 
-# TypeScript
-*.tsbuildinfo
+# Linux
+.directory
+.trash-*
+.nfs*
 
-# Testing
-coverage/
-.nyc_output/
+# ============================================
+# TEMPORARY FILES
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+.tmp/
+tmp/
+temp/
+.cache/
+cache/
 
-# SSH keys and sensitive files
-*.pub
-*.pem
-*.key
-.deploy_keys/
-.env.new
-.env.production
-routes_*.py
+# ============================================
+# TESTING (временные файлы в корне)
+# ============================================
+# Эти файлы должны быть перемещены в tests/
+simple_test.py
+quick_test.py
+test_integrations.py
+public_api.py
+routes_basic.py
+routes_simple.py
+routes_fixed.py
+test-sites.sh
+test-sites.ps1
+*_test.py.bak
+test_*.py.old
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ============================================
+# BUILD ARTIFACTS
+# ============================================
+dist/
+build/
+out/
+target/
+
+# Webpack
+.webpack/
+webpack-stats.json
+
+# Babel
+.babel-cache/
+
+# ============================================
+# MONITORING & OBSERVABILITY
+# ============================================
+# Prometheus data
+prometheus_data/
+prometheus/data/
+
+# Grafana data
+grafana_data/
+grafana/data/
+
+# Loki data
+loki_data/
+
+# APM traces
+traces/
+*.trace
+
+# ============================================
+# SECURITY SCANNING
+# ============================================
+.snyk
+.trivyignore
+trivy-report.json
+safety-report.json
+bandit-report.json
+
+# ============================================
+# CI/CD
+# ============================================
+# GitHub Actions artifacts
+.github/workflows/*.log
+
+# GitLab CI
+.gitlab-ci-local/
+
+# CircleCI
+.circleci/builds/
+
+# ============================================
+# KUBERNETES
+# ============================================
+# Helm
+*.tgz
+charts/*/charts/
+.helmignore
+
+# Kustomize
+kustomization.yaml.bak
+
+# K8s secrets (never commit)
+*-secret.yaml
+*-secrets.yaml
+secret-*.yaml
+
+# ============================================
+# BACKUP FILES
+# ============================================
+*.backup
+*.bck
+backup-*.sql
+backup-*.tar.gz
+backups/
+
+# ============================================
+# DOCUMENTATION BUILDS
+# ============================================
+docs/_build/
+docs/.doctrees/
+site/
+_site/
+
+# Sphinx
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# MkDocs
+site/
+
+# ============================================
+# MISC
+# ============================================
+.benchmarks/
+.pytest_bench/
+prof/
+
+# Sentry
+.sentryclirc
+sentry.properties
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Vagrant
+.vagrant/
+
+# Local history
+.history/
+.local_history/
+
+# MacOS
+.Trashes
+
+# Ignore everything in root config directories data folders
+redis-data/
+postgres-data/
+mongo-data/
