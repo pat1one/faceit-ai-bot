@@ -77,3 +77,26 @@ def health_check():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=4000)
+
+# Prometheus metrics
+from prometheus_client import make_asgi_app, Counter, Histogram
+from fastapi import Response
+
+# Бизнес метрики
+ANALYSIS_REQUESTS = Counter('faceit_analysis_requests_total', 'Total analysis requests')
+ANALYSIS_DURATION = Histogram('faceit_analysis_duration_seconds', 'Analysis duration')
+
+ACTIVE_USERS = Counter('faceit_active_users', 'Active user sessions')
+
+@app.get("/metrics")
+async def metrics():
+    from prometheus_client import generate_latest
+    return Response(generate_latest())
+
+# Использование в коде:
+@app.post("/api/analysis")
+async def analyze(request: dict):
+    ANALYSIS_REQUESTS.inc()
+    with ANALYSIS_DURATION.time():
+        # анализ кода
+        return result

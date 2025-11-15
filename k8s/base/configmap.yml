@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faceit-config
+  namespace: faceit-prod
+data:
+  ENVIRONMENT: "production"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  NODE_ENV: "production"
+  DOMAIN: "pattmsc.online"
+  ALLOWED_ORIGINS: "https://pattmsc.online"
+  LOG_LEVEL: "INFO"
+  REDIS_MAX_CONNECTIONS: "20"
+  DB_POOL_SIZE: "20"
+  CELERY_CONCURRENCY: "4"
