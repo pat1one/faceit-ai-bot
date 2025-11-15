@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     REPLIT_DEV_DOMAIN: Optional[str] = None
 
     # Database settings
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/faceit_ai_bot"
+    DATABASE_URL: str = (
+        "postgresql://user:password@localhost:5432/faceit_ai_bot"
+    )
 
     # Faceit API settings
     FACEIT_API_KEY: Optional[str] = None
@@ -44,7 +46,11 @@ class Settings(BaseSettings):
 
     @validator("DATABASE_URL")
     def validate_database_url(cls, v):
-        allowed_prefixes = ("postgresql://", "postgresql+asyncpg://", "sqlite://")
+        allowed_prefixes = (
+            "postgresql://",
+            "postgresql+asyncpg://",
+            "sqlite://",
+        )
         if not v.startswith(allowed_prefixes):
             raise ValueError(
                 "Invalid database URL. Must start with postgresql://, "
@@ -55,7 +61,9 @@ class Settings(BaseSettings):
     @validator("SECRET_KEY")
     def validate_secret_key(cls, v):
         if len(v) < 32:
-            raise ValueError("SECRET_KEY must be at least 32 characters long for security")
+            raise ValueError(
+                "SECRET_KEY must be at least 32 characters long for security"
+            )
         return v
 
     # SBP API settings

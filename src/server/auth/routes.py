@@ -45,7 +45,8 @@ async def register(request: Request, db: Session = Depends(get_db)):
 
         if not email or not username or not password:
             raise HTTPException(
-                status_code=400, detail="Missing required fields: email, username, password"
+                status_code=400,
+                detail="Missing required fields: email, username, password",
             )
 
         # Validate email format
@@ -54,23 +55,33 @@ async def register(request: Request, db: Session = Depends(get_db)):
 
         # Validate password length
         if len(password) < 6:
-            raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+            raise HTTPException(
+                status_code=400,
+                detail="Password must be at least 6 characters",
+            )
 
-        existing = db.execute(select(User).where(User.email == email)).scalars().first()
+        existing = db.execute(
+            select(User).where(User.email == email)
+        ).scalars().first()
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
 
         hashed_password = get_password_hash(password)
 
         new_user = User(
-            email=email, username=username, hashed_password=hashed_password, faceit_id=faceit_id
+            email=email,
+            username=username,
+            hashed_password=hashed_password,
+            faceit_id=faceit_id,
         )
 
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
 
-        subscription = Subscription(user_id=new_user.id, tier=SubscriptionTier.FREE)
+        subscription = Subscription(
+            user_id=new_user.id, tier=SubscriptionTier.FREE
+        )
         db.add(subscription)
         db.commit()
 
@@ -82,7 +93,9 @@ async def register(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         logger.error(f"Registration error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Registration failed")
+        raise HTTPException(
+            status_code=500, detail="Registration failed"
+        )
 
 
 @router.post("/login", response_model=Token)
@@ -92,26 +105,34 @@ async def login(request: Request, db: Session = Depends(get_db)):
     try:
         form = await request.form()
         if form:
-            email = form.get("email") or form.get("username")  # Support both email and username
+            # Support both email and username
+            email = form.get("email") or form.get("username")
             password = form.get("password")
         else:
             body = await request.json()
-            email = body.get("email") or body.get("username")  # Support both email and username
+            # Support both email and username
+            email = body.get("email") or body.get("username")
             password = body.get("password")
     except Exception:
         body = await request.json()
-        email = body.get("email") or body.get("username")  # Support both email and username
+        # Support both email and username
+        email = body.get("email") or body.get("username")
         password = body.get("password")
 
-    user = db.execute(select(User).where(User.email == email)).scalars().first()
+    user = db.execute(
+        select(User).where(User.email == email)
+    ).scalars().first()
 
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
         )
 
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="User account is inactive")
+        raise HTTPException(
+            status_code=400, detail="User account is inactive"
+        )
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
@@ -120,6 +141,8 @@ async def login(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(current_user: User = Depends(get_current_active_user)):
+async def get_current_user_info(
+    current_user: User = Depends(get_current_active_user),
+):
     """Get current user info"""
     return current_user
