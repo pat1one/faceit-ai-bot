@@ -61,7 +61,9 @@ def configure_logging() -> None:
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
-                "formatter": "console" if settings.ENVIRONMENT != "production" else "json",
+                "formatter": (
+                    "console" if settings.ENVIRONMENT != "production" else "json"
+                ),
                 "stream": sys.stdout,
             },
         },
@@ -112,8 +114,13 @@ class RequestLogger:
     def __init__(self):
         self.logger = get_logger("http")
     
-    def log_request(self, method: str, path: str, headers: Dict[str, Any], 
-                   user_id: str = None) -> None:
+    def log_request(
+        self,
+        method: str,
+        path: str,
+        headers: Dict[str, Any],
+        user_id: str = None,
+    ) -> None:
         """Log incoming HTTP request."""
         self.logger.info(
             "http_request",
@@ -123,8 +130,14 @@ class RequestLogger:
             headers_count=len(headers),
         )
     
-    def log_response(self, method: str, path: str, status_code: int, 
-                    duration_ms: float, user_id: str = None) -> None:
+    def log_response(
+        self,
+        method: str,
+        path: str,
+        status_code: int,
+        duration_ms: float,
+        user_id: str = None,
+    ) -> None:
         """Log HTTP response."""
         self.logger.info(
             "http_response",
@@ -135,8 +148,13 @@ class RequestLogger:
             user_id=user_id,
         )
     
-    def log_error(self, method: str, path: str, error: Exception, 
-                 user_id: str = None) -> None:
+    def log_error(
+        self,
+        method: str,
+        path: str,
+        error: Exception,
+        user_id: str = None,
+    ) -> None:
         """Log HTTP error."""
         self.logger.error(
             "http_error",
@@ -154,8 +172,12 @@ class DatabaseLogger:
     def __init__(self):
         self.logger = get_logger("database")
     
-    def log_query(self, query: str, duration_ms: float, 
-                 params: Dict[str, Any] = None) -> None:
+    def log_query(
+        self,
+        query: str,
+        duration_ms: float,
+        params: Dict[str, Any] = None,
+    ) -> None:
         """Log database query."""
         self.logger.info(
             "database_query",
@@ -172,8 +194,12 @@ class DatabaseLogger:
             error_message=str(error),
         )
     
-    def log_transaction(self, operation: str, status: str, 
-                        duration_ms: float) -> None:
+    def log_transaction(
+        self,
+        operation: str,
+        status: str,
+        duration_ms: float,
+    ) -> None:
         """Log database transaction."""
         self.logger.info(
             "database_transaction",
@@ -189,8 +215,12 @@ class SecurityLogger:
     def __init__(self):
         self.logger = get_logger("security")
     
-    def log_authentication_attempt(self, email: str, ip: str, 
-                                  success: bool) -> None:
+    def log_authentication_attempt(
+        self,
+        email: str,
+        ip: str,
+        success: bool,
+    ) -> None:
         """Log authentication attempt."""
         self.logger.info(
             "authentication_attempt",
@@ -199,8 +229,12 @@ class SecurityLogger:
             success=success,
         )
     
-    def log_authorization_failure(self, user_id: str, resource: str, 
-                                ip: str) -> None:
+    def log_authorization_failure(
+        self,
+        user_id: str,
+        resource: str,
+        ip: str,
+    ) -> None:
         """Log authorization failure."""
         self.logger.warning(
             "authorization_failure",
@@ -209,8 +243,12 @@ class SecurityLogger:
             ip=ip,
         )
     
-    def log_suspicious_activity(self, activity: str, details: Dict[str, Any], 
-                              ip: str) -> None:
+    def log_suspicious_activity(
+        self,
+        activity: str,
+        details: Dict[str, Any],
+        ip: str,
+    ) -> None:
         """Log suspicious activity."""
         self.logger.warning(
             "suspicious_activity",
@@ -226,8 +264,12 @@ class BusinessLogger:
     def __init__(self):
         self.logger = get_logger("business")
     
-    def log_user_registration(self, user_id: str, email: str, 
-                            source: str = "web") -> None:
+    def log_user_registration(
+        self,
+        user_id: str,
+        email: str,
+        source: str = "web",
+    ) -> None:
         """Log user registration."""
         self.logger.info(
             "user_registered",
@@ -236,8 +278,12 @@ class BusinessLogger:
             source=source,
         )
     
-    def log_analysis_request(self, user_id: str, player_id: str, 
-                           analysis_type: str) -> None:
+    def log_analysis_request(
+        self,
+        user_id: str,
+        player_id: str,
+        analysis_type: str,
+    ) -> None:
         """Log analysis request."""
         self.logger.info(
             "analysis_requested",
@@ -246,9 +292,14 @@ class BusinessLogger:
             analysis_type=analysis_type,
         )
     
-    def log_payment_event(self, user_id: str, amount: float, 
-                         currency: str, status: str, 
-                         payment_id: str = None) -> None:
+    def log_payment_event(
+        self,
+        user_id: str,
+        amount: float,
+        currency: str,
+        status: str,
+        payment_id: str = None,
+    ) -> None:
         """Log payment event."""
         self.logger.info(
             "payment_event",
