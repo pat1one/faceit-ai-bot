@@ -10,11 +10,8 @@ from .core.logging import setup_logging
 from .core.sentry import init_sentry, capture_exception
 from .core.telemetry import init_telemetry
 from .middleware.logging_middleware import StructuredLoggingMiddleware
-from .middleware.security_middleware import (
-    SecurityMiddleware,
-    limiter,
-    _rate_limit_exceeded_handler,
-)
+from .middleware.security_middleware import SecurityMiddleware
+from .middleware.cache_middleware import CacheMiddleware, clear_all_cache, invalidate_user_cache
 from .auth.routes import router as auth_router
 from .features.ai_analysis.routes import router as ai_router
 from .features.payments.routes import router as payment_router
@@ -43,6 +40,36 @@ app = FastAPI(
     debug=False,
     docs_url="/docs",
     redoc_url="/redoc",
+    description="""
+    Faceit AI Bot API - Аналитическая платформа для игроков Faceit
+
+    ## Возможности
+
+    * **Анализ игроков** - детальная статистика и рекомендации
+    * **AI анализ** - машинное обучение для предсказаний
+    * **Управление подписками** - премиум возможности
+    * **Командная аналитика** - статистика тиммейтов
+
+    ## Аутентификация
+
+    Используйте JWT токены для доступа к защищенным эндпоинтам:
+    ```
+    Authorization: Bearer <your_jwt_token>
+    ```
+
+    ## Rate Limiting
+
+    API имеет ограничения:
+    - 60 запросов в минуту
+    - 1000 запросов в час
+    """,
+    contact={
+        "name": "Faceit AI Bot Support",
+        "email": "support@faceit-ai-bot.com",
+    },
+    license_info={
+        "name": "MIT",
+    },
 )
 
 # Add structured logging middleware
@@ -50,6 +77,9 @@ app.add_middleware(StructuredLoggingMiddleware)
 
 # Add security middleware
 app.add_middleware(SecurityMiddleware)
+
+# Add caching middleware
+app.add_middleware(CacheMiddleware, cache_ttl=300)  # 5 minutes cache
 
 # Configure CORS
 app.add_middleware(
