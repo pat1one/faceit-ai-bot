@@ -1,6 +1,7 @@
 """Logging configuration with structlog integration."""
 
 import logging
+import logging.config
 import sys
 
 import structlog
@@ -59,7 +60,9 @@ def setup_logging() -> None:
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",
-                "formatter": "console" if settings.ENVIRONMENT != "production" else "json",
+                "formatter": (
+                    "console" if settings.ENVIRONMENT != "production" else "json"
+                ),
                 "stream": sys.stdout,
             },
         },
