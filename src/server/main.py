@@ -1,24 +1,26 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+"""Main FastAPI application entry point."""
+
 import logging
+from fastapi import FastAPI, Request, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import generate_latest, Counter, Histogram
 
 from .config.settings import settings
-from .auth.routes import router as auth_router
-from .features.demo_analyzer.routes import router as demo_router
-from .features.payments.routes import router as payments_router
+from .core.logging import setup_logging
+from .core.sentry import init_sentry, capture_exception
+from .features.auth.routes import router as auth_router
+from .features.ai_analysis.routes import router as ai_router
+from .features.payment.routes import router as payment_router
 from .features.subscriptions.routes import router as subscriptions_router
 from .features.teammates.routes import router as teammates_router
-from .features.ai_analysis.routes import router as ai_router
 from .features.player_analysis.routes import router as player_router
 from .features.tasks.routes import router as tasks_router
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+setup_logging()
+
+# Configure Sentry
+init_sentry()
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -43,7 +45,9 @@ app.add_middleware(
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
+    logger = logging.getLogger(__name__)
     logger.exception(f"Unhandled exception: {str(exc)}")
+    capture_exception(exc, {"path": str(request.url.path)})
     return JSONResponse(
         status_code=500,
         content={
@@ -55,8 +59,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 # Include routers (nginx adds /api prefix)
 app.include_router(auth_router)
-app.include_router(demo_router)
-app.include_router(payments_router)
+app.include_router(payment_router)
 app.include_router(subscriptions_router)
 app.include_router(teammates_router)
 app.include_router(player_router)
@@ -78,25 +81,19 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=4000)
 
+
 # Prometheus metrics
-from prometheus_client import make_asgi_app, Counter, Histogram
 from fastapi import Response
 
-# Бизнес метрики
-ANALYSIS_REQUESTS = Counter('faceit_analysis_requests_total', 'Total analysis requests')
-ANALYSIS_DURATION = Histogram('faceit_analysis_duration_seconds', 'Analysis duration')
-
+# Business metrics
+ANALYSIS_REQUESTS = Counter(
+    'faceit_analysis_requests_total', 'Total analysis requests'
+)
+ANALYSIS_DURATION = Histogram(
+    'faceit_analysis_duration_seconds', 'Analysis duration'
+)
 ACTIVE_USERS = Counter('faceit_active_users', 'Active user sessions')
 
 @app.get("/metrics")
 async def metrics():
-    from prometheus_client import generate_latest
     return Response(generate_latest())
-
-# Использование в коде:
-@app.post("/api/analysis")
-async def analyze(request: dict):
-    ANALYSIS_REQUESTS.inc()
-    with ANALYSIS_DURATION.time():
-        # анализ кода
-        return result
