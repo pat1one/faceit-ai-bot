@@ -61,7 +61,9 @@ def setup_logging() -> None:
             "console": {
                 "class": "logging.StreamHandler",
                 "formatter": (
-                    "console" if settings.ENVIRONMENT != "production" else "json"
+                    "console"
+                    if settings.ENVIRONMENT != "production"
+                    else "json"
                 ),
                 "stream": sys.stdout,
             },

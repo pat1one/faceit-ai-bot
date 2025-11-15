@@ -20,7 +20,7 @@ from ..config.settings import settings
 
 def configure_logging() -> None:
     """Configure structured logging for the application."""
-    
+
     # Configure structlog processors
     processors = [
         structlog.stdlib.filter_by_level,
@@ -30,20 +30,20 @@ def configure_logging() -> None:
         TimeStamper(fmt="iso"),
         StackInfoRenderer(),
     ]
-    
+
     # Use JSON renderer in production, console in development
     if settings.ENVIRONMENT == "production":
         processors.append(JSONRenderer())
     else:
         processors.append(ConsoleRenderer(colors=True))
-    
+
     structlog.configure(
         processors=processors,
         wrapper_class=structlog.stdlib.BoundLogger,
         logger_factory=LoggerFactory(),
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure standard logging
     logging_config = {
         "version": 1,
@@ -62,7 +62,9 @@ def configure_logging() -> None:
             "console": {
                 "class": "logging.StreamHandler",
                 "formatter": (
-                    "console" if settings.ENVIRONMENT != "production" else "json"
+                    "console"
+                    if settings.ENVIRONMENT != "production"
+                    else "json"
                 ),
                 "stream": sys.stdout,
             },
@@ -90,7 +92,7 @@ def configure_logging() -> None:
             },
         },
     }
-    
+
     logging.config.dictConfig(logging_config)
 
 
@@ -101,7 +103,7 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
 
 class LoggerMixin:
     """Mixin class to add logging capabilities to any class."""
-    
+
     @property
     def logger(self) -> structlog.stdlib.BoundLogger:
         """Get logger for the class."""
@@ -110,10 +112,10 @@ class LoggerMixin:
 
 class RequestLogger:
     """Logger for HTTP requests and responses."""
-    
+
     def __init__(self):
         self.logger = get_logger("http")
-    
+
     def log_request(
         self,
         method: str,
@@ -129,7 +131,7 @@ class RequestLogger:
             user_id=user_id,
             headers_count=len(headers),
         )
-    
+
     def log_response(
         self,
         method: str,
@@ -147,7 +149,7 @@ class RequestLogger:
             duration_ms=duration_ms,
             user_id=user_id,
         )
-    
+
     def log_error(
         self,
         method: str,
@@ -168,10 +170,10 @@ class RequestLogger:
 
 class DatabaseLogger:
     """Logger for database operations."""
-    
+
     def __init__(self):
         self.logger = get_logger("database")
-    
+
     def log_query(
         self,
         query: str,
@@ -181,11 +183,15 @@ class DatabaseLogger:
         """Log database query."""
         self.logger.info(
             "database_query",
-            query=query[:100] + "..." if len(query) > 100 else query,
+            query=(
+                query[:100] + "..."
+                if len(query) > 100
+                else query
+            ),
             duration_ms=duration_ms,
             params_count=len(params) if params else 0,
         )
-    
+
     def log_connection_error(self, error: Exception) -> None:
         """Log database connection error."""
         self.logger.error(
@@ -193,7 +199,7 @@ class DatabaseLogger:
             error_type=type(error).__name__,
             error_message=str(error),
         )
-    
+
     def log_transaction(
         self,
         operation: str,
@@ -211,10 +217,10 @@ class DatabaseLogger:
 
 class SecurityLogger:
     """Logger for security events."""
-    
+
     def __init__(self):
         self.logger = get_logger("security")
-    
+
     def log_authentication_attempt(
         self,
         email: str,
@@ -228,7 +234,7 @@ class SecurityLogger:
             ip=ip,
             success=success,
         )
-    
+
     def log_authorization_failure(
         self,
         user_id: str,
@@ -242,7 +248,7 @@ class SecurityLogger:
             resource=resource,
             ip=ip,
         )
-    
+
     def log_suspicious_activity(
         self,
         activity: str,
@@ -254,16 +260,16 @@ class SecurityLogger:
             "suspicious_activity",
             activity=activity,
             ip=ip,
-            **details
+            **details,
         )
 
 
 class BusinessLogger:
     """Logger for business events."""
-    
+
     def __init__(self):
         self.logger = get_logger("business")
-    
+
     def log_user_registration(
         self,
         user_id: str,
@@ -277,7 +283,7 @@ class BusinessLogger:
             email=email,
             source=source,
         )
-    
+
     def log_analysis_request(
         self,
         user_id: str,
@@ -291,7 +297,7 @@ class BusinessLogger:
             player_id=player_id,
             analysis_type=analysis_type,
         )
-    
+
     def log_payment_event(
         self,
         user_id: str,
@@ -328,7 +334,7 @@ def log_function_call(func):
             args_count=len(args),
             kwargs_count=len(kwargs),
         )
-        
+
         try:
             result = func(*args, **kwargs)
             logger.info(
@@ -344,7 +350,7 @@ def log_function_call(func):
                 error_message=str(e),
             )
             raise
-    
+
     return wrapper
 
 
@@ -358,7 +364,7 @@ def log_api_endpoint(endpoint: str, method: str):
                 endpoint=endpoint,
                 method=method,
             )
-            
+
             try:
                 result = func(*args, **kwargs)
                 logger.info(
@@ -376,6 +382,7 @@ def log_api_endpoint(endpoint: str, method: str):
                     error_message=str(e),
                 )
                 raise
-        
+
         return wrapper
+
     return decorator
