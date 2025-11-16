@@ -1,25 +1,39 @@
 """JWT and password security"""
 from datetime import datetime, timedelta
 from typing import Optional
-from passlib.context import CryptContext
+
+import bcrypt
 import jwt
 from jwt.exceptions import InvalidTokenError
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = "your-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
+def _normalize_password(password: str) -> bytes:
+    """Encode password to bytes and truncate to 72 bytes for bcrypt compatibility."""
+    password_bytes = password.encode("utf-8")
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+    return password_bytes
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify password against bcrypt hash."""
+    password_bytes = _normalize_password(plain_password)
+    try:
+        return bcrypt.checkpw(password_bytes, hashed_password.encode("utf-8"))
+    except ValueError:
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash password"""
-    return pwd_context.hash(password)
+    """Hash password using bcrypt with proper length handling."""
+    password_bytes = _normalize_password(password)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode("utf-8")
 
 
 def create_access_token(
