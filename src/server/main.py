@@ -135,6 +135,12 @@ def health_check():
     return {"status": "healthy", "service": "backend"}
 
 
+@app.get("/api/health", tags=["health"])
+def health_check_api():
+    """Alias endpoint for /health when proxied through /api prefix."""
+    return {"status": "healthy", "service": "backend", "path": "/api/health"}
+
+
 @app.get("/metrics")
 async def metrics():
     return Response(generate_latest(), media_type="text/plain; charset=utf-8")
