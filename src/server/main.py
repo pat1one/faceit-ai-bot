@@ -1,7 +1,7 @@
 """Main FastAPI application entry point."""
 
 import logging
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import generate_latest, Counter, Histogram
@@ -19,6 +19,8 @@ from .features.payments.routes import router as payment_router
 from .features.subscriptions.routes import router as subscriptions_router
 from .features.teammates.routes import router as teammates_router
 from .features.player_analysis.routes import router as player_router
+from .features.player_analysis.service import PlayerAnalysisService
+from .features.player_analysis.schemas import PlayerAnalysisResponse
 from .features.tasks.routes import router as tasks_router
 
 # Configure logging
@@ -124,6 +126,25 @@ app.include_router(teammates_router)
 app.include_router(player_router)
 app.include_router(ai_router)
 app.include_router(tasks_router)
+
+
+@app.get("/players/{nickname}/analysis", response_model=PlayerAnalysisResponse, tags=["players"])
+async def analyze_player_route(nickname: str):
+    service = PlayerAnalysisService()
+    try:
+        analysis = await service.analyze_player(nickname)
+        if not analysis:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Player '{nickname}' not found",
+            )
+        return analysis
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error analyzing player {nickname}: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to analyze player")
 
 
 @app.get("/", tags=["health"])
