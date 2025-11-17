@@ -71,6 +71,15 @@ class AIService:
             weaknesses_areas = ["consistency"]
             weaknesses_recs = ["Continue maintaining current skill level"]
 
+        # Enrich recommendations with AI-generated suggestions
+        ai_recs = self._extract_ai_recommendations(detailed_analysis)
+        if ai_recs:
+            for rec in ai_recs:
+                if rec not in weaknesses_recs:
+                    weaknesses_recs.append(rec)
+                    if len(weaknesses_recs) >= 10:
+                        break
+
         priority = weaknesses_areas[0]
 
         weaknesses = {
@@ -79,7 +88,7 @@ class AIService:
             "recommendations": weaknesses_recs,
         }
 
-        training_plan = self.generate_training_plan(
+        training_plan = await self.generate_training_plan(
             nickname=nickname,
             stats=stats,
             language=language,
@@ -111,7 +120,7 @@ class AIService:
             "overall_rating": overall_rating,
         }
 
-    def generate_training_plan(
+    async def generate_training_plan(
         self,
         nickname: str,
         stats: Dict,
@@ -121,6 +130,7 @@ class AIService:
         """Generate personalized training plan for player"""
         kd = float(stats.get("kd_ratio", 1.0))
         win_rate = float(stats.get("win_rate", 50.0))
+        hs_pct = float(stats.get("hs_percentage", 40.0))
 
         if focus_areas is None:
             focus_areas = []
@@ -131,41 +141,106 @@ class AIService:
             if not focus_areas:
                 focus_areas.append("consistency")
 
-        if language == "en":
-            daily_exercises = [
+        # Try to get structured training plan from Groq
+        player_stats = {
+            "kd_ratio": kd,
+            "win_rate": win_rate,
+            "hs_percentage": hs_pct,
+        }
+
+        plan_data = await self.groq_service.generate_training_plan(
+            player_stats=player_stats,
+            focus_areas=focus_areas,
+        )
+
+        daily_exercises_raw = plan_data.get("daily_exercises", [])
+        daily_exercises: List[Dict[str, Any]] = []
+
+        for ex in daily_exercises_raw:
+            if not isinstance(ex, dict):
+                continue
+            name = str(ex.get("name") or "Training exercise")
+            duration_val = ex.get("duration")
+            if isinstance(duration_val, (int, float)):
+                duration = f"{int(duration_val)} min"
+            elif duration_val:
+                duration = str(duration_val)
+            else:
+                duration = "30 min"
+            description = str(ex.get("description") or "")
+            daily_exercises.append(
                 {
-                    "name": "Aim training",
-                    "description": "Aim routine on aim_botz and training maps",
-                },
-                {
-                    "name": "Demo review",
-                    "description": "Watch and analyze your recent matches",
-                },
-                {
-                    "name": "Competitive matches",
-                    "description": "Play 2-3 ranked matches focusing on mistakes",
-                },
-            ]
-            estimated_time = "4 weeks"
+                    "name": name,
+                    "duration": duration,
+                    "description": description,
+                }
+            )
+
+        estimated_time_raw = plan_data.get("estimated_time")
+        if estimated_time_raw:
+            estimated_time = str(estimated_time_raw)
         else:
-            daily_exercises = [
-                {
-                    "name": "Тренировка аима",
-                    "description": "Рутина на aim_botz и тренировочных картах",
-                },
-                {
-                    "name": "Разбор демо",
-                    "description": "Смотреть и разбирать свои последние матчи",
-                },
-                {
-                    "name": "Соревновательные матчи",
-                    "description": "Играть 2-3 рейтинговых матча с фокусом на ошибках",
-                },
-            ]
-            estimated_time = "4 недели"
+            estimated_time = "4 weeks" if language == "en" else "4 недели"
+
+        # Fallback to previous static plan if AI did not provide anything useful
+        if not daily_exercises:
+            if language == "en":
+                daily_exercises = [
+                    {
+                        "name": "Aim training",
+                        "duration": "30 min",
+                        "description": "Aim routine on aim_botz and training maps",
+                    },
+                    {
+                        "name": "Demo review",
+                        "duration": "30 min",
+                        "description": "Watch and analyze your recent matches",
+                    },
+                    {
+                        "name": "Competitive matches",
+                        "duration": "2-3 matches",
+                        "description": "Play 2-3 ranked matches focusing on mistakes",
+                    },
+                ]
+                estimated_time = "4 weeks"
+            else:
+                daily_exercises = [
+                    {
+                        "name": "Тренировка аима",
+                        "duration": "30 мин",
+                        "description": "Рутина на aim_botz и тренировочных картах",
+                    },
+                    {
+                        "name": "Разбор демо",
+                        "duration": "30 мин",
+                        "description": "Смотреть и разбирать свои последние матчи",
+                    },
+                    {
+                        "name": "Соревновательные матчи",
+                        "duration": "2-3 матча",
+                        "description": "Играть 2-3 рейтинговых матча с фокусом на ошибках",
+                    },
+                ]
+                estimated_time = "4 недели"
 
         return {
             "focus_areas": focus_areas,
             "daily_exercises": daily_exercises,
             "estimated_time": estimated_time,
         }
+
+    def _extract_ai_recommendations(self, detailed_text: str) -> List[str]:
+        """Extract bullet-style recommendations from Groq detailed analysis text."""
+        recommendations: List[str] = []
+        try:
+            for line in detailed_text.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line[0].isdigit() or line.startswith(("-", "•", "*")):
+                    clean_line = line.lstrip("-•*0123456789. ").strip()
+                    if clean_line:
+                        recommendations.append(clean_line)
+        except Exception:
+            logger.exception("Failed to parse AI recommendations from detailed analysis")
+        return recommendations

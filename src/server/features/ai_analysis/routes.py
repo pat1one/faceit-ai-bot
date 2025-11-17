@@ -90,8 +90,8 @@ async def analyze_player(request: PlayerAnalysisRequest):
             match_history=match_history
         )
 
-        # Generate training plan
-        training_plan = ai_service.generate_training_plan(
+        # Generate training plan (now async, Groq-based)
+        training_plan = await ai_service.generate_training_plan(
             nickname=request.player_nickname,
             stats=player_stats
         )
