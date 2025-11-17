@@ -86,6 +86,10 @@ export default function SubscriptionsPage() {
         const errorText = await response.text();
         console.error('Payment create error:', errorText);
         setStatus({ type: 'error', message: errorText || t('demo.error_sbp') });
+
+        // При ошибке оплаты отправляем на страницу неуспешного платежа
+        const failUrl = `https://pattmsc.online/payment/fail?subscription=${tier.toLowerCase()}`;
+        window.location.href = failUrl;
         return;
       }
 
@@ -95,6 +99,10 @@ export default function SubscriptionsPage() {
     } catch (error) {
       console.error('Payment error:', error);
       setStatus({ type: 'error', message: t('demo.error_sbp') });
+
+      // Любая сетевая ошибка также ведёт на страницу неуспешного платежа
+      const failUrl = `https://pattmsc.online/payment/fail?subscription=${tier.toLowerCase()}`;
+      window.location.href = failUrl;
     } finally {
       setLoadingTier(null);
     }

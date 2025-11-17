@@ -6,6 +6,8 @@ import logging
 from typing import Optional, List, Dict
 from datetime import datetime
 
+from fastapi import HTTPException
+
 from ...integrations.faceit_client import FaceitAPIClient
 from ...services.ai_service import AIService
 from ...services.cache_service import cache_service
@@ -125,6 +127,14 @@ class PlayerAnalysisService:
 
             return result
 
+        except HTTPException:
+            # Propagate HTTPExceptions (FaceitAPIError, PlayerNotFoundError, etc.)
+            # so that the router can return accurate status codes and messages.
+            logger.error(
+                f"HTTPException while analyzing player {nickname}",
+                exc_info=True,
+            )
+            raise
         except Exception:
             logger.exception(
                 f"Error analyzing player {nickname}"
