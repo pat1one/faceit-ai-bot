@@ -11,6 +11,8 @@ export const API_ENDPOINTS = {
   
   // Demo analysis
   DEMO_ANALYZE: `${API_BASE_URL}/demo/analyze`,
+  // Player analysis
+  PLAYER_ANALYSIS: (nickname: string) => `${API_BASE_URL}/players/${encodeURIComponent(nickname)}/analysis`,
   
   // Payments
   PAYMENTS_CREATE: `${API_BASE_URL}/payments/create`,

@@ -3,6 +3,7 @@
 import json
 import hashlib
 import os
+from urllib.parse import urlparse
 
 import redis
 from fastapi import Request, Response
@@ -10,22 +11,30 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 
 def _get_redis_config():
-    """Parse Redis URL from environment"""
-    redis_url = os.getenv(
-        "REDIS_URL", "redis://localhost:6379"
-    )
-    redis_url = redis_url.replace("redis://", "")
-    parts = redis_url.split(":")
-    host = parts[0]
-    port = int(parts[1]) if len(parts) > 1 else 6379
-    return host, port
+    """Parse Redis URL from environment.
+
+    Поддерживает форматы:
+    - redis://localhost:6379
+    - redis://:password@host:port
+    - redis://host
+    """
+
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    parsed = urlparse(redis_url)
+
+    host = parsed.hostname or "localhost"
+    port = parsed.port or 6379
+    password = parsed.password
+
+    return host, port, password
 
 
 # Redis connection
-host, port = _get_redis_config()
+host, port, password = _get_redis_config()
 redis_client = redis.Redis(
     host=host,
     port=port,
+    password=password,
     decode_responses=True,
 )
 
@@ -55,10 +64,13 @@ class CacheMiddleware(BaseHTTPMiddleware):
             if cached_response:
                 # Parse cached response
                 cached_data = json.loads(cached_response)
+                # Copy headers and drop Content-Length so it can be recalculated
+                headers = dict(cached_data["headers"])
+                headers.pop("content-length", None)
                 response = Response(
                     content=json.dumps(cached_data["content"]),
                     status_code=cached_data["status_code"],
-                    headers=cached_data["headers"],
+                    headers=headers,
                 )
                 response.headers["X-Cache"] = "HIT"
                 return response
@@ -88,11 +100,14 @@ class CacheMiddleware(BaseHTTPMiddleware):
                 redis_client.setex(cache_key, self.cache_ttl, json.dumps(cache_data))
 
                 # Return response with cache header
-                response.headers["X-Cache"] = "MISS"
+                headers = dict(response.headers)
+                headers["X-Cache"] = "MISS"
+                # Remove Content-Length so Starlette will recalculate it
+                headers.pop("content-length", None)
                 return Response(
                     content=json.dumps(cache_data["content"]),
                     status_code=response.status_code,
-                    headers=dict(response.headers),
+                    headers=headers,
                 )
 
             except Exception:

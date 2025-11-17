@@ -11,7 +11,7 @@ from .schemas import PlayerAnalysisResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/players", tags=["players"])
+router = APIRouter(prefix="/players", tags=["players"])
 
 
 @router.get("/{nickname}/analysis", response_model=PlayerAnalysisResponse)

@@ -21,13 +21,14 @@ logger = logging.getLogger(__name__)
 class DemoAnalyzer:
     def __init__(self):
         # AI services initialization
-        from ...services.ai_service import AIService
+        from ...ai.groq_service import GroqService
         from ...integrations.faceit_client import FaceitAPIClient
 
-        self.ai_service = AIService()
+        # Use GroqService for AI-powered recommendations in demo analysis
+        self.ai_service = GroqService()
         self.faceit_client = FaceitAPIClient()
 
-        logger.info("DemoAnalyzer initialized with AI services")
+        logger.info("DemoAnalyzer initialized with Groq AI service")
 
     async def analyze_demo(
         self,

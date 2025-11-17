@@ -21,7 +21,8 @@
     "improvement": "Области для улучшения",
     "priority": "Приоритет",
     "training_plan": "План тренировок",
-    "estimated_time": "Примерное время улучшения"
+    "estimated_time": "Примерное время улучшения",
+    "analyze_my_account": "Анализировать мой аккаунт"
   },
   "demo": {
     "title": "Анализ демо-файлов",
@@ -47,11 +48,94 @@
     "name": "Имя",
     "score": "Очки"
   },
+  "nav": {
+    "home": "Главная",
+    "demo": "Анализ демо",
+    "teammates": "Тиммейты",
+    "dashboard": "Личный кабинет",
+    "login": "Войти",
+    "logout": "Выйти",
+    "subscriptions": "Подписки"
+  },
   "subscription": {
     "title": "Подписки",
+    "subtitle": "Выберите план для CS2 анализа",
     "price": "Цена",
     "month": "мес",
-    "select": "Выбрать"
+    "select": "Выбрать",
+    "free_label": "Бесплатно",
+    "popular_badge": "Популярный",
+    "per_month": "₽{{price}}/мес",
+    "button_loading": "Создаём платёж...",
+    "button_select": "Выбрать",
+    "payment_no_link": "Не удалось получить ссылку на оплату.",
+    "plans": {
+      "FREE": {
+        "features": [
+          "5 анализов",
+          "Базовая статистика"
+        ]
+      },
+      "BASIC": {
+        "features": [
+          "50 анализов",
+          "Детальная статистика"
+        ]
+      },
+      "PRO": {
+        "features": [
+          "Безлимит",
+          "AI анализ"
+        ]
+      },
+      "ELITE": {
+        "features": [
+          "Все функции",
+          "API доступ"
+        ]
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Личный кабинет",
+    "welcome": "С возвращением, {{name}}!",
+    "card_demo_title": "Анализ демо",
+    "card_demo_desc": "Загружайте и анализируйте демки CS2",
+    "card_team_title": "Поиск тиммейтов",
+    "card_team_desc": "Находите игроков под ваш стиль игры",
+    "card_stats_title": "Статистика игрока",
+    "card_stats_desc": "Отслеживайте свой прогресс",
+    "subscription_title": "Подписка",
+    "subscription_free_badge": "Бесплатный план",
+    "subscription_free_text": "Перейдите на PRO, чтобы открыть все функции",
+    "subscription_upgrade": "Улучшить до PRO",
+    "quick_actions_title": "Быстрые действия",
+    "action_analyze_demo": "Анализ демо",
+    "action_player_analysis": "Анализ игрока",
+    "action_find_teammates": "Найти тиммейтов",
+    "action_view_stats": "Посмотреть статистику"
+  },
+  "payment": {
+    "success_title": "Оплата успешно создана",
+    "success_subtitle": "Вы можете перейти в личный кабинет, чтобы продолжить работу с сервисом.",
+    "success_button_dashboard": "В личный кабинет",
+    "success_button_home": "На главную",
+    "fail_title": "Оплата не прошла",
+    "fail_subtitle": "При обработке платежа произошла ошибка. Попробуйте ещё раз или свяжитесь с поддержкой.",
+    "fail_button_retry": "Попробовать снова",
+    "fail_button_home": "На главную"
+  },
+  "landing": {
+    "title": "Faceit AI Bot",
+    "subtitle": "Продвинутая платформа анализа статистики CS2 и поиска тиммейтов",
+    "cta_get_started": "Начать",
+    "cta_sign_in": "Войти",
+    "feature_demo_title": "Анализ демо",
+    "feature_demo_desc": "Загружайте и анализируйте демки CS2",
+    "feature_stats_title": "Статистика игрока",
+    "feature_stats_desc": "Отслеживайте свой прогресс",
+    "feature_team_title": "Поиск тиммейтов",
+    "feature_team_desc": "Находите подходящих игроков"
   },
   "common": {
     "kd_ratio": "K/D",

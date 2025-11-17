@@ -1,7 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
+import API_ENDPOINTS from '../../src/config/api';
 
 interface PlayerStats {
   kd_ratio: number;
@@ -50,13 +52,38 @@ interface PlayerAnalysisData {
 
 export default function PlayerAnalysis() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [analysis, setAnalysis] = useState<PlayerAnalysisData | null>(null);
+  const [autoTriggered, setAutoTriggered] = useState(false);
 
-  const analyzePlayer = async () => {
-    if (!nickname.trim()) {
+  useEffect(() => {
+    if (!nickname && user) {
+      setNickname(user.username || user.email || '');
+    }
+  }, [user, nickname]);
+
+  useEffect(() => {
+    if (!user || autoTriggered) return;
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const auto = params.get('auto');
+
+    if (auto === '1') {
+      analyzePlayer(
+        (user as any).faceit_id || user.username || user.email || ''
+      );
+      setAutoTriggered(true);
+    }
+  }, [user, autoTriggered]);
+
+  const analyzePlayer = async (customNickname?: string) => {
+    const targetNickname = (customNickname || nickname).trim();
+
+    if (!targetNickname) {
       setError(t('player_analysis.error_enter_nickname'));
       return;
     }
@@ -66,14 +93,16 @@ export default function PlayerAnalysis() {
     setAnalysis(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/players/${encodeURIComponent(nickname)}/analysis`);
+      const response = await fetch(
+        API_ENDPOINTS.PLAYER_ANALYSIS(targetNickname)
+      );
       
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || t('player_analysis.error_analysis'));
       }
 
-      const data = await response.json();
+      const data: PlayerAnalysisData = await response.json();
       setAnalysis(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('player_analysis.error_occurred'));
@@ -111,7 +140,7 @@ export default function PlayerAnalysis() {
           {t('player_analysis.subtitle')}
         </p>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <input
             type="text"
             value={nickname}
@@ -122,12 +151,28 @@ export default function PlayerAnalysis() {
             disabled={loading}
           />
           <button
-            onClick={analyzePlayer}
+            onClick={() => analyzePlayer()}
             disabled={loading}
             className="px-8 py-4 bg-white text-orange-600 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? `⏳ ${t('player_analysis.analyzing')}` : `🔍 ${t('player_analysis.analyze_button')}`}
+            {loading
+              ? `⏳ ${t('player_analysis.analyzing')}`
+              : `🔍 ${t('player_analysis.analyze_button')}`}
           </button>
+          {user && (
+            <button
+              type="button"
+              onClick={() =>
+                analyzePlayer(
+                  (user as any).faceit_id || user.username || user.email || ''
+                )
+              }
+              disabled={loading}
+              className="px-6 py-4 bg-white/90 text-orange-700 rounded-lg font-semibold text-md hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('player_analysis.analyze_my_account')}
+            </button>
+          )}
         </div>
 
         {error && (
@@ -136,6 +181,51 @@ export default function PlayerAnalysis() {
           </div>
         )}
       </div>
+
+      {/* Skeleton while loading */}
+      {loading && !analysis && (
+        <div className="space-y-6 animate-pulse">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+              </div>
+              <div className="text-center">
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-20 mx-auto mb-2" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24 mx-auto" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1,2,3,4].map((i) => (
+                <div key={i} className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-2">
+                  <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-16 mx-auto" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-20 mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-4" />
+            <div className="space-y-3">
+              {[1,2,3].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-10" />
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analysis Results */}
       {analysis && (
@@ -193,7 +283,7 @@ export default function PlayerAnalysis() {
 
           {/* Strengths */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">💪 Strengths</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">💪 {t('player_analysis.strengths')}</h3>
             <div className="space-y-3">
               {Object.entries(analysis.strengths).map(([key, value]) => (
                 <div key={key}>
@@ -220,10 +310,10 @@ export default function PlayerAnalysis() {
 
           {/* Weaknesses */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">🎯 Areas for Improvement</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">🎯 {t('player_analysis.improvement')}</h3>
             <div className="mb-4">
               <span className="inline-block bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full text-sm font-semibold">
-                Priority: {analysis.weaknesses.priority}
+                {t('player_analysis.priority')}: {analysis.weaknesses.priority}
               </span>
             </div>
             <div className="space-y-2">
@@ -238,10 +328,10 @@ export default function PlayerAnalysis() {
 
           {/* Training Plan */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">📅 Training Plan</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">📅 {t('player_analysis.training_plan')}</h3>
             <div className="mb-4">
               <p className="text-gray-600 dark:text-gray-300">
-                ⏱️ Estimated improvement time: <span className="font-semibold text-gray-800 dark:text-white">{analysis.training_plan.estimated_time}</span>
+                ⏱️ {t('player_analysis.estimated_time')}: <span className="font-semibold text-gray-800 dark:text-white">{analysis.training_plan.estimated_time}</span>
               </p>
             </div>
             <div className="space-y-4">

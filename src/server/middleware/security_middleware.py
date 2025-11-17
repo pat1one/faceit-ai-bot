@@ -1,18 +1,15 @@
-"""Security middleware for rate limiting and protection."""
+"""Security middleware for basic security headers.
 
-from fastapi import Request, HTTPException
+Rate limiting через slowapi отключён в production-образе, так как
+зависимость отсутствует. Middleware отвечает только за security-заголовки.
+"""
+
+from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from slowapi.middleware import SlowAPIMiddleware
-
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address)
 
 
 class SecurityMiddleware(BaseHTTPMiddleware):
-    """Security middleware with rate limiting and basic protection."""
+    """Security middleware with basic protection headers."""
 
     async def dispatch(self, request: Request, call_next):
         # Basic security headers
@@ -26,6 +23,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # Remove server header
-        response.headers.pop("server", None)
+        if "server" in response.headers:
+            del response.headers["server"]
 
         return response

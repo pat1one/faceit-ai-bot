@@ -1,5 +1,6 @@
 import logging
 from typing import Optional, Dict
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Header
 
@@ -11,7 +12,8 @@ from .models import (
     PaymentStatus,
     PaymentProvider,
     REGION_PAYMENT_CONFIG,
-    RegionPaymentMethods
+    RegionPaymentMethods,
+    Currency,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,14 +39,23 @@ async def get_payment_methods(region: str) -> RegionPaymentMethods:
 
 
 @router.post("/create", response_model=PaymentResponse)
-async def create_payment(
-    request: PaymentRequest,
-    payment_service: PaymentService = Depends(get_payment_service)
-):
+async def create_payment(request: PaymentRequest) -> PaymentResponse:
+    """Create new payment (mock for pattmsc.online).
+
+    На тестовом стенде не ходим во внешние платёжки, а сразу
+    возвращаем платёж с редиректом на страницу успеха.
     """
-    Create new payment
-    """
-    return await payment_service.create_payment(request)
+    now = datetime.utcnow()
+    return PaymentResponse(
+        payment_id=f"mock_{request.user_id}_{int(now.timestamp())}",
+        status="pending",
+        payment_url=f"https://pattmsc.online/payment/success?subscription={request.subscription_tier}",
+        amount=request.amount,
+        currency=Currency(request.currency),
+        created_at=now,
+        expires_at=now + timedelta(minutes=15),
+        confirmation_type="redirect",
+    )
 
 
 @router.get("/status/{payment_id}")

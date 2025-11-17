@@ -1,37 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import API_ENDPOINTS from '../../src/config/api';
-
-interface UserSubscription {
-  subscription_tier: string;
-  is_active?: boolean;
-}
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const loadSubscription = async () => {
-      try {
-        const res = await fetch(API_ENDPOINTS.SUBSCRIPTIONS_USER(user.id));
-        if (!res.ok) return;
-        const data = await res.json();
-        setSubscription(data);
-      } catch (e) {
-        console.error('Failed to load subscription', e);
-      }
-    };
-    loadSubscription();
-  }, [user]);
 
   if (!user) {
     router.push('/auth');
@@ -39,7 +17,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-black dark:text-white animate-fade-in">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-black dark:text-white">
       <div className="container mx-auto px-6 pt-32 pb-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -49,31 +27,25 @@ export default function DashboardPage() {
             <p className="text-xl text-gray-300">
               {t('dashboard.welcome', { name: user.username || user.email })}
             </p>
-            <button
-              className="mt-6 btn-primary"
-              onClick={() => router.push('/analysis?auto=1')}
-            >
-              {t('dashboard.action_player_analysis')}
-            </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Link href="/demo" className="card text-center animate-fade-in-up">
+            <Link href="/demo" className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 text-center hover:bg-gray-800/70 transition-colors">
               <div className="text-4xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{t('dashboard.card_demo_title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{t('dashboard.card_demo_desc')}</p>
+              <h3 className="text-xl font-semibold mb-3 text-white">{t('dashboard.card_demo_title')}</h3>
+              <p className="text-gray-400">{t('dashboard.card_demo_desc')}</p>
             </Link>
             
-            <Link href="/teammates" className="card text-center animate-fade-in-up">
+            <Link href="/teammates" className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 text-center hover:bg-gray-800/70 transition-colors">
               <div className="text-4xl mb-4">👥</div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{t('dashboard.card_team_title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{t('dashboard.card_team_desc')}</p>
+              <h3 className="text-xl font-semibold mb-3 text-white">{t('dashboard.card_team_title')}</h3>
+              <p className="text-gray-400">{t('dashboard.card_team_desc')}</p>
             </Link>
             
-            <Link href="/analysis" className="card text-center animate-fade-in-up">
+            <Link href="/demo" className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg p-8 text-center hover:bg-gray-800/70 transition-colors">
               <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">{t('dashboard.card_stats_title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{t('dashboard.card_stats_desc')}</p>
+              <h3 className="text-xl font-semibold mb-3 text-white">{t('dashboard.card_stats_title')}</h3>
+              <p className="text-gray-400">{t('dashboard.card_stats_desc')}</p>
             </Link>
           </div>
         </div>
@@ -85,16 +57,7 @@ export default function DashboardPage() {
           </div>
           <div className="card-content">
             <div className="subscription-status">
-              {subscription?.subscription_tier && (
-                <p className="status-text mb-2">
-                  Текущий тариф: {subscription.subscription_tier.toUpperCase()}
-                </p>
-              )}
-              <div className="status-badge">
-                {subscription?.subscription_tier
-                  ? subscription.subscription_tier.toUpperCase()
-                  : t('dashboard.subscription_free_badge')}
-              </div>
+              <div className="status-badge">{t('dashboard.subscription_free_badge')}</div>
               <p className="status-text">{t('dashboard.subscription_free_text')}</p>
               <button
                 className="upgrade-btn"
@@ -106,6 +69,32 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="dashboard-card full-width">
+          <div className="card-header">
+            <h2>⚡ {t('dashboard.quick_actions_title')}</h2>
+          </div>
+          <div className="card-content">
+            <div className="actions-grid">
+              <button className="action-btn" onClick={() => router.push('/demo')}>
+                <span className="action-icon">📊</span>
+                <span>{t('dashboard.action_analyze_demo')}</span>
+              </button>
+              <button className="action-btn" onClick={() => router.push('/demo')}>
+                <span className="action-icon">🎯</span>
+                <span>{t('dashboard.action_player_analysis')}</span>
+              </button>
+              <button className="action-btn" onClick={() => router.push('/teammates')}>
+                <span className="action-icon">👥</span>
+                <span>{t('dashboard.action_find_teammates')}</span>
+              </button>
+              <button className="action-btn" onClick={() => router.push('/analysis')}>
+                <span className="action-icon">📈</span>
+                <span>{t('dashboard.action_view_stats')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <style jsx>{`

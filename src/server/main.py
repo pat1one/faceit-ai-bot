@@ -1,8 +1,9 @@
 """Main FastAPI application entry point."""
 
 import logging
-from fastapi import FastAPI, Request, JSONResponse, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from prometheus_client import generate_latest, Counter, Histogram
 
 from .config.settings import settings
@@ -84,8 +85,8 @@ app.add_middleware(StructuredLoggingMiddleware)
 # Add security middleware
 app.add_middleware(SecurityMiddleware)
 
-# Add caching middleware
-app.add_middleware(CacheMiddleware, cache_ttl=300)  # 5 minutes cache
+# Caching middleware temporarily disabled due to Content-Length issues
+# app.add_middleware(CacheMiddleware, cache_ttl=300)
 
 # Configure CORS
 app.add_middleware(

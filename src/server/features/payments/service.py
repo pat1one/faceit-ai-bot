@@ -18,13 +18,10 @@ logger = logging.getLogger(__name__)
 class PaymentService:
     def __init__(self, settings):
         self.settings = settings
+        # Register only providers that have implemented handlers
         self.providers = {
             PaymentProvider.SBP: self._process_sbp_payment,
             PaymentProvider.YOOKASSA: self._process_yookassa_payment,
-            PaymentProvider.QIWI: self._process_qiwi_payment,
-            PaymentProvider.STRIPE: self._process_stripe_payment,
-            PaymentProvider.PAYPAL: self._process_paypal_payment,
-            PaymentProvider.CRYPTO: self._process_crypto_payment
         }
 
     async def create_payment(self, request: PaymentRequest) -> PaymentResponse:
@@ -84,6 +81,23 @@ class PaymentService:
     ) -> PaymentResponse:
         """Process payment through SBP"""
         try:
+            # If SBP is not configured, return mock payment response
+            if not self.settings.SBP_API_URL or not self.settings.SBP_TOKEN:
+                logger.warning(
+                    "SBP settings are not configured. "
+                    "Returning mock payment response instead of calling external SBP API."
+                )
+                now = datetime.now()
+                return PaymentResponse(
+                    payment_id=f"mock_{request.user_id}_{int(now.timestamp())}",
+                    status="pending",
+                    payment_url=f"{self.settings.WEBSITE_URL}/payment/success?subscription={request.subscription_tier}",
+                    amount=request.amount,
+                    currency=request.currency,
+                    created_at=now,
+                    expires_at=now + timedelta(minutes=15),
+                    confirmation_type="redirect",
+                )
             headers = {
                 "Authorization": f"Bearer {self.settings.SBP_TOKEN}",
                 "Content-Type": "application/json"

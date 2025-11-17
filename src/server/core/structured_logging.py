@@ -1,25 +1,72 @@
-"""Structured logging configuration with structlog."""
+"""Structured logging configuration with optional structlog support.
+
+Если structlog недоступен в окружении, модуль прозрачно
+использует стандартный logging и не мешает запуску приложения.
+"""
 
 import logging
 import logging.config
 import sys
 from typing import Any, Dict
 
-import structlog
-from structlog.stdlib import LoggerFactory
-from structlog.processors import (
-    TimeStamper,
-    add_log_level,
-    StackInfoRenderer,
-    JSONRenderer,
-    ConsoleRenderer,
-)
+try:
+    import structlog
+    from structlog.stdlib import LoggerFactory
+    from structlog.processors import (
+        TimeStamper,
+        add_log_level,
+        StackInfoRenderer,
+        JSONRenderer,
+        ConsoleRenderer,
+    )
+
+    STRUCTLOG_AVAILABLE = True
+except ImportError:  # structlog не установлен
+    structlog = None  # type: ignore[assignment]
+    LoggerFactory = None  # type: ignore[assignment]
+    TimeStamper = add_log_level = StackInfoRenderer = JSONRenderer = ConsoleRenderer = None
+    STRUCTLOG_AVAILABLE = False
 
 from ..config.settings import settings
 
 
+class _StdLoggerAdapter:
+    def __init__(self, logger: logging.Logger):
+        self._logger = logger
+
+    def _log(self, level: int, msg: str, **kwargs: Any) -> None:
+        if kwargs:
+            # Логируем дополнительные поля как словарь рядом с сообщением
+            self._logger.log(level, "%s | %s", msg, kwargs)
+        else:
+            self._logger.log(level, msg)
+
+    def info(self, msg: str, **kwargs: Any) -> None:
+        self._log(logging.INFO, msg, **kwargs)
+
+    def warning(self, msg: str, **kwargs: Any) -> None:
+        self._log(logging.WARNING, msg, **kwargs)
+
+    def error(self, msg: str, **kwargs: Any) -> None:
+        self._log(logging.ERROR, msg, **kwargs)
+
+    def debug(self, msg: str, **kwargs: Any) -> None:
+        self._log(logging.DEBUG, msg, **kwargs)
+
+
 def configure_logging() -> None:
-    """Configure structured logging for the application."""
+    """Configure structured logging for the application.
+
+    Если structlog недоступен, настраиваем только стандартный logging.
+    """
+
+    if not STRUCTLOG_AVAILABLE or structlog is None:  # type: ignore[truthy-function]
+        logging.basicConfig(
+            level=settings.LOG_LEVEL,
+            format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            stream=sys.stdout,
+        )
+        return
 
     # Configure structlog processors
     processors = [
@@ -44,7 +91,7 @@ def configure_logging() -> None:
         cache_logger_on_first_use=True,
     )
 
-    # Configure standard logging
+    # Configure standard logging to integrate with structlog
     logging_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -96,16 +143,25 @@ def configure_logging() -> None:
     logging.config.dictConfig(logging_config)
 
 
-def get_logger(name: str) -> structlog.stdlib.BoundLogger:
-    """Get a structured logger instance."""
-    return structlog.get_logger(name)
+def get_logger(name: str) -> Any:
+    """Get a logger instance.
+
+    При наличии structlog возвращаем структурированный логгер,
+    иначе стандартный logging.Logger.
+    """
+
+    if STRUCTLOG_AVAILABLE and structlog is not None:
+        return structlog.get_logger(name)  # type: ignore[no-any-return]
+
+    base_logger = logging.getLogger(name)
+    return _StdLoggerAdapter(base_logger)
 
 
 class LoggerMixin:
     """Mixin class to add logging capabilities to any class."""
 
     @property
-    def logger(self) -> structlog.stdlib.BoundLogger:
+    def logger(self) -> Any:
         """Get logger for the class."""
         return get_logger(self.__class__.__name__)
 

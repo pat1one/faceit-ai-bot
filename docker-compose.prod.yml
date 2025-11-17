@@ -63,6 +63,8 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - FACEIT_API_KEY=${FACEIT_API_KEY}
+    volumes:
+      - ./src:/app/src
     networks:
       - faceit-network
 
@@ -107,11 +109,15 @@ services:
       - celery_worker
     environment:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    volumes:
+      - ./src:/app/src
     networks:
       - faceit-network
 
   web:
-    image: ghcr.io/pat1one/faceit-ai-bot/web:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.web
     restart: always
     depends_on:
       api:
