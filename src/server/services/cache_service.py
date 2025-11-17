@@ -95,7 +95,8 @@ class CacheService:
 
     def get_player_cache_key(self, nickname: str) -> str:
         """Get cache key for player"""
-        return f"player:analysis:{nickname.lower()}"
+        # Versioned key to avoid using stale cached analysis when logic changes
+        return f"player:analysis:v2:{nickname.lower()}"
 
     def get_stats_cache_key(self, nickname: str) -> str:
         """Get cache key for stats"""
