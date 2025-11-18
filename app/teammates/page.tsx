@@ -140,7 +140,9 @@ export default function TeammatesPage() {
             className="btn-primary"
             disabled={loading}
           >
-            {loading ? t('demo.analyzing') : t('teammate.search_button', { defaultValue: 'Search' })}
+            {loading
+              ? t('teammate.search_loading', { defaultValue: 'Searching...' })
+              : t('teammate.search_button', { defaultValue: 'Search' })}
           </button>
         </div>
 

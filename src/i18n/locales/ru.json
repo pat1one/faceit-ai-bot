@@ -40,7 +40,9 @@
   "teammate": {
     "title": "Поиск тиммейтов",
     "placeholder": "Введите навык, имя или ранг",
-    "no_results": "Ничего не найдено"
+    "no_results": "Ничего не найдено",
+    "search_button": "Найти тиммейтов",
+    "search_loading": "Идёт поиск..."
   },
   "ranking": {
     "title": "Рейтинг игроков",

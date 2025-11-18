@@ -40,7 +40,9 @@
   "teammate": {
     "title": "Teammate Search",
     "placeholder": "Enter skill, name or rank",
-    "no_results": "No results found"
+    "no_results": "No results found",
+    "search_button": "Search",
+    "search_loading": "Searching..."
   },
   "ranking": {
     "title": "Player Rankings",
