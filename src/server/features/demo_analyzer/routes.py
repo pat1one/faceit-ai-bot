@@ -42,11 +42,11 @@ demo_analyzer = DemoAnalyzer()
         }
     }
 )
-async def analyze_demo(demo: UploadFile = File(...)):
+async def analyze_demo(demo: UploadFile = File(...), language: str = "ru"):
     """
     CS2 demo file analysis
 
     Accepts demo file in .dem format and returns detailed game analysis,
     including player performance, round analysis and recommendations.
     """
-    return await demo_analyzer.analyze_demo(demo)
+    return await demo_analyzer.analyze_demo(demo, language=language)

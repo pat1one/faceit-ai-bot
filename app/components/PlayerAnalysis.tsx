@@ -51,7 +51,7 @@ interface PlayerAnalysisData {
 }
 
 export default function PlayerAnalysis() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
@@ -93,8 +93,12 @@ export default function PlayerAnalysis() {
     setAnalysis(null);
 
     try {
+      const lang = i18n.language && i18n.language.toLowerCase().startsWith('en')
+        ? 'en'
+        : 'ru';
+
       const response = await fetch(
-        API_ENDPOINTS.PLAYER_ANALYSIS(targetNickname)
+        `${API_ENDPOINTS.PLAYER_ANALYSIS(targetNickname)}?language=${lang}`
       );
 
       if (!response.ok) {

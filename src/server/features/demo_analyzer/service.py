@@ -37,7 +37,8 @@ class DemoAnalyzer:
 
     async def analyze_demo(
         self,
-        demo_file: UploadFile
+        demo_file: UploadFile,
+        language: str = "ru",
     ) -> DemoAnalysis:
         try:
             # File validation
@@ -74,7 +75,8 @@ class DemoAnalyzer:
                     demo_data,
                     player_performances,
                     round_analysis,
-                    key_moments
+                    key_moments,
+                    language=language,
                 )
             )
 
@@ -398,7 +400,8 @@ class DemoAnalyzer:
                 'round': first_round,
                 'type': 'start',
                 'description': (
-                    f'Opening round on {map_name} that set the initial momentum.'
+                    f'Пистолетный раунд на карте {map_name}, который задал '
+                    f'темп началу игры.'
                 ),
                 'player': main_player
             }
@@ -409,7 +412,9 @@ class DemoAnalyzer:
                 {
                     'round': mid_round,
                     'type': 'swing_round',
-                    'description': 'Critical swing round in the middle of the game.',
+                    'description': (
+                        'Ключевой раунд в середине матча, который изменил ход игры.'
+                    ),
                     'player': main_player
                 }
             )
@@ -419,7 +424,7 @@ class DemoAnalyzer:
                 'round': last_round,
                 'type': 'final_round',
                 'description': (
-                    f'Final round that closed the game with score '
+                    'Финальный раунд, который завершил матч со счётом '
                     f"{score.get('team1', 0)}:{score.get('team2', 0)}."
                 ),
                 'player': main_player
@@ -433,7 +438,8 @@ class DemoAnalyzer:
         demo_data: Dict,
         player_performances: Dict[str, PlayerPerformance],
         round_analysis: List[RoundAnalysis],
-        key_moments: List[Dict]
+        key_moments: List[Dict],
+        language: str = "ru",
     ) -> List[str]:
         """Generate improvement recommendations"""
         try:
@@ -474,7 +480,8 @@ class DemoAnalyzer:
                 ai_analysis = (
                     await self.ai_service.analyze_player_performance(
                         stats=stats_summary,
-                        match_history=[]
+                        match_history=[],
+                        language=language,
                     )
                 )
 
@@ -526,11 +533,11 @@ class DemoAnalyzer:
     def _get_default_recommendations(self) -> List[str]:
         """Default recommendations"""
         return [
-            "Improve headshot aim",
-            "Work on team economy",
-            "Improve utility usage",
-            "Practice positioning",
-            "Learn map timings"
+            "Улучшай аим по головам",
+            "Следи за экономикой команды и не форси без плана",
+            "Чаще используй гранаты и продумывай их тайминги",
+            "Работай над позиционированием и углами",
+            "Выучи тайминги на основных картах"
         ]
 
 def _generate_rule_based_recommendations(self, demo_data: Dict, player_performances: Dict[str, PlayerPerformance], round_analysis: List[RoundAnalysis], key_moments: List[Dict]) -> List[str]:
@@ -555,7 +562,7 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                 {
                     "area": "aim",
                     "current_level": "medium",
-                    "recommendation": "Train aiming accuracy"
+                    "recommendation": "Улучшай точность стрельбы по мишеням и моделям"
                 }
             ]
 
@@ -569,7 +576,7 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                     "area": "aim",
                     "current_level": "medium",
                     "recommendation": (
-                        "Improve headshot accuracy through regular aim training."
+                        "Повышай точность хедшотов через регулярные тренировки аима."
                     )
                 }
             )
@@ -580,8 +587,8 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                     "area": "damage",
                     "current_level": "medium",
                     "recommendation": (
-                        "Focus on dealing more damage per round with better "
-                        "crosshair placement."
+                        "Старайся наносить больше урона за раунд за счёт лучшего "
+                        "позиционирования прицела и выбора дуэлей."
                     )
                 }
             )
@@ -592,7 +599,8 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                     "area": "utility",
                     "current_level": "low",
                     "recommendation": (
-                        "Work on grenade usage to increase utility damage and impact."
+                        "Уделяй больше внимания гранатам, чтобы увеличивать урон "
+                        "и влияние за счёт utility."
                     )
                 }
             )
@@ -603,8 +611,8 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                     "area": "clutch",
                     "current_level": "medium",
                     "recommendation": (
-                        "Practice clutch scenarios to improve decision making "
-                        "in 1vX situations."
+                        "Тренируй клатч-ситуации, чтобы улучшить принятие решений "
+                        "в 1vX раундах."
                     )
                 }
             )
@@ -615,7 +623,7 @@ def _generate_rule_based_recommendations(self, demo_data: Dict, player_performan
                     "area": "consistency",
                     "current_level": "high",
                     "recommendation": (
-                        "Maintain current performance and focus on consistency."
+                        "Поддерживай текущий уровень игры и концентрируйся на стабильности."
                     )
                 }
             )

@@ -13,7 +13,7 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (!user) {
     return (
@@ -41,7 +41,11 @@ export default function DemoPage() {
       const formData = new FormData();
       formData.append('demo', file);
 
-      const response = await fetch(API_ENDPOINTS.DEMO_ANALYZE, {
+      const lang = i18n.language && i18n.language.toLowerCase().startsWith('en')
+        ? 'en'
+        : 'ru';
+
+      const response = await fetch(`${API_ENDPOINTS.DEMO_ANALYZE}?language=${lang}`, {
         method: 'POST',
         body: formData,
       });

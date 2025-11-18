@@ -31,7 +31,8 @@ class PlayerAnalysisService:
 
     async def analyze_player(
         self,
-        nickname: str
+        nickname: str,
+        language: str = "ru",
     ) -> Optional[PlayerAnalysisResponse]:
         """
         Complete player analysis
@@ -85,7 +86,8 @@ class PlayerAnalysisService:
                 await self.ai_service.analyze_player_with_ai(
                     nickname,
                     stats.dict(),
-                    match_history
+                    match_history,
+                    language=language,
                 )
             )
 

@@ -49,6 +49,7 @@ class AIService:
         detailed_analysis = await self.groq_service.analyze_player_performance(
             stats=groq_stats,
             match_history=match_history,
+            language=language,
         )
 
         aim_score = min(10, int((kd * 4) + (hs_pct / 10)))
@@ -70,23 +71,25 @@ class AIService:
 
         if kd < 1.0:
             weaknesses_areas.append("aim")
-            weaknesses_recs.append("Practice aiming on training maps")
+            weaknesses_recs.append("Больше тренируй аим на тренировочных картах")
 
         if hs_pct < 40:
             weaknesses_areas.append("headshot accuracy")
-            weaknesses_recs.append("Focus on headshot-only modes")
+            weaknesses_recs.append("Сфокусируйся на режимах с упором на хедшоты")
 
         if win_rate < 50:
             weaknesses_areas.append("game sense")
-            weaknesses_recs.append("Study professional matches and strategies")
+            weaknesses_recs.append(
+                "Смотри демки и стримы сильных игроков, разбирай их решения"
+            )
 
         if matches < 50:
             weaknesses_areas.append("experience")
-            weaknesses_recs.append("Play more matches to gain experience")
+            weaknesses_recs.append("Играй больше рейтинговых матчей для набора опыта")
 
         if not weaknesses_areas:
             weaknesses_areas = ["consistency"]
-            weaknesses_recs = ["Continue maintaining current skill level"]
+            weaknesses_recs = ["Поддерживай текущий уровень игры и стабильность"]
 
         # Enrich recommendations with AI-generated suggestions
         ai_recs = self._extract_ai_recommendations(detailed_analysis)
@@ -168,6 +171,7 @@ class AIService:
         plan_data = await self.groq_service.generate_training_plan(
             player_stats=player_stats,
             focus_areas=focus_areas,
+            language=language,
         )
 
         daily_exercises_raw = plan_data.get("daily_exercises", [])

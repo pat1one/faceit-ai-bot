@@ -28,7 +28,7 @@ class PlayerAnalysisResponse(BaseModel):
 
 
 @router.post("/analyze-player", response_model=PlayerAnalysisResponse)
-async def analyze_player(request: PlayerAnalysisRequest):
+async def analyze_player(request: PlayerAnalysisRequest, language: str = "ru"):
     """
     AI player analysis based on Faceit statistics
 
@@ -87,13 +87,15 @@ async def analyze_player(request: PlayerAnalysisRequest):
         analysis = await ai_service.analyze_player_with_ai(
             nickname=request.player_nickname,
             stats=player_stats,
-            match_history=match_history
+            match_history=match_history,
+            language=language,
         )
 
         # Generate training plan (now async, Groq-based)
         training_plan = await ai_service.generate_training_plan(
             nickname=request.player_nickname,
-            stats=player_stats
+            stats=player_stats,
+            language=language,
         )
 
         # Parse analysis to extract strengths/weaknesses

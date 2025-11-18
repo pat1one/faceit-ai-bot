@@ -17,7 +17,8 @@ router = APIRouter(prefix="/players", tags=["players"])
 @router.get("/{nickname}/analysis", response_model=PlayerAnalysisResponse)
 async def analyze_player(
     nickname: str,
-    service: PlayerAnalysisService = Depends()
+    language: str = "ru",
+    service: PlayerAnalysisService = Depends(),
 ):
     """
     Analyze player by nickname
@@ -29,7 +30,7 @@ async def analyze_player(
         Detailed player analysis with recommendations
     """
     try:
-        analysis = await service.analyze_player(nickname)
+        analysis = await service.analyze_player(nickname, language=language)
         if not analysis:
             raise HTTPException(
                 status_code=404,

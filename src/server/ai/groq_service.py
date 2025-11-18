@@ -42,10 +42,22 @@ class GroqService:
         if not self.api_key and self.provider != "local":
             logger.warning("Groq API key not configured")
 
+    def _normalize_language(self, language: Optional[str]) -> str:
+        """Normalize language code to a small set (currently 'ru' or 'en')."""
+        if not language:
+            return "ru"
+        lang = str(language).lower()
+        if lang.startswith("en"):
+            return "en"
+        if lang.startswith("ru"):
+            return "ru"
+        return "en"
+
     async def analyze_player_performance(
         self,
         stats: Dict,
-        match_history: Optional[List[Dict]] = None
+        match_history: Optional[List[Dict]] = None,
+        language: str = "ru",
     ) -> str:
         """
         Analyze player performance with Groq AI
@@ -61,7 +73,8 @@ class GroqService:
             return "Analysis unavailable - API key not configured"
 
         try:
-            prompt = self._build_analysis_prompt(stats, match_history or [])
+            lang = self._normalize_language(language)
+            prompt = self._build_analysis_prompt(stats, match_history or [], lang)
 
             headers = {
                 "Content-Type": "application/json",
@@ -77,22 +90,33 @@ class GroqService:
                     headers["HTTP-Referer"] = referer
                 headers["X-Title"] = app_title
 
+            if lang == "en":
+                system_content = (
+                    "You are a professional CS2 coach with over 10 years of experience. "
+                    "Analyze player statistics and provide specific, practical "
+                    "recommendations for improvement. Always answer in English and "
+                    "be detailed but avoid unnecessary fluff."
+                )
+            else:
+                system_content = (
+                    "Ты профессиональный тренер по CS2 с более чем "
+                    "10-летним опытом. Анализируй статистику игрока "
+                    "и давай конкретные, практические рекомендации по "
+                    "улучшению. Всегда отвечай на русском языке и будь "
+                    "достаточно подробным, но без лишней воды."
+                )
+
             payload = {
                 "model": self.model,
                 "messages": [
                     {
                         "role": "system",
-                        "content": (
-                            "You are a professional CS2 coach with "
-                            "over 10 years of experience. Analyze "
-                            "player statistics and provide specific, "
-                            "actionable recommendations for improvement."
-                        )
+                        "content": system_content,
                     },
                     {"role": "user", "content": prompt}
                 ],
-                "temperature": 0.7,
-                "max_tokens": 1500
+                "temperature": 0.6,
+                "max_tokens": 800
             }
 
             async with aiohttp.ClientSession() as session:
@@ -126,7 +150,8 @@ class GroqService:
     async def generate_training_plan(
         self,
         player_stats: Dict,
-        focus_areas: List[str]
+        focus_areas: List[str],
+        language: str = "ru",
     ) -> Dict:
         """
         Generate personalized training plan
@@ -138,26 +163,54 @@ class GroqService:
         Returns:
             Structured training plan
         """
+        lang = self._normalize_language(language)
+
         if not self.api_key and getattr(self, "provider", None) != "local":
-            return self._get_default_training_plan()
+            return self._get_default_training_plan(lang)
 
         try:
-            prompt = f"""
-            Create a detailed training plan for a CS2 player.
+            if lang == "en":
+                prompt = f"""
+                Create a detailed training plan for a CS2 player.
 
-            Statistics:
-            - K/D: {player_stats.get('kd_ratio', 'N/A')}
-            - Headshot %: {player_stats.get('hs_percentage', 'N/A')}
-            - Win Rate: {player_stats.get('win_rate', 'N/A')}
+                Player statistics:
+                - K/D: {player_stats.get('kd_ratio', 'N/A')}
+                - Headshot %: {player_stats.get('hs_percentage', 'N/A')}
+                - Win Rate: {player_stats.get('win_rate', 'N/A')}
 
-            Focus on: {', '.join(focus_areas)}
+                Main focus areas for improvement: {', '.join(focus_areas)}
 
-            Return ONLY a valid JSON object with fields:
-            - daily_exercises: list of objects with fields name, duration, description
-            - weekly_goals: list of strings
-            - estimated_time: string
-            Do not add any explanations, comments or markdown, only pure JSON.
-            """
+                Return ONLY one valid JSON object with the following fields:
+                - daily_exercises: list of objects with fields name, duration, description
+                - weekly_goals: list of strings
+                - estimated_time: string
+
+                All text fields (name, description, weekly_goals, estimated_time)
+                must be in ENGLISH.
+
+                Do not add any explanations, comments or markdown, only pure JSON.
+                """
+            else:
+                prompt = f"""
+                Составь подробный тренировочный план для игрока CS2.
+
+                Статистика игрока:
+                - K/D: {player_stats.get('kd_ratio', 'N/A')}
+                - Headshot %: {player_stats.get('hs_percentage', 'N/A')}
+                - Win Rate: {player_stats.get('win_rate', 'N/A')}
+
+                Основные направления для улучшения: {', '.join(focus_areas)}
+
+                Верни ТОЛЬКО один корректный JSON-объект со следующими полями:
+                - daily_exercises: список объектов с полями name, duration, description
+                - weekly_goals: список строк
+                - estimated_time: строка
+
+                Все текстовые поля (name, description, weekly_goals, estimated_time)
+                должны быть НА РУССКОМ ЯЗЫКЕ.
+
+                Не добавляй никаких пояснений, комментариев или markdown, только чистый JSON.
+                """
 
             headers = {
                 "Content-Type": "application/json"
@@ -166,20 +219,29 @@ class GroqService:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
+            if lang == "en":
+                system_content = (
+                    "You are a CS2 coach. Reply strictly in JSON format, without "
+                    "any extra text. All text fields in the JSON must be in English."
+                )
+            else:
+                system_content = (
+                    "Ты тренер по CS2. Отвечай строго в формате JSON, без "
+                    "дополнительного текста. Все текстовые поля в JSON "
+                    "должны быть на русском языке."
+                )
+
             payload = {
                 "model": self.model,
                 "messages": [
                     {
                         "role": "system",
-                        "content": (
-                            "You are a CS2 coach. "
-                            "Reply only in JSON format."
-                        )
+                        "content": system_content,
                     },
                     {"role": "user", "content": prompt}
                 ],
-                "temperature": 0.5,
-                "max_tokens": 1000
+                "temperature": 0.4,
+                "max_tokens": 700
             }
 
             async with aiohttp.ClientSession() as session:
@@ -221,57 +283,103 @@ class GroqService:
                                         "Failed to parse Groq training plan JSON",
                                         exc_info=True,
                                     )
-                            return self._get_default_training_plan()
+                            return self._get_default_training_plan(lang)
                     else:
-                        return self._get_default_training_plan()
+                        return self._get_default_training_plan(lang)
 
         except Exception as e:
             logger.error(f"Error generating training plan: {str(e)}")
-            return self._get_default_training_plan()
+            return self._get_default_training_plan(lang)
 
     def _build_analysis_prompt(
         self,
         stats: Dict,
-        match_history: List[Dict]
+        match_history: List[Dict],
+        language: str = "ru",
     ) -> str:
         """Build analysis prompt"""
-        return f"""
-        Analyze CS2 player statistics:
+        lang = self._normalize_language(language)
+        if lang == "en":
+            return f"""
+            Analyze CS2 player statistics.
 
-        Current metrics:
-        - K/D Ratio: {stats.get('kd_ratio', 'N/A')}
-        - Headshot %: {stats.get('hs_percentage', 'N/A')}
-        - Win Rate: {stats.get('win_rate', 'N/A')}
-        - Avg Damage: {stats.get('avg_damage', 'N/A')}
-        - Matches Played: {stats.get('matches_played', 'N/A')}
+            Current metrics:
+            - K/D: {stats.get('kd_ratio', 'N/A')}
+            - Headshot %: {stats.get('hs_percentage', 'N/A')}
+            - Win Rate: {stats.get('win_rate', 'N/A')}
+            - Average damage: {stats.get('avg_damage', 'N/A')}
+            - Matches played: {stats.get('matches_played', 'N/A')}
 
-        Recent match history: {len(match_history)} matches
+            Recent matches: {len(match_history)}
 
-        Provide detailed analysis:
-        1. Strengths
-        2. Weaknesses
-        3. Specific recommendations for improvement
-        4. Action plan for the next week
-        """
+            Provide a structured analysis in ENGLISH:
+            1. Strengths of the player
+            2. Weaknesses
+            3. Specific recommendations for improvement (as a list)
+            4. Action plan for the next week
+            Be concise and avoid unnecessary fluff.
+            """
+        else:
+            return f"""
+            Проанализируй статистику игрока CS2.
 
-    def _get_default_training_plan(self) -> Dict:
-        """Default training plan"""
-        return {
-            "daily_exercises": [
-                {
-                    "name": "Aim Training",
-                    "duration": 30,
-                    "description": "Aim training on aim_botz"
-                },
-                {
-                    "name": "Spray Control",
-                    "duration": 20,
-                    "description": "Recoil control for AK-47 and M4A4"
-                }
-            ],
-            "weekly_goals": [
-                "Increase accuracy by 5%",
-                "Improve K/D to 1.2"
-            ],
-            "estimated_time": "2-3 weeks"
-        }
+            Текущие показатели:
+            - K/D: {stats.get('kd_ratio', 'N/A')}
+            - Headshot %: {stats.get('hs_percentage', 'N/A')}
+            - Win Rate: {stats.get('win_rate', 'N/A')}
+            - Средний урон: {stats.get('avg_damage', 'N/A')}
+            - Сыграно матчей: {stats.get('matches_played', 'N/A')}
+
+            Количество недавних матчей: {len(match_history)}
+
+            Дай структурированный анализ на РУССКОМ языке:
+            1. Сильные стороны игрока
+            2. Слабые стороны
+            3. Конкретные рекомендации по улучшению (списком)
+            4. План действий на ближайшую неделю
+            Постарайся быть по делу и не писать лишнего.
+            """
+
+    def _get_default_training_plan(self, language: str = "ru") -> Dict:
+        """Default training plan used when AI plan is unavailable."""
+        lang = self._normalize_language(language)
+        if lang == "en":
+            return {
+                "daily_exercises": [
+                    {
+                        "name": "Aim Training",
+                        "duration": 30,
+                        "description": "Aim training on aim_botz",
+                    },
+                    {
+                        "name": "Spray Control",
+                        "duration": 20,
+                        "description": "Recoil control for AK-47 and M4A4",
+                    },
+                ],
+                "weekly_goals": [
+                    "Increase accuracy by 5%",
+                    "Improve K/D to 1.2",
+                ],
+                "estimated_time": "2-3 weeks",
+            }
+        else:
+            return {
+                "daily_exercises": [
+                    {
+                        "name": "Тренировка аима",
+                        "duration": 30,
+                        "description": "Тренировка аима на aim_botz и картах для практики",
+                    },
+                    {
+                        "name": "Контроль спрея",
+                        "duration": 20,
+                        "description": "Отработка отдачи на AK-47 и M4A4",
+                    },
+                ],
+                "weekly_goals": [
+                    "Увеличить точность стрельбы на 5%",
+                    "Довести K/D до 1.2",
+                ],
+                "estimated_time": "2-3 недели",
+            }
