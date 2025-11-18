@@ -114,7 +114,7 @@ class GroqService:
 
         try:
             prompt = f"""
-            Create detailed training plan for CS2 player:
+            Create a detailed training plan for a CS2 player.
 
             Statistics:
             - K/D: {player_stats.get('kd_ratio', 'N/A')}
@@ -123,8 +123,11 @@ class GroqService:
 
             Focus on: {', '.join(focus_areas)}
 
-            Return JSON with fields: daily_exercises, weekly_goals,
-            estimated_time
+            Return ONLY a valid JSON object with fields:
+            - daily_exercises: list of objects with fields name, duration, description
+            - weekly_goals: list of strings
+            - estimated_time: string
+            Do not add any explanations, comments or markdown, only pure JSON.
             """
 
             headers = {
@@ -159,7 +162,35 @@ class GroqService:
                         content = data["choices"][0]["message"][
                             "content"
                         ]
-                        return json.loads(content)
+
+                        # Try to parse JSON strictly first
+                        text = content.strip()
+
+                        # Remove optional markdown code fences
+                        if text.startswith("```"):
+                            lines = text.splitlines()
+                            cleaned_lines = [
+                                line
+                                for line in lines
+                                if not line.strip().startswith("```")
+                            ]
+                            text = "\n".join(cleaned_lines).strip()
+
+                        try:
+                            return json.loads(text)
+                        except json.JSONDecodeError:
+                            # Try to extract the first JSON object from the text
+                            start = text.find("{")
+                            end = text.rfind("}")
+                            if start != -1 and end != -1 and end > start:
+                                try:
+                                    return json.loads(text[start : end + 1])
+                                except json.JSONDecodeError:
+                                    logger.error(
+                                        "Failed to parse Groq training plan JSON",
+                                        exc_info=True,
+                                    )
+                            return self._get_default_training_plan()
                     else:
                         return self._get_default_training_plan()
 

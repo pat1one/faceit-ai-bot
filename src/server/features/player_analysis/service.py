@@ -43,18 +43,12 @@ class PlayerAnalysisService:
             Detailed analysis or None
         """
         try:
-            # Check cache
-            cache_key = cache_service.get_player_cache_key(
-                nickname
-            )
-            cached = await cache_service.get(cache_key)
-            if cached:
-                logger.info(f"Cache hit for player {nickname}")
-                return PlayerAnalysisResponse(**cached)
-
+            # NOTE: Redis caching for player analysis is temporarily disabled
+            # to avoid returning stale data while AI logic is actively evolving.
             logger.info(
-                f"Cache miss for player {nickname}, analyzing..."
+                f"Analyzing player {nickname} (no cache)"
             )
+
             # Fetch player data
             player = (
                 await self.faceit_client.get_player_by_nickname(
@@ -116,13 +110,6 @@ class PlayerAnalysisService:
                 training_plan=training_plan,
                 overall_rating=overall_rating,
                 analyzed_at=datetime.utcnow()
-            )
-
-            # Save to cache (1 hour)
-            await cache_service.set(
-                cache_key,
-                result.dict(),
-                ttl=3600
             )
 
             return result

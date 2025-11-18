@@ -24,15 +24,32 @@ class AIService:
         """Analyze player with Groq-backed analysis and structured output"""
         logger.info(f"Analyzing player {nickname}")
 
-        detailed_analysis = await self.groq_service.analyze_player_performance(
-            stats=stats,
-            match_history=match_history,
-        )
-
         kd = float(stats.get("kd_ratio", 1.0))
         win_rate = float(stats.get("win_rate", 50.0))
-        hs_pct = float(stats.get("hs_percentage", 40.0))
-        matches = int(stats.get("matches_played", 0))
+        hs_pct = float(
+            stats.get(
+                "headshot_percentage",
+                stats.get("hs_percentage", 40.0),
+            )
+        )
+        matches = int(stats.get("matches_played", stats.get("matches", 0)))
+
+        avg_damage = stats.get("avg_damage")
+        if avg_damage is None:
+            avg_damage = stats.get("average_damage", stats.get("average_kills"))
+
+        groq_stats = {
+            "kd_ratio": kd,
+            "win_rate": win_rate,
+            "hs_percentage": hs_pct,
+            "matches_played": matches,
+            "avg_damage": avg_damage if avg_damage is not None else "N/A",
+        }
+
+        detailed_analysis = await self.groq_service.analyze_player_performance(
+            stats=groq_stats,
+            match_history=match_history,
+        )
 
         aim_score = min(10, int((kd * 4) + (hs_pct / 10)))
         game_sense_score = min(10, int(win_rate / 10))

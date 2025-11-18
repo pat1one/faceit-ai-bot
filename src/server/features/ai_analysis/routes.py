@@ -153,7 +153,7 @@ async def get_training_plan(player_id: str):
         }
 
         # Generate plan
-        training_plan = ai_service.generate_training_plan(
+        training_plan = await ai_service.generate_training_plan(
             nickname=player_id,
             stats=player_stats
         )
