@@ -141,5 +141,26 @@
     "kd_ratio": "K/D",
     "win_rate": "Win Rate",
     "headshots": "Headshots"
+  },
+  "auth": {
+    "title_login": "Welcome back",
+    "title_register": "Create account",
+    "subtitle_login": "Login to your account",
+    "subtitle_register": "Sign up to get started",
+    "email_label": "Email",
+    "email_placeholder": "your@email.com",
+    "username_label": "Username",
+    "username_placeholder": "username",
+    "password_label": "Password",
+    "password_placeholder": "••••••••",
+    "loading": "Loading...",
+    "login_button": "Login",
+    "register_button": "Sign Up",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "switch_to_register": "Sign Up",
+    "switch_to_login": "Login",
+    "login_failed": "Login failed. Check your credentials.",
+    "register_failed": "Registration failed. Try again."
   }
 }

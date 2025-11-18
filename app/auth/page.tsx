@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function AuthPage() {
@@ -14,6 +15,7 @@ export default function AuthPage() {
   
   const { login, register } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,8 +30,13 @@ export default function AuthPage() {
       }
       router.push('/');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage || (isLogin ? 'Login failed. Check your credentials.' : 'Registration failed. Try again.'));
+      const errorMessage = err instanceof Error ? err.message : '';
+      setError(
+        errorMessage ||
+          (isLogin
+            ? t('auth.login_failed')
+            : t('auth.register_failed'))
+      );
       console.error('Auth error:', err);
     } finally {
       setLoading(false);
@@ -41,21 +48,25 @@ export default function AuthPage() {
       <div className="card w-full max-w-md">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white text-center mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? t('auth.title_login') : t('auth.title_register')}
           </h2>
           <p className="text-gray-400 text-center mb-8">
-            {isLogin ? 'Login to your account' : 'Sign up to get started'}
+            {isLogin
+              ? t('auth.subtitle_login')
+              : t('auth.subtitle_register')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              {t('auth.email_label')}
+            </label>
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder={t('auth.email_placeholder')}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
               required
             />
@@ -63,12 +74,14 @@ export default function AuthPage() {
 
           {!isLogin && (
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Username</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t('auth.username_label')}
+              </label>
               <input 
                 type="text" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="username"
+                placeholder={t('auth.username_placeholder')}
                 className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 required
               />
@@ -76,12 +89,14 @@ export default function AuthPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              {t('auth.password_label')}
+            </label>
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t('auth.password_placeholder')}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
               required
               minLength={6}
@@ -99,19 +114,27 @@ export default function AuthPage() {
             className="w-full btn-primary"
             disabled={loading}
           >
-            {loading ? 'Loading...' : (isLogin ? 'Login' : 'Sign Up')}
+            {loading
+              ? t('auth.loading')
+              : isLogin
+                ? t('auth.login_button')
+                : t('auth.register_button')}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-center text-gray-400">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}
+            {isLogin
+              ? t('auth.no_account')
+              : t('auth.have_account')}
             {' '}
             <button 
               onClick={() => setIsLogin(!isLogin)} 
               className="text-orange-500 hover:text-orange-400 underline"
             >
-              {isLogin ? 'Sign Up' : 'Login'}
+              {isLogin
+                ? t('auth.switch_to_register')
+                : t('auth.switch_to_login')}
             </button>
           </p>
         </div>

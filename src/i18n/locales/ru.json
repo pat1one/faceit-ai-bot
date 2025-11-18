@@ -141,5 +141,26 @@
     "kd_ratio": "K/D",
     "win_rate": "Винрейт",
     "headshots": "Хедшоты"
+  },
+  "auth": {
+    "title_login": "Вход в аккаунт",
+    "title_register": "Создать аккаунт",
+    "subtitle_login": "Войдите в свой аккаунт",
+    "subtitle_register": "Зарегистрируйтесь, чтобы начать",
+    "email_label": "Email",
+    "email_placeholder": "Введите email",
+    "username_label": "Имя пользователя",
+    "username_placeholder": "Никнейм",
+    "password_label": "Пароль",
+    "password_placeholder": "Введите пароль",
+    "loading": "Загрузка...",
+    "login_button": "Войти",
+    "register_button": "Зарегистрироваться",
+    "no_account": "Нет аккаунта?",
+    "have_account": "Уже есть аккаунт?",
+    "switch_to_register": "Зарегистрироваться",
+    "switch_to_login": "Войти",
+    "login_failed": "Не удалось войти. Проверьте email и пароль.",
+    "register_failed": "Не удалось зарегистрироваться. Попробуйте ещё раз."
   }
 }
