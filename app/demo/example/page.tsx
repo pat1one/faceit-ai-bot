@@ -281,7 +281,7 @@ export default function DemoExamplePage() {
           </div>
 
           <div className="mt-8 flex justify-center gap-4">
-            <Link href={user ? '/demo' : '/auth'} className="btn-primary">
+            <Link href={user ? '/analysis' : '/auth'} className="btn-primary">
               {t('landing.cta_get_started', {
                 defaultValue: lang === 'en' ? 'Get started' : 'Начать',
               })}
