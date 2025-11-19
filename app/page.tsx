@@ -18,7 +18,7 @@ export default function HomePage() {
           {t('landing.subtitle')}
         </p>
         
-        <div className="flex gap-4 justify-center mb-16">
+        <div className="flex flex-wrap gap-4 justify-center mb-16">
           {user ? (
             <>
               <Link
@@ -32,6 +32,12 @@ export default function HomePage() {
                 className="btn-secondary"
               >
                 {t('subscription.title')}
+              </Link>
+              <Link
+                href="/demo/example"
+                className="btn-secondary"
+              >
+                {t('landing.cta_demo_example', { defaultValue: 'Посмотреть пример анализа' })}
               </Link>
             </>
           ) : (
@@ -47,6 +53,12 @@ export default function HomePage() {
                 className="btn-secondary"
               >
                 {t('landing.cta_sign_in')}
+              </Link>
+              <Link
+                href="/demo/example"
+                className="btn-secondary"
+              >
+                {t('landing.cta_demo_example', { defaultValue: 'Посмотреть пример анализа' })}
               </Link>
             </>
           )}
