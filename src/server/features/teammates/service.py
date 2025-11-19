@@ -23,7 +23,7 @@ class TeammateService:
         """Find suitable teammates based on preferences for the current user.
 
         MVP implementation: uses stored TeammateProfile rows and basic filters
-        by ELO range and languages/roles. Later можно будет добавить AI-совместимость.
+        by ELO range and languages/roles. Later AI-based matching can be added.
         """
         try:
             # Ensure current user has a profile (optional, can be created lazily later)
@@ -192,8 +192,8 @@ class TeammateService:
         """Update teammate search preferences for current user.
 
         Stores high-level preferences (roles, maps, languages, style) in
-        TeammateProfile table. ELO/level можно будет заполнить отдельно
-        через Faceit-интеграцию.
+        the TeammateProfile table. ELO/level can be populated separately
+        via Faceit integration.
         """
         try:
             profile = (

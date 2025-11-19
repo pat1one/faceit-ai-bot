@@ -13,7 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 def _get_redis_config():
     """Parse Redis URL from environment.
 
-    Поддерживает форматы:
+    Supports formats:
     - redis://localhost:6379
     - redis://:password@host:port
     - redis://host

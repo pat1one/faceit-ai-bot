@@ -14,6 +14,7 @@ export default function DemoPage() {
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
+  const coachReport = (result as any)?.coach_report;
 
   if (!user) {
     return (
@@ -115,7 +116,98 @@ export default function DemoPage() {
         {result && (
           <div className="mt-8 text-left max-h-96 overflow-auto text-sm card">
             <h2 className="text-lg font-semibold mb-2">{t('demo.results')}</h2>
-            <pre className="whitespace-pre-wrap break-all">{JSON.stringify(result, null, 2)}</pre>
+            {coachReport ? (
+              <div className="space-y-4">
+                {coachReport.overview && (
+                  <p className="text-sm text-zinc-300 mb-2">
+                    {coachReport.overview}
+                  </p>
+                )}
+
+                {coachReport.strengths && coachReport.strengths.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-1">
+                      {t('demo.coach_strengths', { defaultValue: 'Сильные стороны' })}
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {coachReport.strengths.map((s: any, idx: number) => (
+                        <li key={idx}>
+                          <span className="font-medium">{s.title}: </span>
+                          <span>{s.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {coachReport.weaknesses && coachReport.weaknesses.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-1">
+                      {t('demo.coach_weaknesses', { defaultValue: 'Слабые стороны' })}
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {coachReport.weaknesses.map((w: any, idx: number) => (
+                        <li key={idx}>
+                          <span className="font-medium">{w.title}: </span>
+                          <span>{w.description}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {coachReport.key_moments && coachReport.key_moments.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-1">
+                      {t('demo.coach_key_moments', { defaultValue: 'Ключевые моменты' })}
+                    </h3>
+                    <ul className="space-y-1 text-sm">
+                      {coachReport.key_moments.map((m: any, idx: number) => (
+                        <li key={idx} className="border border-zinc-700 rounded-md p-2">
+                          <div className="text-xs text-zinc-400 mb-1">
+                            {t('demo.round_label', { defaultValue: 'Раунд' })} {m.round}
+                          </div>
+                          <div className="font-medium mb-1">{m.title}</div>
+                          <div className="text-xs text-zinc-300 mb-1">{m.what_happened}</div>
+                          <div className="text-xs text-red-300 mb-1">{m.mistake}</div>
+                          <div className="text-xs text-emerald-300">{m.better_play}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {coachReport.training_plan && coachReport.training_plan.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-1">
+                      {t('demo.coach_training_plan', { defaultValue: 'План тренировок' })}
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      {coachReport.training_plan.map((p: any, idx: number) => (
+                        <li key={idx} className="border border-zinc-700 rounded-md p-2">
+                          <div className="font-medium mb-1">{p.goal}</div>
+                          {p.exercises && (
+                            <ul className="list-disc list-inside text-xs text-zinc-300 space-y-1">
+                              {p.exercises.map((ex: string, exIdx: number) => (
+                                <li key={exIdx}>{ex}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {coachReport.summary && (
+                  <p className="text-sm text-zinc-200">
+                    {coachReport.summary}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <pre className="whitespace-pre-wrap break-all">{JSON.stringify(result, null, 2)}</pre>
+            )}
           </div>
         )}
         </div>

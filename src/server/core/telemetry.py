@@ -1,7 +1,7 @@
 """OpenTelemetry configuration for distributed tracing.
 
-В production-образе OpenTelemetry может быть не установлен. В этом случае
-телеметрия должна отключаться без падения приложения.
+In the production image, OpenTelemetry may not be installed. In this case
+telemetry should be disabled gracefully without crashing the application.
 """
 
 import logging
@@ -21,7 +21,7 @@ try:
     from opentelemetry.instrumentation.logging import LoggingInstrumentor
 
     OTEL_AVAILABLE = True
-except ImportError:  # opentelemetry не установлен в окружении
+except ImportError:  # opentelemetry is not installed in the environment
     trace = metrics = None  # type: ignore[assignment]
     TracerProvider = BatchSpanProcessor = MeterProvider = None  # type: ignore[assignment]
     JaegerExporter = PrometheusMetricReader = None  # type: ignore[assignment]
@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 def init_telemetry() -> None:
     """Initialize OpenTelemetry tracing and metrics.
 
-    В non-production окружениях и при отсутствии OTEL-зависимостей
-    функция просто пишет в лог и завершает работу.
+    In non-production environments and when OTEL dependencies are missing,
+    this function only logs a message and then returns.
     """
 
     if not settings.ENVIRONMENT == "production":
@@ -82,7 +82,7 @@ def init_telemetry() -> None:
 def get_tracer(name: str) -> Any:
     """Get a tracer instance.
 
-    Если OpenTelemetry недоступен, возвращается простой заглушечный объект.
+    If OpenTelemetry is not available, a simple no-op stub object is returned.
     """
 
     if OTEL_AVAILABLE and trace is not None:
@@ -101,7 +101,7 @@ def get_tracer(name: str) -> Any:
 def get_meter(name: str) -> Any:
     """Get a meter instance.
 
-    Если OpenTelemetry недоступен, возвращается заглушечный объект.
+    If OpenTelemetry is not available, a no-op stub object is returned.
     """
 
     if OTEL_AVAILABLE and metrics is not None:

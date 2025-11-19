@@ -1,7 +1,7 @@
 """Sentry integration for error tracking and monitoring.
 
-В production-образе Sentry SDK может быть не установлен. В этом случае
-интеграция должна тихо отключаться и не мешать запуску приложения.
+In the production image the Sentry SDK may not be installed. In this case
+the integration should quietly disable itself and not block application startup.
 """
 
 import logging
@@ -15,7 +15,7 @@ try:
     from sentry_sdk.integrations.logging import LoggingIntegration
 
     SENTRY_AVAILABLE = True
-except ImportError:  # sentry_sdk не установлен в окружении
+except ImportError:  # sentry_sdk is not installed in the environment
     sentry_sdk = None  # type: ignore[assignment]
     FastApiIntegration = SqlalchemyIntegration = RedisIntegration = CeleryIntegration = LoggingIntegration = None
     SENTRY_AVAILABLE = False
@@ -30,7 +30,7 @@ class SentryManager:
 
     def __init__(self):
         self.settings = Settings()
-        # Включаем Sentry только если есть DSN и установлен SDK
+        # Enable Sentry only if a DSN is provided and the SDK is installed
         self.enabled = bool(self.settings.SENTRY_DSN) and SENTRY_AVAILABLE
 
     def init_sentry(self):

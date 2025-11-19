@@ -1,7 +1,7 @@
 """Security middleware for basic security headers.
 
-Rate limiting через slowapi отключён в production-образе, так как
-зависимость отсутствует. Middleware отвечает только за security-заголовки.
+Rate limiting via slowapi is disabled in the production image because
+the dependency is not installed. This middleware only manages security headers.
 """
 
 from fastapi import Request

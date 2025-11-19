@@ -1,10 +1,10 @@
 """Logging configuration with optional structlog integration.
 
-В production-контейнере structlog может быть не установлен, поэтому
-конфигурация должна уметь работать в двух режимах:
+In the production container structlog may not be installed, so
+the configuration must be able to work in two modes:
 
-- с structlog (локальная разработка / полноценный образ с зависимостью);
-- только с стандартным logging (fallback, если зависимость отсутствует).
+- with structlog (local development / full image with the dependency);
+- with standard logging only (fallback when the dependency is missing).
 """
 
 import logging
@@ -24,7 +24,7 @@ try:
     )
 
     STRUCTLOG_AVAILABLE = True
-except ImportError:  # structlog не установлен в окружении
+except ImportError:  # structlog is not installed in the environment
     structlog = None  # type: ignore[assignment]
     LoggerFactory = None  # type: ignore[assignment]
     TimeStamper = add_log_level = StackInfoRenderer = JSONRenderer = ConsoleRenderer = None
@@ -36,8 +36,8 @@ from ..config.settings import settings
 def setup_logging() -> None:
     """Configure logging for the application.
 
-    Если structlog доступен, настраивается структурированное логирование.
-    Если нет — используется стандартный logging.basicConfig.
+    If structlog is available, structured logging is configured.
+    Otherwise standard ``logging.basicConfig`` is used.
     """
 
     if STRUCTLOG_AVAILABLE and structlog is not None:  # type: ignore[truthy-function]
@@ -126,8 +126,8 @@ def setup_logging() -> None:
 def get_logger(name: str) -> Any:
     """Get a logger instance.
 
-    Возвращает structlog-логгер, если он доступен, иначе стандартный
-    logging.Logger. Так код выше может работать одинаково в обоих режимах.
+    Returns a structlog logger if it is available, otherwise a standard
+    ``logging.Logger`` so that callers can work the same way in both modes.
     """
 
     if STRUCTLOG_AVAILABLE and structlog is not None:

@@ -1,7 +1,7 @@
 """Structured logging configuration with optional structlog support.
 
-Если structlog недоступен в окружении, модуль прозрачно
-использует стандартный logging и не мешает запуску приложения.
+If structlog is not available in the environment, this module transparently
+falls back to standard logging without blocking application startup.
 """
 
 import logging
@@ -36,7 +36,7 @@ class _StdLoggerAdapter:
 
     def _log(self, level: int, msg: str, **kwargs: Any) -> None:
         if kwargs:
-            # Логируем дополнительные поля как словарь рядом с сообщением
+            # Log extra fields as a dictionary next to the message
             self._logger.log(level, "%s | %s", msg, kwargs)
         else:
             self._logger.log(level, msg)
@@ -57,7 +57,7 @@ class _StdLoggerAdapter:
 def configure_logging() -> None:
     """Configure structured logging for the application.
 
-    Если structlog недоступен, настраиваем только стандартный logging.
+    If structlog is not available, only standard logging is configured.
     """
 
     if not STRUCTLOG_AVAILABLE or structlog is None:  # type: ignore[truthy-function]
@@ -146,8 +146,8 @@ def configure_logging() -> None:
 def get_logger(name: str) -> Any:
     """Get a logger instance.
 
-    При наличии structlog возвращаем структурированный логгер,
-    иначе стандартный logging.Logger.
+    If structlog is available, return a structured logger,
+    otherwise a standard ``logging.Logger``.
     """
 
     if STRUCTLOG_AVAILABLE and structlog is not None:
