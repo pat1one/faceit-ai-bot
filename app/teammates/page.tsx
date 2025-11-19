@@ -17,7 +17,7 @@ interface TeammateProfile {
 }
 
 export default function TeammatesPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const [filters, setFilters] = useState({ rank: '', region: '', role: '' });
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export default function TeammatesPage() {
   }
 
   const handleSearch = async () => {
-    if (!user) return;
+    if (!user || !token) return;
 
     setLoading(true);
     setError(null);
@@ -71,10 +71,22 @@ export default function TeammatesPage() {
     };
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.TEAMMATES_SEARCH}?user_id=${user.id}`, {
+      // Сохраняем предпочтения пользователя (профиль тиммейта)
+      await fetch(API_ENDPOINTS.TEAMMATES_PREFERENCES, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(preferences),
+      });
+
+      // Ищем тиммейтов по этим же предпочтениям
+      const response = await fetch(API_ENDPOINTS.TEAMMATES_SEARCH, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(preferences),
       });

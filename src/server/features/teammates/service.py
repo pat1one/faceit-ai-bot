@@ -27,7 +27,7 @@ class TeammateService:
         """
         try:
             # Ensure current user has a profile (optional, can be created lazily later)
-            _ = (
+            current_profile = (
                 db.query(TeammateProfileDB)
                 .filter(TeammateProfileDB.user_id == current_user.id)
                 .first()
@@ -46,6 +46,59 @@ class TeammateService:
                 )
 
             candidates = query.limit(50).all()
+
+            if not candidates and current_profile is not None:
+                langs = (
+                    current_profile.languages.split(",")
+                    if current_profile.languages
+                    else []
+                )
+                roles = (
+                    current_profile.roles.split(",")
+                    if current_profile.roles
+                    else []
+                )
+
+                stats = PlayerStats(
+                    faceit_elo=current_profile.elo or 0,
+                    matches_played=0,
+                    win_rate=0.5,
+                    avg_kd=1.0,
+                    avg_hs=0.5,
+                    favorite_maps=(
+                        current_profile.preferred_maps.split(",")
+                        if current_profile.preferred_maps
+                        else []
+                    ),
+                    last_20_matches=[],
+                )
+
+                candidate_prefs = TeammatePreferences(
+                    min_elo=(current_profile.elo - 200) if current_profile.elo else 0,
+                    max_elo=(current_profile.elo + 200) if current_profile.elo else 10000,
+                    preferred_maps=(
+                        current_profile.preferred_maps.split(",")
+                        if current_profile.preferred_maps
+                        else []
+                    ),
+                    preferred_roles=roles,
+                    communication_lang=langs,
+                    play_style=current_profile.play_style or "unknown",
+                    time_zone="unknown",
+                )
+
+                demo_profile = TeammateProfile(
+                    user_id=str(current_profile.user_id),
+                    faceit_nickname=current_profile.faceit_nickname or "",
+                    stats=stats,
+                    preferences=candidate_prefs,
+                    availability=[current_profile.availability]
+                    if current_profile.availability
+                    else [],
+                    team_history=[],
+                )
+
+                return [demo_profile]
 
             result: List[TeammateProfile] = []
             for row in candidates:
