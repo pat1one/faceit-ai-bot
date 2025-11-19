@@ -292,6 +292,117 @@ class GroqService:
             logger.error(f"Error generating training plan: {str(e)}")
             return self._get_default_training_plan(lang)
 
+    async def describe_teammate_matches(
+        self,
+        payload: Dict,
+        language: str = "ru",
+    ) -> Dict:
+        lang = self._normalize_language(language)
+
+        if not self.api_key and getattr(self, "provider", None) != "local":
+            return {}
+
+        try:
+            if lang == "en":
+                system_content = (
+                    "You are a CS2 coach. Given a player profile and a list of "
+                    "candidate teammates, you evaluate how well each candidate "
+                    "fits the player. Return ONLY one JSON object where keys are "
+                    "candidate user_id values and values are objects with fields "
+                    "'score' (0-1 float, higher is better) and 'summary' (short "
+                    "text explanation in ENGLISH). Do not add any extra text."
+                )
+            else:
+                system_content = (
+                    "Ты тренер по CS2. Тебе дан профиль игрока и список кандидатов "
+                    "в тиммейты. Оцени, насколько каждый кандидат подходит игроку. "
+                    "Верни ТОЛЬКО один JSON-объект, где ключи — user_id кандидатов, "
+                    "а значения — объекты с полями 'score' (число от 0 до 1, чем выше, "
+                    "тем лучше) и 'summary' (короткое объяснение на русском языке). "
+                    "Не добавляй никакого дополнительного текста."
+                )
+
+            prompt = json.dumps(payload, ensure_ascii=False)
+
+            headers = {
+                "Content-Type": "application/json",
+            }
+
+            if self.api_key:
+                headers["Authorization"] = f"Bearer {self.api_key}"
+
+            if self.groq_base_url.startswith("https://openrouter.ai"):
+                referer = getattr(settings, "WEBSITE_URL", "")
+                app_title = getattr(settings, "APP_TITLE", "Faceit AI Bot")
+                if referer:
+                    headers["HTTP-Referer"] = referer
+                headers["X-Title"] = app_title
+
+            request_payload = {
+                "model": self.model,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": system_content,
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.3,
+                "max_tokens": 400,
+            }
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    self.groq_base_url,
+                    headers=headers,
+                    json=request_payload,
+                ) as response:
+                    if response.status != 200:
+                        text = await response.text()
+                        logger.error(
+                            "Groq teammate match error: %s - %s",
+                            response.status,
+                            text,
+                        )
+                        return {}
+                    data = await response.json()
+                    content = data["choices"][0]["message"][
+                        "content"
+                    ]
+
+            text = content.strip()
+            if text.startswith("```"):
+                lines = text.splitlines()
+                cleaned_lines = [
+                    line
+                    for line in lines
+                    if not line.strip().startswith("```")
+                ]
+                text = "\n".join(cleaned_lines).strip()
+
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, Dict):
+                    return parsed
+                return {}
+            except json.JSONDecodeError:
+                start = text.find("{")
+                end = text.rfind("}")
+                if start != -1 and end != -1 and end > start:
+                    try:
+                        parsed = json.loads(text[start : end + 1])
+                        if isinstance(parsed, Dict):
+                            return parsed
+                    except json.JSONDecodeError:
+                        logger.error(
+                            "Failed to parse teammate match JSON",
+                            exc_info=True,
+                        )
+                return {}
+        except Exception:
+            logger.exception("Error in describe_teammate_matches")
+            return {}
+
     def _build_analysis_prompt(
         self,
         stats: Dict,

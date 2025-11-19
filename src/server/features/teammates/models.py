@@ -27,3 +27,5 @@ class TeammateProfile(BaseModel):
     preferences: TeammatePreferences
     availability: List[str]
     team_history: List[Dict]
+    compatibility_score: Optional[float] = None
+    match_summary: Optional[str] = None

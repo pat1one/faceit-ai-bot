@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from ...database.models import TeammateProfile as TeammateProfileDB, User
 from .models import TeammateProfile, PlayerStats, TeammatePreferences
+from ...ai.groq_service import GroqService
 import logging
 
 
@@ -13,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 class TeammateService:
     """Service for teammate search and preference management."""
+
+    def __init__(self) -> None:
+        self.ai = GroqService()
 
     async def find_teammates(
         self,
@@ -174,7 +178,11 @@ class TeammateService:
                 )
                 result.append(profile)
 
-            return result
+            return await self._enrich_with_ai(
+                current_user=current_user,
+                preferences=preferences,
+                profiles=result,
+            )
 
         except Exception as e:
             logger.exception("Failed to find teammates")
@@ -182,6 +190,68 @@ class TeammateService:
                 status_code=500,
                 detail=f"Teammate search failed: {str(e)}",
             )
+
+    async def _enrich_with_ai(
+        self,
+        current_user: User,
+        preferences: TeammatePreferences,
+        profiles: List[TeammateProfile],
+    ) -> List[TeammateProfile]:
+        if not profiles:
+            return profiles
+
+        try:
+            player_payload = {
+                "elo": preferences.max_elo,
+                "preferred_roles": preferences.preferred_roles,
+                "communication_lang": preferences.communication_lang,
+                "play_style": preferences.play_style,
+            }
+
+            candidates_payload = []
+            for p in profiles:
+                candidates_payload.append(
+                    {
+                        "user_id": p.user_id,
+                        "faceit_nickname": p.faceit_nickname,
+                        "elo": p.stats.faceit_elo,
+                        "preferred_roles": p.preferences.preferred_roles,
+                        "communication_lang": p.preferences.communication_lang,
+                        "play_style": p.preferences.play_style,
+                    }
+                )
+
+            ai_result = await self.ai.describe_teammate_matches(
+                {
+                    "player": player_payload,
+                    "candidates": candidates_payload,
+                },
+                language="ru",
+            )
+
+            if isinstance(ai_result, dict):
+                for p in profiles:
+                    info = ai_result.get(p.user_id)
+                    if not isinstance(info, dict):
+                        continue
+                    score = info.get("score")
+                    summary = info.get("summary")
+                    try:
+                        if isinstance(score, (int, float)):
+                            p.compatibility_score = float(score)
+                    except Exception:
+                        p.compatibility_score = None
+                    if isinstance(summary, str):
+                        p.match_summary = summary
+
+            profiles.sort(
+                key=lambda item: (item.compatibility_score or 0.0),
+                reverse=True,
+            )
+        except Exception:
+            logger.exception("Failed to enrich teammates with AI data")
+
+        return profiles
 
     async def update_preferences(
         self,

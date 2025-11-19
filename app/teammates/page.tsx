@@ -14,6 +14,8 @@ interface TeammateProfile {
     win_rate?: number;
     avg_kd?: number;
   };
+  compatibility_score?: number;
+  match_summary?: string;
 }
 
 export default function TeammatesPage() {
@@ -216,7 +218,10 @@ export default function TeammatesPage() {
             </div>
           )}
           {results.map((p) => (
-            <div key={p.user_id} className="glass-effect rounded-xl p-6 flex items-center justify-between transition-all duration-300 hover:-translate-y-1">
+            <div
+              key={p.user_id}
+              className="glass-effect rounded-xl p-6 flex items-center justify-between transition-all duration-300 hover:-translate-y-1"
+            >
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary-dark rounded-full flex items-center justify-center text-2xl">
                   🎮
@@ -226,6 +231,16 @@ export default function TeammatesPage() {
                   <p className="text-zinc-400">
                     {p.stats?.faceit_elo ? `ELO ${p.stats.faceit_elo}` : ''}
                   </p>
+                  {typeof p.compatibility_score === 'number' && (
+                    <p className="text-xs text-emerald-400 mt-1">
+                      {t('teammate.compatibility', { defaultValue: 'Совместимость' })}
+                      {': '}
+                      {Math.round(p.compatibility_score * 100)}%
+                    </p>
+                  )}
+                  {p.match_summary && (
+                    <p className="text-sm text-zinc-300 mt-2">{p.match_summary}</p>
+                  )}
                 </div>
               </div>
               <button className="px-6 py-2 bg-gradient-to-r from-primary to-primary-dark rounded-lg font-medium">
