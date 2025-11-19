@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang =
+    i18n.language && i18n.language.toLowerCase().startsWith('en')
+      ? 'en'
+      : 'ru';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white animate-fade-in">
@@ -37,7 +41,12 @@ export default function HomePage() {
                 href="/demo/example"
                 className="btn-secondary"
               >
-                {t('landing.cta_demo_example', { defaultValue: 'Посмотреть пример анализа' })}
+                {t('landing.cta_demo_example', {
+                  defaultValue:
+                    lang === 'en'
+                      ? 'View demo analysis example'
+                      : 'Посмотреть пример анализа',
+                })}
               </Link>
             </>
           ) : (
@@ -58,7 +67,12 @@ export default function HomePage() {
                 href="/demo/example"
                 className="btn-secondary"
               >
-                {t('landing.cta_demo_example', { defaultValue: 'Посмотреть пример анализа' })}
+                {t('landing.cta_demo_example', {
+                  defaultValue:
+                    lang === 'en'
+                      ? 'View demo analysis example'
+                      : 'Посмотреть пример анализа',
+                })}
               </Link>
             </>
           )}
