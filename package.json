@@ -17,7 +17,7 @@
     "type": "git",
     "url": "https://github.com/pat1one/faceit-ai-bot.git"
   },
-  "license": "MIT",
+  "license": "Source-available (see LICENSE)",
   "author": "pattmsc",
   "private": true,
   "main": "index.js",

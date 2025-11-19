@@ -1,17 +1,417 @@
 """Authentication endpoints"""
 
+from datetime import timedelta
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+import secrets
+from urllib.parse import urlencode
+
+import aiohttp
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from .schemas import Token, UserResponse
-from .security import verify_password, get_password_hash, create_access_token
+
+from .schemas import Token, UserResponse, SteamLinkRequest
+from .security import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+    decode_access_token,
+)
 from .dependencies import get_current_active_user
+from ..config.settings import settings
 from ..database.models import User, Subscription, SubscriptionTier
 from ..database import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
+
+FACEIT_AUTHORIZATION_URL = "https://accounts.faceit.com"
+FACEIT_TOKEN_URL = "https://api.faceit.com/auth/v1/oauth/token"
+FACEIT_USERINFO_URL = "https://api.faceit.com/auth/v1/resources/userinfo"
+
+
+async def verify_steam_openid(query_params) -> str | None:
+    """Verify Steam OpenID response and return steam_id if valid.
+
+    This posts back the signed fields to Steam's OpenID endpoint with
+    `check_authentication` mode and checks for `is_valid:true` in response.
+    """
+
+    params = dict(query_params)
+
+    # Basic sanity check
+    if params.get("openid.mode") not in {"id_res", "checkid_immediate", "checkid_setup"}:
+        return None
+
+    payload = {
+        "openid.ns": "http://specs.openid.net/auth/2.0",
+        "openid.mode": "check_authentication",
+        "openid.assoc_handle": params.get("openid.assoc_handle", ""),
+        "openid.signed": params.get("openid.signed", ""),
+        "openid.sig": params.get("openid.sig", ""),
+    }
+
+    signed = params.get("openid.signed", "")
+    for var in signed.split(","):
+        key = f"openid.{var}"
+        if key in params:
+            payload[key] = params[key]
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(STEAM_OPENID_URL, data=payload) as resp:
+                text = await resp.text()
+                if "is_valid:true" not in text:
+                    logger.warning("Steam OpenID validation failed: %s", text.strip())
+                    return None
+    except Exception as e:  # pragma: no cover - network errors are logged
+        logger.error("Steam OpenID verification error: %s", str(e))
+        return None
+
+    claimed_id = params.get("openid.claimed_id")
+    if not claimed_id:
+        return None
+
+    # Example: https://steamcommunity.com/openid/id/76561198000000000
+    steam_id = claimed_id.rstrip("/").split("/")[-1]
+    return steam_id or None
+
+
+@router.get("/steam/login")
+async def steam_login():
+    """Redirect user to Steam OpenID for authentication.
+
+    External entry point used by frontend "Sign in with Steam" button.
+    """
+
+    realm = settings.WEBSITE_URL.rstrip("/")
+    # Nginx adds /api prefix for backend, so callback is exposed as /api/auth/steam/callback
+    return_to = f"{realm}/api/auth/steam/callback"
+
+    params = {
+        "openid.ns": "http://specs.openid.net/auth/2.0",
+        "openid.mode": "checkid_setup",
+        "openid.return_to": return_to,
+        "openid.realm": realm,
+        "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
+        "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
+    }
+
+    url = f"{STEAM_OPENID_URL}?{urlencode(params)}"
+    return RedirectResponse(url)
+
+
+@router.get("/faceit/login")
+async def faceit_login():
+    """Redirect user to FACEIT OAuth2 for authentication.
+
+    Uses Authorization Code flow. After successful login FACEIT will redirect
+    back to /api/auth/faceit/callback with a temporary code and our signed
+    state token.
+    """
+
+    client_id = getattr(settings, "FACEIT_CLIENT_ID", None)
+    client_secret = getattr(settings, "FACEIT_CLIENT_SECRET", None)
+    if not client_id or not client_secret:
+        logger.error("FACEIT OAuth is not configured: missing client id/secret")
+        raise HTTPException(
+            status_code=500,
+            detail="Faceit OAuth is not configured",
+        )
+
+    redirect_uri = f"{settings.WEBSITE_URL.rstrip('/')}/api/auth/faceit/callback"
+
+    # Short-lived signed state to protect against CSRF
+    state_token = create_access_token(
+        data={"sub": "faceit_oauth"},
+        expires_delta=timedelta(minutes=10),
+    )
+
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state_token,
+    }
+
+    url = f"{FACEIT_AUTHORIZATION_URL}?{urlencode(params)}"
+    return RedirectResponse(url)
+
+
+@router.get("/faceit/callback")
+async def faceit_callback(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Handle FACEIT OAuth2 callback, create/find user and issue JWT.
+
+    On success redirects back to frontend /auth with faceit_token and auto=1
+    to trigger automatic player analysis for the logged-in user.
+    """
+
+    params = dict(request.query_params)
+    code = params.get("code")
+    state = params.get("state")
+
+    if not code or not state:
+        raise HTTPException(
+            status_code=400,
+            detail="Missing authorization code or state",
+        )
+
+    state_payload = decode_access_token(state)
+    if not state_payload or state_payload.get("sub") != "faceit_oauth":
+        raise HTTPException(status_code=400, detail="Invalid state parameter")
+
+    client_id = getattr(settings, "FACEIT_CLIENT_ID", None)
+    client_secret = getattr(settings, "FACEIT_CLIENT_SECRET", None)
+    if not client_id or not client_secret:
+        logger.error("FACEIT OAuth is not configured: missing client id/secret")
+        raise HTTPException(
+            status_code=500,
+            detail="Faceit OAuth is not configured",
+        )
+
+    redirect_uri = f"{settings.WEBSITE_URL.rstrip('/')}/api/auth/faceit/callback"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            token_data = None
+            # Exchange code for tokens
+            async with session.post(
+                FACEIT_TOKEN_URL,
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": redirect_uri,
+                },
+                headers={"Accept": "application/json"},
+                auth=aiohttp.BasicAuth(client_id, client_secret),
+            ) as token_resp:
+                if token_resp.status != 200:
+                    text = await token_resp.text()
+                    logger.error(
+                        "FACEIT token endpoint error %s: %s",
+                        token_resp.status,
+                        text,
+                    )
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Faceit authentication failed",
+                    )
+                token_data = await token_resp.json()
+
+            access_token_faceit = token_data.get("access_token")
+            if not access_token_faceit:
+                logger.error("FACEIT token response missing access_token: %s", token_data)
+                raise HTTPException(
+                    status_code=400,
+                    detail="Faceit authentication failed",
+                )
+
+            # Fetch user info
+            async with session.get(
+                FACEIT_USERINFO_URL,
+                headers={
+                    "Authorization": f"Bearer {access_token_faceit}",
+                    "Accept": "application/json",
+                },
+            ) as userinfo_resp:
+                if userinfo_resp.status != 200:
+                    text = await userinfo_resp.text()
+                    logger.error(
+                        "FACEIT userinfo endpoint error %s: %s",
+                        userinfo_resp.status,
+                        text,
+                    )
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Faceit authentication failed",
+                    )
+                userinfo = await userinfo_resp.json()
+    except HTTPException:
+        raise
+    except Exception as e:  # pragma: no cover - network errors are logged
+        logger.error("FACEIT OAuth callback error: %s", str(e))
+        raise HTTPException(
+            status_code=400,
+            detail="Faceit authentication failed",
+        )
+
+    faceit_guid = (
+        userinfo.get("guid")
+        or userinfo.get("sub")
+        or userinfo.get("user_id")
+    )
+    if not faceit_guid:
+        logger.error("FACEIT userinfo missing guid/sub/user_id: %s", userinfo)
+        raise HTTPException(
+            status_code=400,
+            detail="Faceit authentication failed",
+        )
+
+    email = userinfo.get("email")
+    nickname = (
+        userinfo.get("nickname")
+        or userinfo.get("preferred_username")
+        or userinfo.get("name")
+        or f"faceit_{faceit_guid}"
+    )
+
+    # Try to find existing user by faceit_id
+    user = db.execute(
+        select(User).where(User.faceit_id == faceit_guid)
+    ).scalars().first()
+
+    if not user and email:
+        # Try to link to existing account with same email
+        user = db.execute(
+            select(User).where(User.email == email)
+        ).scalars().first()
+        if user and user.faceit_id and user.faceit_id != faceit_guid:
+            logger.warning(
+                "Email %s already linked to a different FACEIT id %s",
+                email,
+                user.faceit_id,
+            )
+            raise HTTPException(
+                status_code=400,
+                detail="This email is already linked to another Faceit account",
+            )
+
+    if not user:
+        # Create synthetic email if needed or if it's already taken
+        if email:
+            existing_email_user = db.execute(
+                select(User).where(User.email == email)
+            ).scalars().first()
+            if existing_email_user:
+                email = None
+
+        if not email:
+            email = f"faceit_{faceit_guid}@faceit.local"
+
+        # Ensure unique username
+        base_username = nickname
+        username = base_username
+        suffix = 1
+        while db.execute(
+            select(User).where(User.username == username)
+        ).scalars().first():
+            username = f"{base_username}_{suffix}"
+            suffix += 1
+
+        random_password = secrets.token_urlsafe(16)
+        hashed_password = get_password_hash(random_password)
+
+        user = User(
+            email=email,
+            username=username,
+            hashed_password=hashed_password,
+            faceit_id=faceit_guid,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        subscription = Subscription(user_id=user.id, tier=SubscriptionTier.FREE)
+        db.add(subscription)
+        db.commit()
+    else:
+        # Link FACEIT account if not already linked
+        if not user.faceit_id:
+            user.faceit_id = faceit_guid
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+    access_token = create_access_token(data={"sub": str(user.id)})
+
+    redirect_url = f"{settings.WEBSITE_URL.rstrip('/')}/auth?faceit_token={access_token}&auto=1"
+
+    response = RedirectResponse(redirect_url)
+    secure_cookie = settings.WEBSITE_URL.startswith("https://")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,
+    )
+    return response
+
+
+@router.get("/steam/callback")
+async def steam_callback(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Handle Steam OpenID callback, create/find user and issue JWT.
+
+    On success redirects back to frontend /auth with steam_token and auto=1
+    to trigger automatic player analysis for the logged-in user.
+    """
+
+    steam_id = await verify_steam_openid(request.query_params)
+    if not steam_id:
+        raise HTTPException(status_code=400, detail="Steam authentication failed")
+
+    # Find existing user by steam_id, or create a new one
+    user = db.execute(
+        select(User).where(User.steam_id == steam_id)
+    ).scalars().first()
+
+    if not user:
+        # Create synthetic email/username based on steam_id
+        email = f"steam_{steam_id}@steam.local"
+        username = f"steam_{steam_id}"
+
+        random_password = secrets.token_urlsafe(16)
+        hashed_password = get_password_hash(random_password)
+
+        user = User(
+            email=email,
+            username=username,
+            hashed_password=hashed_password,
+            steam_id=steam_id,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        subscription = Subscription(user_id=user.id, tier=SubscriptionTier.FREE)
+        db.add(subscription)
+        db.commit()
+    else:
+        # Ensure steam_id is stored if user existed without it
+        if not user.steam_id:
+            user.steam_id = steam_id
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+    access_token = create_access_token(data={"sub": str(user.id)})
+
+    # Redirect back to frontend auth page, which will store the token and
+    # then redirect to /analysis?auto=1 for immediate player analysis.
+    redirect_url = f"{settings.WEBSITE_URL.rstrip('/')}/auth?steam_token={access_token}&auto=1"
+
+    response = RedirectResponse(redirect_url)
+    secure_cookie = settings.WEBSITE_URL.startswith("https://")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,
+    )
+    return response
 
 
 @router.post("/register")
@@ -99,7 +499,11 @@ async def register(request: Request, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(request: Request, db: Session = Depends(get_db)):
+async def login(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     """Login user"""
     # Try to get form data first
     try:
@@ -136,6 +540,17 @@ async def login(request: Request, db: Session = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
+    # Set httpOnly cookie for 30 days in addition to returning the token in JSON
+    secure_cookie = settings.WEBSITE_URL.startswith("https://")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,
+    )
+
     logger.info(f"User logged in: {user.email}")
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -146,3 +561,49 @@ async def get_current_user_info(
 ):
     """Get current user info"""
     return current_user
+
+
+@router.post("/steam/link", response_model=UserResponse)
+async def link_steam_account(
+    payload: SteamLinkRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Link a Steam account to the currently authenticated user.
+
+    Expects a payload with steam_id. If this steam_id is already linked to
+    another user, returns 400.
+    """
+
+    # Check if steam_id is already used by another user
+    existing = db.execute(
+        select(User).where(User.steam_id == payload.steam_id)
+    ).scalars().first()
+
+    if existing and existing.id != current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="This Steam account is already linked to another user",
+        )
+
+    current_user.steam_id = payload.steam_id
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+
+    return UserResponse.model_validate(current_user)
+
+
+@router.post("/steam/unlink", response_model=UserResponse)
+async def unlink_steam_account(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    """Unlink Steam account from the current user (if any)."""
+
+    current_user.steam_id = None
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+
+    return UserResponse.model_validate(current_user)

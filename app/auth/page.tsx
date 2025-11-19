@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { API_ENDPOINTS } from '../../src/config/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,9 +14,50 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { login, register } = useAuth();
+  const { login, register, loginWithToken } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
+
+  // Handle OpenID/OAuth callbacks: token & auto=1 from query params
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    const steamToken = url.searchParams.get('steam_token');
+    const faceitToken = url.searchParams.get('faceit_token');
+    const genericToken = url.searchParams.get('token');
+    const auto = url.searchParams.get('auto');
+
+    const authToken = steamToken || faceitToken || genericToken;
+
+    if (!authToken) {
+      return;
+    }
+
+    const handleExternalLogin = async () => {
+      try {
+        await loginWithToken(authToken);
+
+        // Очистим токен из URL, чтобы не светился в адресной строке
+        url.searchParams.delete('steam_token');
+        url.searchParams.delete('faceit_token');
+        url.searchParams.delete('token');
+        window.history.replaceState({}, '', url.toString());
+
+        if (auto === '1') {
+          router.replace('/analysis?auto=1');
+        } else {
+          router.replace('/');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : '';
+        setError(errorMessage || t('auth.login_failed'));
+        console.error('External auth error:', err);
+      }
+    };
+
+    handleExternalLogin();
+  }, [loginWithToken, router, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +163,42 @@ export default function AuthPage() {
                 : t('auth.register_button')}
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="flex items-center my-4">
+            <div className="flex-grow border-t border-gray-700" />
+            <span className="mx-3 text-gray-400 text-sm">
+              {t('auth.or', 'or')}
+            </span>
+            <div className="flex-grow border-t border-gray-700" />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = API_ENDPOINTS.AUTH_STEAM_LOGIN;
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            disabled={loading}
+          >
+            <span>🎮</span>
+            <span>{t('auth.login_with_steam', 'Sign in with Steam')}</span>
+          </button>
+
+          <div className="mt-3" />
+
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = API_ENDPOINTS.AUTH_FACEIT_LOGIN;
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            disabled={loading}
+          >
+            <span>⚔️</span>
+            <span>{t('auth.login_with_faceit', 'Sign in with FACEIT')}</span>
+          </button>
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-center text-gray-400">

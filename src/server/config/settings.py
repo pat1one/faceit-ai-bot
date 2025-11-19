@@ -28,8 +28,10 @@ class Settings(BaseSettings):
         "postgresql://user:password@localhost:5432/faceit_ai_bot"
     )
 
-    # Faceit API settings
+    # Faceit API & OAuth settings
     FACEIT_API_KEY: Optional[str] = None
+    FACEIT_CLIENT_ID: Optional[str] = None
+    FACEIT_CLIENT_SECRET: Optional[str] = None
 
     # AI Services
     GROQ_API_KEY: Optional[str] = None

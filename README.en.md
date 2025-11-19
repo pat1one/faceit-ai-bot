@@ -5,7 +5,7 @@
 ![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.0-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Source--available-blue?style=for-the-badge)
 
 **CS2 Player Analysis and Teammate Finder for Faceit Platform**
 
@@ -297,7 +297,8 @@ We welcome contributions to the project!
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is distributed under a custom **source-available** license.
+See the [LICENSE](LICENSE) file for full terms and conditions.
 
 ---
 

@@ -4,6 +4,9 @@ Copyright (c) 2025 pattmsc (Platon)
 
 You can freely use this code, but there are a couple important points:
 
+This is a source-available, non-proprietary license: you can read and modify the
+code, but commercial and competitive use are restricted as described below.
+
 MAIN RULES:
 
 1. GIVE CREDIT
@@ -37,6 +40,18 @@ MAIN RULES:
 6. OFFICIAL SERVICE
    The only official paid service is here: https://pattmsc.online
    Want to launch your own commercial project - write to me.
+
+7. CODE OWNERS & ANTI-PIRACY
+   - Official code owners are defined in the .github/CODEOWNERS file of this
+     repository.
+   - Any commercial use, resale, hosting or integration of this project or
+     substantial parts of its code into your own public or commercial project
+     without explicit written permission from a code owner is prohibited.
+   - You may not create or distribute builds, forks or services with identical
+     or confusingly similar functionality that compete with the official
+     service (https://pattmsc.online), whether paid or free.
+   - Pirated, cracked or resold builds, keys or subscriptions are strictly
+     forbidden.
 
 DISCLAIMER:
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

@@ -77,7 +77,7 @@ app = FastAPI(
         "email": "support@faceit-ai-bot.com",
     },
     license_info={
-        "name": "MIT",
+        "name": "Source-available (see LICENSE)",
     },
 )
 

@@ -8,6 +8,7 @@ interface User {
   username?: string;
   email?: string;
   faceit_id?: string;
+  steam_id?: string;
 }
 
 interface AuthContextType {
@@ -15,6 +16,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
+   loginWithToken: (token: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -89,6 +91,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await fetchUser(data.access_token);
   };
 
+  const loginWithToken = async (authToken: string) => {
+    setToken(authToken);
+    localStorage.setItem('token', authToken);
+    await fetchUser(authToken);
+  };
+
   const register = async (email: string, username: string, password: string) => {
     const response = await fetch(API_ENDPOINTS.AUTH_REGISTER, {
       method: 'POST',
@@ -124,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, loginWithToken, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

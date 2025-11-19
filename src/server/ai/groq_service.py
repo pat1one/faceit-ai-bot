@@ -4,6 +4,7 @@ Service for Groq AI models
 """
 from typing import Dict, List, Optional
 import logging
+from urllib.parse import urlparse
 import aiohttp
 import json
 from ..config.settings import settings
@@ -41,6 +42,14 @@ class GroqService:
 
         if not self.api_key and self.provider != "local":
             logger.warning("Groq API key not configured")
+
+    def _is_openrouter_base_url(self) -> bool:
+        """Return True if groq_base_url points to openrouter.ai host."""
+        try:
+            parsed = urlparse(self.groq_base_url)
+            return parsed.netloc == "openrouter.ai"
+        except Exception:
+            return False
 
     def _normalize_language(self, language: Optional[str]) -> str:
         """Normalize language code to a small set (currently 'ru' or 'en')."""
@@ -83,7 +92,7 @@ class GroqService:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
-            if self.groq_base_url.startswith("https://openrouter.ai"):
+            if self._is_openrouter_base_url():
                 referer = getattr(settings, "WEBSITE_URL", "")
                 app_title = getattr(settings, "APP_TITLE", "Faceit AI Bot")
                 if referer:
@@ -331,7 +340,7 @@ class GroqService:
             if self.api_key:
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
-            if self.groq_base_url.startswith("https://openrouter.ai"):
+            if self._is_openrouter_base_url():
                 referer = getattr(settings, "WEBSITE_URL", "")
                 app_title = getattr(settings, "APP_TITLE", "Faceit AI Bot")
                 if referer:

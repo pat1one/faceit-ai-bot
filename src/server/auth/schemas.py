@@ -30,9 +30,15 @@ class UserResponse(BaseModel):
     email: str
     username: str
     faceit_id: Optional[str]
+    steam_id: Optional[str]
     is_active: bool
     is_admin: bool
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class SteamLinkRequest(BaseModel):
+    """Request body for linking a Steam account to the current user"""
+    steam_id: str
