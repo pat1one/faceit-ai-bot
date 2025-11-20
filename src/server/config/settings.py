@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     FACEIT_CLIENT_ID: Optional[str] = None
     FACEIT_CLIENT_SECRET: Optional[str] = None
 
+    # Steam Web API settings
+    STEAM_WEB_API_KEY: Optional[str] = None
+
     # AI Services
     GROQ_API_KEY: Optional[str] = None
     GROQ_MODEL: Optional[str] = None

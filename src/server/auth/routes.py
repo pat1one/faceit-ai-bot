@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 STEAM_OPENID_URL = "https://steamcommunity.com/openid/login"
+STEAM_API_PLAYER_SUMMARIES_URL = "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/"
 
 FACEIT_AUTHORIZATION_URL = "https://accounts.faceit.com"
 FACEIT_TOKEN_URL = "https://api.faceit.com/auth/v1/oauth/token"
@@ -78,6 +79,47 @@ async def verify_steam_openid(query_params) -> str | None:
     # Example: https://steamcommunity.com/openid/id/76561198000000000
     steam_id = claimed_id.rstrip("/").split("/")[-1]
     return steam_id or None
+
+
+async def fetch_steam_persona_name(steam_id: str) -> str | None:
+    api_key = getattr(settings, "STEAM_WEB_API_KEY", None)
+    if not api_key:
+        return None
+
+    params = {
+        "key": api_key,
+        "steamids": steam_id,
+    }
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+            
+                STEAM_API_PLAYER_SUMMARIES_URL,
+                params=params,
+            ) as resp:
+                if resp.status != 200:
+                    text = await resp.text()
+                    logger.warning(
+                        "Steam GetPlayerSummaries error %s: %s",
+                        resp.status,
+                        text,
+                    )
+                    return None
+                data = await resp.json()
+    except Exception as e:  # pragma: no cover - network errors are logged
+        logger.error("Steam GetPlayerSummaries request error: %s", str(e))
+        return None
+
+    players = (data.get("response") or {}).get("players") or []
+    if not players:
+        return None
+
+    persona_name = players[0].get("personaname")
+    if not persona_name:
+        return None
+
+    return str(persona_name)
 
 
 @router.get("/steam/login")
@@ -322,9 +364,29 @@ async def faceit_callback(
         db.add(subscription)
         db.commit()
     else:
+        updated = False
+
         # Link FACEIT account if not already linked
         if not user.faceit_id:
             user.faceit_id = faceit_guid
+            updated = True
+
+        # If user still has legacy faceit_<id> username, try to replace it with nickname
+        if nickname and user.username:
+            legacy_prefix = f"faceit_{faceit_guid}"
+            if user.username == legacy_prefix:
+                base_username = nickname
+                username = base_username
+                suffix = 1
+                while db.execute(
+                    select(User).where(User.username == username)
+                ).scalars().first():
+                    username = f"{base_username}_{suffix}"
+                    suffix += 1
+                user.username = username
+                updated = True
+
+        if updated:
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -361,15 +423,26 @@ async def steam_callback(
     if not steam_id:
         raise HTTPException(status_code=400, detail="Steam authentication failed")
 
+    steam_persona_name = await fetch_steam_persona_name(steam_id)
+
     # Find existing user by steam_id, or create a new one
     user = db.execute(
         select(User).where(User.steam_id == steam_id)
     ).scalars().first()
 
     if not user:
-        # Create synthetic email/username based on steam_id
+        # Create synthetic email based on steam_id
         email = f"steam_{steam_id}@steam.local"
-        username = f"steam_{steam_id}"
+
+        # Prefer real Steam persona name as username when available
+        base_username = steam_persona_name or f"steam_{steam_id}"
+        username = base_username
+        suffix = 1
+        while db.execute(
+            select(User).where(User.username == username)
+        ).scalars().first():
+            username = f"{base_username}_{suffix}"
+            suffix += 1
 
         random_password = secrets.token_urlsafe(16)
         hashed_password = get_password_hash(random_password)
@@ -389,8 +462,27 @@ async def steam_callback(
         db.commit()
     else:
         # Ensure steam_id is stored if user existed without it
+        updated = False
         if not user.steam_id:
             user.steam_id = steam_id
+            updated = True
+
+        # If user still has legacy steam_<id> username, try to replace it with persona name
+        if steam_persona_name and user.username:
+            legacy_prefix = f"steam_{steam_id}"
+            if user.username == legacy_prefix:
+                base_username = steam_persona_name
+                username = base_username
+                suffix = 1
+                while db.execute(
+                    select(User).where(User.username == username)
+                ).scalars().first():
+                    username = f"{base_username}_{suffix}"
+                    suffix += 1
+                user.username = username
+                updated = True
+
+        if updated:
             db.add(user)
             db.commit()
             db.refresh(user)
