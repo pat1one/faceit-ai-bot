@@ -4,7 +4,13 @@
   "version": "0.1.0",
   "description": "Quick access to Faceit AI Bot player and demo analysis.",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.svg",
+      "32": "icon.svg",
+      "48": "icon.svg",
+      "128": "icon.svg"
+    }
   },
   "permissions": [
     "activeTab"
@@ -16,6 +22,12 @@
     "https://steamcommunity.com/*",
     "http://localhost:3000/*"
   ],
+  "icons": {
+    "16": "icon.svg",
+    "32": "icon.svg",
+    "48": "icon.svg",
+    "128": "icon.svg"
+  },
   "content_scripts": [
     {
       "matches": [
