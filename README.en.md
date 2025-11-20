@@ -214,6 +214,11 @@ Detailed documentation for developers and contributors is available in the `/doc
 - [x] 📊 Improved analytics
 - [x] 🔄 Automatic deploy pipeline
 
+### 🧩 Browser extension (status)
+
+- ✅ **Basic browser extension available** (Chrome/Edge, manual install from `extension` folder)
+- 🚧 Store publishing (Chrome Web Store / other stores) and UX polish are planned for v0.5.0
+
 </details>
 
 ### 🚧 v0.5.0 - In Development (Q1 2026)

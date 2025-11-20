@@ -2,7 +2,11 @@
   function tryInjectButton() {
     try {
       const host = window.location.hostname.toLowerCase();
-      if (!host.includes("faceit.com")) return;
+      // Разрешаем только faceit.com и его поддомены, а не произвольные хосты,
+      // содержащие "faceit.com" внутри.
+      const isFaceitHost =
+        host === "faceit.com" || host.endsWith(".faceit.com");
+      if (!isFaceitHost) return;
 
       const path = window.location.pathname.toLowerCase();
       const idx = path.indexOf("/players/");
