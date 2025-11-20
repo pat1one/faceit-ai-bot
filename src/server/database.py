@@ -17,14 +17,15 @@ if settings.DATABASE_URL.startswith('sqlite'):
     engine = create_engine(
         settings.DATABASE_URL,
         connect_args={"check_same_thread": False},
-        poolclass=StaticPool
+        poolclass=StaticPool,
     )
 else:
+    # Use a simple engine configuration for PostgreSQL that matches
+    # the manual test (create_engine(settings.DATABASE_URL)) which
+    # successfully connects with the current credentials.
     engine = create_engine(
         settings.DATABASE_URL,
         pool_pre_ping=True,
-        pool_size=10,
-        max_overflow=20
     )
 
 # Creation session factory
