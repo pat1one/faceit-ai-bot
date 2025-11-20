@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env - use absolute path
 project_root = Path(__file__).resolve().parent.parent.parent.parent
 env_path = project_root / ".env"
-load_dotenv(dotenv_path=str(env_path), override=True)
+load_dotenv(dotenv_path=str(env_path))
 
 # Use DATABASE_URL from environment
 DATABASE_URL = os.getenv(
