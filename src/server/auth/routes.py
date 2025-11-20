@@ -655,6 +655,13 @@ async def get_current_user_info(
     return current_user
 
 
+@router.post("/logout")
+async def logout_user(response: Response):
+    """Logout user by clearing the access_token cookie"""
+    response.delete_cookie(key="access_token")
+    return {"detail": "Logged out"}
+
+
 @router.post("/steam/link", response_model=UserResponse)
 async def link_steam_account(
     payload: SteamLinkRequest,

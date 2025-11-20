@@ -45,7 +45,15 @@ const Navigation = () => {
           <LanguageSwitcher />
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-gray-700 dark:text-gray-300 text-sm">{user.username || user.email}</span>
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 text-sm font-medium"
+              >
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold">
+                  {(user.username || user.email || '?')[0]?.toUpperCase()}
+                </span>
+                <span>{user.username || user.email}</span>
+              </Link>
               <button
                 onClick={logout}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white font-medium transition-colors"

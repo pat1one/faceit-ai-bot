@@ -30,29 +30,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check for saved token on mount
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      fetchUser(savedToken);
-    } else {
-      setLoading(false);
-    }
+    fetchUser();
   }, []);
 
-  const fetchUser = async (authToken: string) => {
+  const fetchUser = async () => {
     try {
       const response = await fetch(API_ENDPOINTS.AUTH_ME, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
+        credentials: 'include',
       });
 
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
       } else {
-        localStorage.removeItem('token');
         setToken(null);
+        setUser(null);
       }
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -86,15 +78,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json();
-    setToken(data.access_token);
-    localStorage.setItem('token', data.access_token);
-    await fetchUser(data.access_token);
+    setToken(data.access_token || null);
+    await fetchUser();
   };
 
   const loginWithToken = async (authToken: string) => {
     setToken(authToken);
-    localStorage.setItem('token', authToken);
-    await fetchUser(authToken);
+    await fetchUser();
   };
 
   const register = async (email: string, username: string, password: string) => {
@@ -126,9 +116,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('token');
+    fetch(API_ENDPOINTS.AUTH_LOGOUT, {
+      method: 'POST',
+      credentials: 'include',
+    })
+      .catch((error) => {
+        console.error('Failed to logout:', error);
+      })
+      .finally(() => {
+        setUser(null);
+        setToken(null);
+      });
   };
 
   return (

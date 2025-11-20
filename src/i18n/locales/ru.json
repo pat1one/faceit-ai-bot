@@ -130,7 +130,7 @@
   "landing": {
     "title": "Faceit AI Bot",
     "subtitle": "Продвинутая платформа анализа статистики CS2 и поиска тиммейтов",
-    "cta_get_started": "Начать",
+    "cta_get_started": "Анализ игрока",
     "cta_sign_in": "Войти",
     "feature_demo_title": "Анализ демо",
     "feature_demo_desc": "Загружайте и анализируйте демки CS2",

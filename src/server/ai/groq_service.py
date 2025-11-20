@@ -62,6 +62,28 @@ class GroqService:
             return "ru"
         return "en"
 
+
+    def _log_sample(
+        self,
+        task: str,
+        language: str,
+        input_payload: Dict,
+        output_payload,
+    ) -> None:
+        try:
+            record = {
+                "task": task,
+                "language": language,
+                "input": input_payload,
+                "output": output_payload,
+            }
+            logger.info(
+                "ai_sample %s",
+                json.dumps(record, ensure_ascii=False, default=str),
+            )
+        except Exception:
+            logger.exception("Failed to log AI sample")
+
     async def analyze_player_performance(
         self,
         stats: Dict,
@@ -137,9 +159,19 @@ class GroqService:
                 ) as response:
                     if response.status == 200:
                         data = await response.json()
-                        return data["choices"][0]["message"][
+                        content = data["choices"][0]["message"][
                             "content"
                         ]
+                        self._log_sample(
+                            task="analysis",
+                            language=lang,
+                            input_payload={
+                                "stats": stats,
+                                "match_history": match_history or [],
+                            },
+                            output_payload=content,
+                        )
+                        return content
                     else:
                         error_text = await response.text()
                         logger.error(
@@ -280,14 +312,34 @@ class GroqService:
                             text = "\n".join(cleaned_lines).strip()
 
                         try:
-                            return json.loads(text)
+                            plan = json.loads(text)
+                            self._log_sample(
+                                task="training_plan",
+                                language=lang,
+                                input_payload={
+                                    "player_stats": player_stats,
+                                    "focus_areas": focus_areas,
+                                },
+                                output_payload=plan,
+                            )
+                            return plan
                         except json.JSONDecodeError:
                             # Try to extract the first JSON object from the text
                             start = text.find("{")
                             end = text.rfind("}")
                             if start != -1 and end != -1 and end > start:
                                 try:
-                                    return json.loads(text[start : end + 1])
+                                    plan = json.loads(text[start : end + 1])
+                                    self._log_sample(
+                                        task="training_plan",
+                                        language=lang,
+                                        input_payload={
+                                            "player_stats": player_stats,
+                                            "focus_areas": focus_areas,
+                                        },
+                                        output_payload=plan,
+                                    )
+                                    return plan
                                 except json.JSONDecodeError:
                                     logger.error(
                                         "Failed to parse Groq training plan JSON",
@@ -392,6 +444,12 @@ class GroqService:
             try:
                 parsed = json.loads(text)
                 if isinstance(parsed, Dict):
+                    self._log_sample(
+                        task="teammates",
+                        language=lang,
+                        input_payload=payload,
+                        output_payload=parsed,
+                    )
                     return parsed
                 return {}
             except json.JSONDecodeError:
@@ -401,6 +459,12 @@ class GroqService:
                     try:
                         parsed = json.loads(text[start : end + 1])
                         if isinstance(parsed, Dict):
+                            self._log_sample(
+                                task="teammates",
+                                language=lang,
+                                input_payload=payload,
+                                output_payload=parsed,
+                            )
                             return parsed
                     except json.JSONDecodeError:
                         logger.error(
