@@ -160,16 +160,6 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     restart: always
 
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
-      - /var/log/faceit:/var/log/faceit
-    command: -config.file=/etc/promtail/config.yml
-    restart: always
-    depends_on:
-      - loki
-
   alertmanager:
     image: prom/alertmanager:latest
     ports:
