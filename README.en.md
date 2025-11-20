@@ -106,7 +106,7 @@ Current extension capabilities:
 
 #### Manual Browser Extension Installation (Chrome/Edge)
 
-1. Download the repository or ZIP archive from GitHub and unpack it.
+1. Open the v0.4.1 release on GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.1) and download the extension archive from the **Assets** section, then unpack it (or download the whole repository as a ZIP).
 2. Open `chrome://extensions` (for Chrome) or `edge://extensions` (for Microsoft Edge).
 3. Enable **Developer mode**.
 4. Click **"Load unpacked"** and select the `extension` folder inside the `faceit-ai-bot` project.
