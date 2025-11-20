@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 import aiohttp
 import json
 from ..config.settings import settings
+from .sample_store import append_sample
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,9 @@ class GroqService:
                 "ai_sample %s",
                 json.dumps(record, ensure_ascii=False, default=str),
             )
+
+            # Additionally, persist samples for future coach model training
+            append_sample(record)
         except Exception:
             logger.exception("Failed to log AI sample")
 

@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Faceit AI Bot Assistant",
+  "version": "0.1.0",
+  "description": "Quick access to Faceit AI Bot player and demo analysis.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://pattmsc.online/*",
+    "https://*.faceit.com/*",
+    "https://faceit.com/*",
+    "https://steamcommunity.com/*",
+    "http://localhost:3000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.faceit.com/*",
+        "https://faceit.com/*"
+      ],
+      "js": ["faceit_content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://steamcommunity.com/*"
+      ],
+      "js": ["steam_content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

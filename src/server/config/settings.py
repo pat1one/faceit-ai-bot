@@ -141,6 +141,9 @@ class Settings(BaseSettings):
     JAEGER_PORT: int = 6831
     VERSION: str = "0.4.0"
 
+    # Directory for storing AI training samples (JSONL)
+    AI_SAMPLES_DIR: str = "data"
+
     # Test settings
     TEST_ENV: bool = False
 
