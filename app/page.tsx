@@ -58,12 +58,6 @@ export default function HomePage() {
                 {t('landing.cta_get_started')}
               </Link>
               <Link
-                href="/auth"
-                className="btn-primary"
-              >
-                {t('landing.cta_sign_in')}
-              </Link>
-              <Link
                 href="/demo/example"
                 className="btn-primary"
               >
@@ -123,12 +117,6 @@ export default function HomePage() {
               <li>{t('landing.social_benefit_3')}</li>
             </ul>
             <div className="mt-6 flex flex-wrap gap-4">
-              <Link
-                href={user ? '/analysis' : '/auth'}
-                className="btn-primary"
-              >
-                {t('landing.cta_get_started')}
-              </Link>
               <Link
                 href="/demo/example"
                 className="btn-primary"
