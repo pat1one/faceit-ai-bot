@@ -68,12 +68,20 @@ const Navigation = () => {
               </button>
             </div>
           ) : (
-            <Link
-              href="/auth"
-              className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white font-semibold transition-colors"
-            >
-              {t('nav.login')}
-            </Link>
+            <>
+              <Link
+                href="/analysis"
+                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white font-semibold text-sm transition-colors"
+              >
+                {t('nav.player_analysis', { defaultValue: 'Player Analysis' })}
+              </Link>
+              <Link
+                href="/auth"
+                className="px-6 py-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg text-white font-semibold transition-colors"
+              >
+                {t('nav.login')}
+              </Link>
+            </>
           )}
         </div>
       </div>
