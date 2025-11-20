@@ -63,7 +63,6 @@
 ![Groq](https://img.shields.io/badge/Groq-FFA500?style=for-the-badge&logo=groq&logoColor=black)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
 ![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge)
-![Languages](https://img.shields.io/badge/Languages-ru%20%7C%20en-6B21A8?style=for-the-badge)
 
 **AI-стек приложения:**
 - Единый сервис `GroqService` с поддержкой трёх провайдеров:
