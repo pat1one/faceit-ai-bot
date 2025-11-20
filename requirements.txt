@@ -22,3 +22,6 @@ redis>=4.5.0
 python-dotenv>=1.0.0
 celery>=5.3.0
 demoparser2>=0.40.2
+
+# Monitoring
+prometheus-client>=0.20.0
