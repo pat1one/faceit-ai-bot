@@ -9,7 +9,7 @@
 
 **CS2 Player Analysis and Teammate Finder for Faceit Platform**
 
-[🚀 Demo](https://pattmsc.online) • [📚 Documentation](https://docs.pattmsc.online) • [📦 Release v0.4.1](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.1) • [🐛 Bug Reports](https://github.com/pat1one/faceit-ai-bot/issues)
+[🚀 Demo](https://pattmsc.online) • [📚 Documentation](https://pat1one.github.io/faceit-ai-bot/) • [📦 Release v0.4.1](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.1) • [🐛 Bug Reports](https://github.com/pat1one/faceit-ai-bot/issues)
 
 **[Русская версия](README.md)**
 
@@ -45,6 +45,8 @@ A tool for analyzing CS2 player statistics on the Faceit platform. Helps find te
 ✅ **AI and data technologies:**
 ![Groq](https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=ai&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge)
+![Languages](https://img.shields.io/badge/Languages-ru%20%7C%20en-6B21A8?style=for-the-badge)
 
 **AI stack:**
 - Unified `GroqService` with three providers:
@@ -82,7 +84,7 @@ A tool for analyzing CS2 player statistics on the Faceit platform. Helps find te
 ✅ **The site is live and running in production!**
 
 🌍 **Main site:** [pattmsc.online](https://pattmsc.online)
-📚 **Documentation:** [docs.pattmsc.online](https://docs.pattmsc.online)
+📚 **Documentation:** [GitHub Pages](https://pat1one.github.io/faceit-ai-bot/)
 
 **Available features:**
 - 🎯 CS2 player analysis by nickname

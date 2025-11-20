@@ -1,114 +1,63 @@
 # Contributing Guide
 
-Thank you for your interest in the project. I welcome all contributions.
+Thank you for your interest in the project — I appreciate any reasonable contribution.
 
-## How to Contribute
+## How to contribute
 
-### 1. Fork & Clone
+### 1. Fork & setup
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/faceit-ai-bot.git
 cd faceit-ai-bot
+git checkout -b feature/my-change
 ```
 
-### 2. Create a Branch
+### 2. What I expect
+
+- Run the project locally (see README).
+- Make small, focused changes (one feature or one bugfix per PR).
+- If you change core logic, add or update tests when possible.
+
+### 3. Code style
+
+- **Python**: follow PEP 8, use type hints.
+- **TypeScript/Next.js**: keep ESLint/Prettier happy (as configured in the repo).
+- Avoid noisy refactors that only reformat large files without real changes.
+
+### 4. Commits
+
+- Keep commit messages short and clear: what exactly changed.
+
+Examples:
 
 ```bash
-git checkout -b feature/your-awesome-feature
+git commit -m "fix prod auth and Dockerfile"
+git commit -m "update extension page and docs"
+git commit -m "add training sample export for demos"
 ```
 
-### 3. Make Your Changes
+You can use Conventional Commits if you like, but it's **not required**.
 
-Make sure everything works:
+### 5. Pull Request
 
 ```bash
-# Check TypeScript
-npm run type-check
-
-# Lint your code
-npm run lint
-
-# Run tests
-npm test
+git push origin feature/my-change
 ```
 
-### 4. Commit Your Work
+Then open a Pull Request to `pat1one/faceit-ai-bot` on GitHub and briefly describe:
 
-We use [Conventional Commits](https://www.conventionalcommits.org/) - it sounds fancy but it's simple:
+- what you changed;
+- why it is useful for users or the project;
+- add a screenshot/example if relevant.
 
-```bash
-git commit -m "feat: add new feature"
-git commit -m "fix: fix that annoying bug"
-git commit -m "docs: update readme"
-```
+## Bugs and feature requests
 
-**Commit types:**
-
-- `feat` - new feature
-- `fix` - bug fix
-- `docs` - documentation
-- `style` - code formatting
-- `refactor` - code refactoring
-- `test` - adding tests
-- `chore` - updating dependencies
-
-**Examples:**
-
-```bash
-git commit -m "feat: add player search"
-git commit -m "fix: fix stats display"
-git commit -m "docs: update installation guide"
-```
-
-### 5. Push & PR
-
-```bash
-git push origin feature/your-awesome-feature
-```
-
-Then create a Pull Request on GitHub!
-
-## Code Style
-
-### TypeScript/JavaScript
-
-- Use ESLint and Prettier
-- 2 spaces for indentation
-- Semicolons are required
-
-### Python
-
-- Follow PEP 8
-- 4 spaces for indentation
-- Max line length: 88 characters (Black formatter)
-
-### Commits
-
-- Keep them short and sweet
-- Write in present tense ("add feature" not "added feature")
-- No AI/ML buzzwords - use simple terms like "analysis", "processing", "stats"
-
-## Bug Reports
-
-Found a bug? Create an issue with:
-
-- Steps to reproduce
-- What you expected
-- What actually happened
-- Version info
-- Your environment (OS, browser, etc.)
-
-## Feature Requests
-
-Create an issue with the `enhancement` tag and describe:
-
-- What problem it solves
-- How you'd like it to work
-- Any alternatives you considered
+- Bugs: open an issue with clear reproduction steps and a short description.
+- Enhancements: open an issue with the `enhancement` label and explain what problem it solves.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+By contributing, you agree that your code is distributed under the custom **source-available** license described in [LICENSE](LICENSE).
 
 ---
 

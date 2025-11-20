@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-Source--available-blue?style=for-the-badge)
 
 [![Site Status](https://img.shields.io/badge/Site-Online-brightgreen?style=for-the-badge)](https://pattmsc.online)
-[![Documentation](https://img.shields.io/badge/Documentation-Available-blue?style=for-the-badge)](https://docs.pattmsc.online)
+[![Documentation](https://img.shields.io/badge/Documentation-Available-blue?style=for-the-badge)](https://pat1one.github.io/faceit-ai-bot/)
 [![codecov](https://codecov.io/gh/pat1one/faceit-ai-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/pat1one/faceit-ai-bot)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/pat1one/faceit-ai-bot)
 [![GitHub issues](https://img.shields.io/github/issues/pat1one/faceit-ai-bot)](https://github.com/pat1one/faceit-ai-bot/issues)
@@ -18,9 +18,9 @@
 **Анализ игроков CS2 и поиск тиммейтов на платформе Faceit**
 
 ✅ **Сайт активно работает: [pattmsc.online](https://pattmsc.online)**  
-📚 **Документация доступна: [docs.pattmsc.online](https://docs.pattmsc.online)**
+📚 **Документация доступна на GitHub Pages: [pat1one.github.io/faceit-ai-bot](https://pat1one.github.io/faceit-ai-bot/)**
 
-[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://docs.pattmsc.online) • [📦 Релиз v0.4.1](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.1) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
+[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://pat1one.github.io/faceit-ai-bot/) • [📦 Релиз v0.4.1](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.1) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
 
 **[English version](README.en.md)** | **[Contributing](CONTRIBUTING.md)** | **[Changelog](CHANGELOG.md)** | **[FAQ](FAQ.md)**
 
@@ -62,6 +62,8 @@
 ✅ **AI и Data технологии:**
 ![Groq](https://img.shields.io/badge/Groq-FFA500?style=for-the-badge&logo=groq&logoColor=black)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge)
+![Languages](https://img.shields.io/badge/Languages-ru%20%7C%20en-6B21A8?style=for-the-badge)
 
 **AI-стек приложения:**
 - Единый сервис `GroqService` с поддержкой трёх провайдеров:
@@ -74,7 +76,6 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ### Frontend
@@ -110,7 +111,7 @@
 ✅ **Сайт успешно запущен и работает!**
 
 🌍 **Основной сайт:** [pattmsc.online](https://pattmsc.online)
-📚 **Документация:** [docs.pattmsc.online](https://docs.pattmsc.online) (субдомен)
+📚 **Документация:** [GitHub Pages](https://pat1one.github.io/faceit-ai-bot/)
 
 **Возможности:**
 - 🎯 Анализ игроков CS2 по никнейму
