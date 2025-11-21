@@ -19,6 +19,7 @@ import tempfile
 import os
 import pandas as pd
 from demoparser2 import DemoParser
+from ...ai.demo_coach_model import DemoCoachModel
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ class DemoAnalyzer:
         # Use GroqService for AI-powered recommendations in demo analysis
         self.ai_service = GroqService()
         self.faceit_client = FaceitAPIClient()
+        self.demo_coach_model = DemoCoachModel()
 
         logger.info("DemoAnalyzer initialized with Groq AI service")
 
@@ -94,13 +96,31 @@ class DemoAnalyzer:
                 language=language,
             )
 
-            coach_report = self._build_coach_report_stub(
-                demo_input=demo_input,
-                player_performances=player_performances,
-                improvement_areas=improvement_areas,
-                recommendations=recommendations,
-                language=language,
-            )
+            try:
+                coach_report = await self.demo_coach_model.generate_coach_report(
+                    demo_input=demo_input,
+                    language=language,
+                )
+
+                # If model returned an empty report, fall back to stub
+                if not (
+                    getattr(coach_report, "overview", None)
+                    or getattr(coach_report, "summary", None)
+                ):
+                    raise RuntimeError("Empty coach report from demo coach model")
+
+            except Exception:
+                logger.warning(
+                    "DemoCoachModel failed, falling back to stub coach report",
+                    exc_info=True,
+                )
+                coach_report = self._build_coach_report_stub(
+                    demo_input=demo_input,
+                    player_performances=player_performances,
+                    improvement_areas=improvement_areas,
+                    recommendations=recommendations,
+                    language=language,
+                )
 
             return DemoAnalysis(
                 demo_id=demo_data['match_id'],
