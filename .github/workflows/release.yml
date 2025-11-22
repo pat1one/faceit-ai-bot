@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
+      - name: Build frontend
+        run: npm run build
+
       - name: Build extension
         run: npm run build:extension
       
@@ -48,6 +51,15 @@ jobs:
         run: |
           mkdir -p dist/releases
           zip -r dist/releases/faceit-ai-bot-extension-${{ steps.version.outputs.version }}.zip extension
+
+      - name: Create web assets package
+        run: |
+          mkdir -p dist
+          tar -czf dist/faceit-ai-bot-web-assets-${{ steps.version.outputs.version }}.tar.gz \
+            .next \
+            public \
+            next.config.* \
+            package.json
       
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -103,6 +115,10 @@ jobs:
           #### 🧩 Расширение для браузера
           
           - `faceit-ai-bot-extension-${{ steps.version.outputs.version }}.zip`
+
+          #### 🌐 Веб-ассеты
+
+          - `faceit-ai-bot-web-assets-${{ steps.version.outputs.version }}.tar.gz`
           
           #### 🐳 Docker
           
@@ -162,6 +178,10 @@ jobs:
             cp dist/releases/faceit-ai-bot-extension-${{ steps.version.outputs.version }}.zip website-upload/downloads/faceit-ai-bot-extension.zip
           fi
           
+          if [ -f "dist/faceit-ai-bot-web-assets-${{ steps.version.outputs.version }}.tar.gz" ]; then
+            cp dist/faceit-ai-bot-web-assets-${{ steps.version.outputs.version }}.tar.gz website-upload/downloads/faceit-ai-bot-web-assets.tar.gz
+          fi
+
           if [ -f "dist/faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz" ]; then
             cp dist/faceit-ai-bot-docker-${{ steps.version.outputs.version }}.tar.gz website-upload/downloads/faceit-ai-bot-docker.tar.gz
           fi
