@@ -25,7 +25,11 @@ export default function TeammatesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<TeammateProfile[]>([]);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang =
+    i18n.language && i18n.language.toLowerCase().startsWith('en')
+      ? 'en'
+      : 'ru';
 
   if (!user) {
     return (
@@ -67,7 +71,7 @@ export default function TeammatesPage() {
       max_elo,
       preferred_maps: [],
       preferred_roles: filters.role ? [filters.role] : [],
-      communication_lang: ['en'],
+      communication_lang: [lang],
       play_style: 'balanced',
       time_zone: 'UTC',
     };
@@ -116,7 +120,7 @@ export default function TeammatesPage() {
         <p className="text-zinc-400 mb-8">
           {t('teammate.placeholder', {
             defaultValue:
-              'ИИ поможет подобрать тиммейтов по твоему уровню Faceit и стилю игры. Сейчас поиск в бете и подбирает партнёров по рангу, роли и базовой статистике.',
+              'ИИ поможет подобрать тиммейтов по твоему уровню Faceit и стилю игры. Сейчас поиск в бета и подбирает партнёров по рангу, роли и базовой статистике.',
           })}
         </p>
         
@@ -243,7 +247,18 @@ export default function TeammatesPage() {
                   )}
                 </div>
               </div>
-              <button className="px-6 py-2 bg-gradient-to-r from-primary to-primary-dark rounded-lg font-medium">
+              <button
+                className="px-6 py-2 bg-gradient-to-r from-primary to-primary-dark rounded-lg font-medium"
+                onClick={async () => {
+                  try {
+                    if (p.faceit_nickname) {
+                      await navigator.clipboard.writeText(p.faceit_nickname);
+                    }
+                  } catch (err) {
+                    console.error('Clipboard copy failed', err);
+                  }
+                }}
+              >
                 {t('teammate.add_friend_button', { defaultValue: 'Add Friend' })}
               </button>
             </div>

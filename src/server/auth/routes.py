@@ -1,6 +1,6 @@
 """Authentication endpoints"""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 import secrets
 from urllib.parse import urlencode
@@ -20,7 +20,7 @@ from .security import (
 )
 from .dependencies import get_current_active_user
 from ..config.settings import settings
-from ..database.models import User, Subscription, SubscriptionTier
+from ..database.models import User, Subscription, SubscriptionTier, TeammateProfile as TeammateProfileDB
 from ..database import get_db
 
 logger = logging.getLogger(__name__)
@@ -390,6 +390,41 @@ async def faceit_callback(
             db.add(user)
             db.commit()
             db.refresh(user)
+
+    # Sync teammate search profile with Faceit data for this user
+    try:
+        from ..integrations.faceit_client import FaceitAPIClient
+
+        faceit_client = FaceitAPIClient()
+        faceit_player = await faceit_client.get_player_by_nickname(nickname)
+
+        elo = None
+        level = None
+        if isinstance(faceit_player, dict):
+            game_data = (faceit_player.get("games") or {}).get("cs2") or {}
+            elo = game_data.get("faceit_elo")
+            level = game_data.get("skill_level")
+
+        profile = (
+            db.query(TeammateProfileDB)
+            .filter(TeammateProfileDB.user_id == user.id)
+            .first()
+        )
+        if not profile:
+            profile = TeammateProfileDB(user_id=user.id)
+            db.add(profile)
+
+        profile.faceit_nickname = nickname
+        if elo is not None:
+            profile.elo = elo
+        if level is not None:
+            profile.level = level
+        profile.updated_at = datetime.utcnow()
+
+        db.commit()
+    except Exception:
+        logger.exception("Failed to sync teammate profile from Faceit on login")
+        db.rollback()
 
     access_token = create_access_token(data={"sub": str(user.id)})
 

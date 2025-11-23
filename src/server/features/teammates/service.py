@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -182,6 +182,7 @@ class TeammateService:
                 current_user=current_user,
                 preferences=preferences,
                 profiles=result,
+                current_profile=current_profile,
             )
 
         except Exception as e:
@@ -196,16 +197,45 @@ class TeammateService:
         current_user: User,
         preferences: TeammatePreferences,
         profiles: List[TeammateProfile],
+        current_profile: Optional[TeammateProfileDB] = None,
     ) -> List[TeammateProfile]:
         if not profiles:
             return profiles
 
         try:
+            # Prefer stored Faceit-based profile data for the player when available
+            player_langs = list(preferences.communication_lang or [])
+            player_roles = list(preferences.preferred_roles or [])
+            player_elo = preferences.max_elo
+            player_style = preferences.play_style
+
+            if current_profile is not None:
+                if current_profile.elo is not None:
+                    player_elo = current_profile.elo
+                if current_profile.languages:
+                    langs = [
+                        l.strip()
+                        for l in current_profile.languages.split(",")
+                        if l.strip()
+                    ]
+                    if langs:
+                        player_langs = langs
+                if current_profile.roles:
+                    roles = [
+                        r.strip()
+                        for r in current_profile.roles.split(",")
+                        if r.strip()
+                    ]
+                    if roles:
+                        player_roles = roles
+                if current_profile.play_style:
+                    player_style = current_profile.play_style
+
             player_payload = {
-                "elo": preferences.max_elo,
-                "preferred_roles": preferences.preferred_roles,
-                "communication_lang": preferences.communication_lang,
-                "play_style": preferences.play_style,
+                "elo": player_elo,
+                "preferred_roles": player_roles,
+                "communication_lang": player_langs,
+                "play_style": player_style,
             }
 
             candidates_payload = []

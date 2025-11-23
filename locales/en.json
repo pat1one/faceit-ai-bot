@@ -67,5 +67,43 @@
     "save": "Save",
     "back": "Back",
     "next": "Next"
+  },
+  "landing": {
+    "title": "AI demo coach and teammate finder for Faceit",
+    "subtitle": "Upload CS2 demos, get AI coaching reports and find teammates that match your level and playstyle.",
+    "cta_sign_in": "Sign in",
+    "cta_get_started": "Sign in with Faceit",
+    "cta_demo_example": "View demo analysis example",
+    "feature_demo_title": "Demo analysis with AI coach",
+    "feature_demo_desc": "AI reviews your demo, finds mistakes and returns a clear coaching report with recommendations.",
+    "feature_stats_title": "Faceit stats analysis",
+    "feature_stats_desc": "Connect your account and see what your long-term stats say about your play.",
+    "feature_team_title": "Teammate search",
+    "feature_team_desc": "Find teammates by ELO, roles, language and playstyle using Faceit data and AI.",
+    "social_title": "Stop playing solo queue only",
+    "social_subtitle": "Faceit AI Bot combines deep analytics and teammate search so you rage less and win more.",
+    "social_benefit_1": "Fewer random teammates, more coordinated games.",
+    "social_benefit_2": "Match with players by roles and level, not just rating.",
+    "social_benefit_3": "AI reports that clearly explain what to improve.",
+    "social_metric_1_title": "Progress up to 3× faster",
+    "social_metric_1_desc": "Structured training advice instead of vague tips.",
+    "social_metric_2_title": "Stable stack",
+    "social_metric_2_desc": "Find people whose playstyle actually fits yours.",
+    "social_metric_3_title": "Focus on what matters",
+    "social_metric_3_desc": "The service highlights key mistakes and strengths from your demos and stats."
+  },
+  "teammate": {
+    "title": "Teammate search powered by Faceit data",
+    "placeholder": "AI will suggest teammates by your level, roles and playstyle.",
+    "filter_rank": "Faceit rank range",
+    "filter_region": "Region",
+    "filter_role": "Team role",
+    "search_loading": "Searching for teammates...",
+    "search_button": "Search teammates",
+    "no_results_title": "No suitable teammates yet",
+    "no_results": "Try changing level range or role, or play a few more matches — we are expanding the player pool and improving matching.",
+    "no_results_hint": "Right now search is in beta and uses basic Faceit stats plus AI compatibility scoring.",
+    "compatibility": "Compatibility",
+    "add_friend_button": "Copy nickname"
   }
 }
