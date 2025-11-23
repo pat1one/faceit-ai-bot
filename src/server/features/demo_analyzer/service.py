@@ -17,8 +17,17 @@ from exceptions import DemoAnalysisException
 
 import tempfile
 import os
-import pandas as pd
-from demoparser2 import DemoParser
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None  # type: ignore[assignment]
+
+try:
+    from demoparser2 import DemoParser
+except ImportError:  # demoparser2 может быть не установлен (особенно на Python 3.14)
+    DemoParser = None  # type: ignore[assignment]
+
 from ...ai.demo_coach_model import DemoCoachModel
 
 logger = logging.getLogger(__name__)
@@ -170,6 +179,10 @@ class DemoAnalyzer:
             tmp_file.write(content)
     
         try:
+            if DemoParser is None:
+                # Принудительно уйти в fallback-парсинг ниже
+                raise RuntimeError("demoparser2 is not installed")
+
             parser = DemoParser(demopath=tmp_path)
     
             # Parse header
@@ -296,19 +309,30 @@ class DemoAnalyzer:
         
         stats = {'kills': 0, 'deaths': 0, 'headshots': 0, 'total_damage': 0, 'assists': 0, 'utility_damage': 0}
         
-        if kills_data:
+        try:
+            import pandas as pd
+        except ImportError:
+            pd = None
+        
+        if kills_data and pd is not None:
             df_kills = pd.DataFrame(kills_data)
             player_kills = df_kills[df_kills['attackername'] == main_player]
             player_deaths = df_kills[df_kills['victimname'] == main_player]
             
             stats['kills'] = len(player_kills)
             stats['deaths'] = len(player_deaths)
-            stats['headshots'] = len(player_kills[player_kills.get('headshot', False) == True]) if not player_kills.empty else 0
-        
-        if damage_data:
+            stats['headshots'] = (
+                len(player_kills[player_kills.get('headshot', False) is True])
+                if not player_kills.empty
+                else 0
+            )
+
+        if damage_data and pd is not None:
             df_damage = pd.DataFrame(damage_data)
             player_damage = df_damage[df_damage['attackername'] == main_player]
-            stats['total_damage'] = player_damage['hp_damage'].sum() if not player_damage.empty else 0
+            stats['total_damage'] = (
+                player_damage['hp_damage'].sum() if not player_damage.empty else 0
+            )
         
         # Headshot percentage
         if stats['kills'] > 0:

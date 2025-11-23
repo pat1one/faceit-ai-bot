@@ -1,0 +1,366 @@
+import logging
+import os
+from io import BytesIO
+from typing import Optional
+
+import discord
+from discord import app_commands
+from fastapi import UploadFile
+
+from src.server.database.connection import SessionLocal
+from src.server.database.models import User
+from src.server.features.player_analysis.service import PlayerAnalysisService
+from src.server.features.demo_analyzer.service import DemoAnalyzer
+from src.server.features.teammates.models import TeammatePreferences
+from src.server.features.teammates.service import TeammateService
+
+
+logger = logging.getLogger("discord_bot")
+logging.basicConfig(level=logging.INFO)
+
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+tree = app_commands.CommandTree(client)
+
+
+# Discord guild (server) ID – можно переопределить через переменную окружения
+GUILD_ID: Optional[int] = None
+_guild_env = os.getenv("DISCORD_GUILD_ID")
+if _guild_env:
+    try:
+        GUILD_ID = int(_guild_env)
+    except ValueError:
+        logger.warning("Invalid DISCORD_GUILD_ID env value: %s", _guild_env)
+
+
+player_service = PlayerAnalysisService()
+demo_analyzer = DemoAnalyzer()
+teammate_service = TeammateService()
+
+
+@tree.command(name="hello", description="Тестовая команда")
+async def hello(interaction: discord.Interaction) -> None:
+    await interaction.response.send_message("Работает!", ephemeral=True)
+
+
+@tree.command(name="website", description="Ссылка на основной сайт")
+async def website(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(
+        title="🌐 Сайт проекта",
+        description="Перейти на pattmsc.online",
+        url="https://pattmsc.online/",
+        color=discord.Color.blue(),
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@tree.command(name="github", description="Ссылка на GitHub проект")
+async def github(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(
+        title="💻 GitHub репозиторий",
+        description="faceit-ai-bot на GitHub",
+        url="https://github.com/pat1one/faceit-ai-bot",
+        color=discord.Color.dark_grey(),
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@tree.command(name="links", description="Все основные ссылки проекта")
+async def links(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(title="🔗 Ссылки проекта", color=discord.Color.purple())
+    embed.add_field(
+        name="Сайт",
+        value="[pattmsc.online](https://pattmsc.online/)",
+        inline=False,
+    )
+    embed.add_field(
+        name="GitHub",
+        value="[faceit-ai-bot](https://github.com/pat1one/faceit-ai-bot)",
+        inline=False,
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@tree.command(name="project", description="Краткая информация о проекте")
+async def project(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(
+        title="📦 Faceit AI Bot",
+        description="AI‑коуч по демкам и поиск тиммейтов по Faceit",
+        color=discord.Color.orange(),
+    )
+    embed.add_field(
+        name="GitHub",
+        value="[Репозиторий](https://github.com/pat1one/faceit-ai-bot)",
+        inline=False,
+    )
+    embed.add_field(
+        name="Сайт",
+        value="[pattmsc.online](https://pattmsc.online/)",
+        inline=False,
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@tree.command(name="faceit_stats", description="Быстрая статистика игрока по нику Faceit")
+@app_commands.describe(nickname="Никнейм на Faceit")
+async def faceit_stats(
+    interaction: discord.Interaction,
+    nickname: str,
+) -> None:
+    await interaction.response.defer(thinking=True, ephemeral=True)
+
+    stats = await player_service.get_player_stats(nickname)
+    if not stats:
+        await interaction.followup.send(
+            f"Не удалось найти статистику для **{nickname}**", ephemeral=True
+        )
+        return
+
+    game_data = stats.get("stats", {}).get("lifetime", {})
+
+    elo = stats.get("elo")
+    level = stats.get("level")
+    kd_ratio = game_data.get("Average K/D Ratio") or game_data.get("K/D Ratio")
+    winrate = game_data.get("Win Rate %")
+
+    embed = discord.Embed(
+        title=f"Статистика Faceit: {nickname}",
+        color=discord.Color.green(),
+    )
+    if elo is not None:
+        embed.add_field(name="ELO", value=str(elo), inline=True)
+    if level is not None:
+        embed.add_field(name="Уровень", value=str(level), inline=True)
+    if kd_ratio is not None:
+        embed.add_field(name="K/D", value=str(kd_ratio), inline=True)
+    if winrate is not None:
+        embed.add_field(name="Winrate %", value=str(winrate), inline=True)
+
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+@tree.command(name="tm_find", description="Найти тиммейтов по ELO и языкам")
+@app_commands.describe(
+    min_elo="Минимальный ELO",
+    max_elo="Максимальный ELO",
+    language="Язык общения (например, ru или en)",
+    role="Желаемая роль (entry/support/igl/any)",
+)
+async def tm_find(
+    interaction: discord.Interaction,
+    min_elo: int,
+    max_elo: int,
+    language: str = "ru",
+    role: str = "any",
+) -> None:
+    await interaction.response.defer(thinking=True, ephemeral=True)
+
+    db = SessionLocal()
+    try:
+        user = User(
+            id=0,
+            username=f"discord_{interaction.user.id}",
+            email=f"discord_{interaction.user.id}@local",
+            hashed_password="",
+        )
+
+        preferences = TeammatePreferences(
+            min_elo=min_elo,
+            max_elo=max_elo,
+            preferred_maps=[],
+            preferred_roles=[] if role == "any" else [role],
+            communication_lang=[language],
+            play_style="unknown",
+            time_zone="unknown",
+        )
+
+        profiles = await teammate_service.find_teammates(
+            db=db,
+            current_user=user,
+            preferences=preferences,
+        )
+
+        if not profiles:
+            await interaction.followup.send(
+                "Не удалось найти подходящих тиммейтов с такими параметрами.",
+                ephemeral=True,
+            )
+            return
+
+        embed = discord.Embed(
+            title="Найденные тиммейты",
+            color=discord.Color.blurple(),
+        )
+
+        for p in profiles[:5]:
+            score = (
+                f"{p.compatibility_score:.1f}"
+                if p.compatibility_score is not None
+                else "—"
+            )
+            value_lines = [
+                f"ELO: {p.stats.faceit_elo}",
+                f"Языки: {', '.join(p.preferences.communication_lang) or '—'}",
+                f"Роли: {', '.join(p.preferences.preferred_roles) or '—'}",
+                f"Стиль: {p.preferences.play_style}",
+            ]
+            if p.match_summary:
+                value_lines.append("")
+                value_lines.append(p.match_summary[:256])
+
+            embed.add_field(
+                name=f"{p.faceit_nickname or 'Неизвестный игрок'} (score: {score})",
+                value="\n".join(value_lines),
+                inline=False,
+            )
+
+        await interaction.followup.send(embed=embed, ephemeral=True)
+    finally:
+        db.close()
+
+
+@tree.command(name="demo_analyze", description="Анализ CS2 демки (.dem)")
+@app_commands.describe(
+    demo="Файл демки (.dem)",
+    language="Язык отчёта (ru/en)",
+)
+async def demo_analyze(
+    interaction: discord.Interaction,
+    demo: discord.Attachment,
+    language: str = "ru",
+) -> None:
+    await interaction.response.defer(thinking=True, ephemeral=True)
+
+    filename = demo.filename or ""
+    if not filename.lower().endswith(".dem"):
+        await interaction.followup.send(
+            "Прикрепи, пожалуйста, файл демки с расширением .dem", ephemeral=True
+        )
+        return
+
+    data = await demo.read()
+    file_obj = BytesIO(data)
+    upload = UploadFile(filename=filename, file=file_obj)  # type: ignore[arg-type]
+
+    analysis = await demo_analyzer.analyze_demo(upload, language=language)
+
+    metadata = analysis.metadata
+    coach = analysis.coach_report
+
+    embed = discord.Embed(
+        title=f"Анализ демки: {metadata.map_name}",
+        description=f"Матч {metadata.match_id} на {metadata.map_name}",
+        color=discord.Color.blue(),
+    )
+    embed.add_field(name="Счёт", value=str(metadata.score), inline=False)
+
+    if coach and coach.summary:
+        embed.add_field(
+            name="Краткий вывод коуча",
+            value=coach.summary[:1024],
+            inline=False,
+        )
+    elif analysis.recommendations:
+        joined = "\n".join(analysis.recommendations[:5])
+        embed.add_field(
+            name="Рекомендации",
+            value=joined[:1024],
+            inline=False,
+        )
+
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+@tree.command(name="faceit_analyze", description="AI-анализ игрока по нику Faceit")
+@app_commands.describe(
+    nickname="Никнейм на Faceit",
+    language="Язык ответа (ru/en)",
+)
+async def faceit_analyze(
+    interaction: discord.Interaction,
+    nickname: str,
+    language: str = "ru",
+) -> None:
+    await interaction.response.defer(thinking=True, ephemeral=True)
+
+    analysis = await player_service.analyze_player(nickname, language=language)
+    if not analysis:
+        await interaction.followup.send(
+            f"Не удалось проанализировать игрока **{nickname}**",
+            ephemeral=True,
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"AI-анализ игрока: {nickname}",
+        color=discord.Color.gold(),
+    )
+
+    embed.add_field(
+        name="Общий рейтинг",
+        value=str(analysis.overall_rating),
+        inline=False,
+    )
+
+    strengths = analysis.strengths
+    weaknesses = analysis.weaknesses
+
+    embed.add_field(
+        name="Сильные стороны",
+        value=(
+            f"Aim: {strengths.aim}\n"
+            f"Game sense: {strengths.game_sense}\n"
+            f"Positioning: {strengths.positioning}\n"
+            f"Teamwork: {strengths.teamwork}\n"
+            f"Consistency: {strengths.consistency}"
+        ),
+        inline=False,
+    )
+
+    embed.add_field(
+        name="Слабые стороны (priority: " f"{weaknesses.priority})",
+        value="\n".join(weaknesses.areas),
+        inline=False,
+    )
+
+    embed.add_field(
+        name="Рекомендации",
+        value="\n".join(weaknesses.recommendations),
+        inline=False,
+    )
+
+    await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+@client.event
+async def on_ready() -> None:
+    global GUILD_ID
+
+    try:
+        if GUILD_ID is not None:
+            guild = discord.Object(id=GUILD_ID)
+            tree.copy_global_to(guild=guild)
+            synced = await tree.sync(guild=guild)
+            logger.info("Синхронизировано %s команд на сервере", len(synced))
+        else:
+            synced = await tree.sync()
+            logger.info("Синхронизировано %s глобальных команд", len(synced))
+
+        logger.info("Discord бот %s запущен", client.user)
+    except Exception:
+        logger.exception("Ошибка при синхронизации команд Discord")
+
+
+def main() -> None:
+    token = os.getenv("DISCORD_BOT_TOKEN")
+    if not token:
+        raise RuntimeError("DISCORD_BOT_TOKEN не задан в переменных окружения")
+
+    client.run(token)
+
+
+if __name__ == "__main__":
+    main()

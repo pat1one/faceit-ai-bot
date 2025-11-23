@@ -71,4 +71,4 @@ class DemoTrainingSample(BaseModel):
     created_at: datetime
 
 
-DemoAnalysis.update_forward_refs(CoachReport=CoachReport, DemoAnalysisInput=DemoAnalysisInput)
+DemoAnalysis.model_rebuild()

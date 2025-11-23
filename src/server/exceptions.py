@@ -99,3 +99,16 @@ class ValidationError(HTTPException):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail
         )
+
+
+class DemoAnalysisException(HTTPException):
+    def __init__(
+        self,
+        detail: str,
+        error_code: str = "DEMO_ANALYSIS_ERROR",
+        status_code: int = status.HTTP_400_BAD_REQUEST,
+    ):
+        super().__init__(
+            status_code=status_code,
+            detail={"error": detail, "error_code": error_code},
+        )
