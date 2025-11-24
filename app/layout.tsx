@@ -5,8 +5,8 @@ import { Providers } from './providers';
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Faceit AI Bot - Stats Analysis and Teammate Search',
-  description: 'Tool for game stats analysis and teammate search on Faceit platform. Download browser extension or full version on our website.',
+  title: 'Faceit AI Bot — AI demo coach and teammate search for CS2',
+  description: 'Faceit AI Bot analyzes your CS2 demos with an AI coach and helps you find teammates on FACEIT.',
   icons: {
     icon: '/icon.svg',
   },
