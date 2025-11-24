@@ -152,7 +152,9 @@ services:
       - faceit-network
 
   discord_bot:
-    image: ghcr.io/pat1one/faceit-ai-bot/api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       api:
@@ -181,7 +183,9 @@ services:
       - faceit-network
 
   telegram_bot:
-    image: ghcr.io/pat1one/faceit-ai-bot/api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: always
     depends_on:
       api:
