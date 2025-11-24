@@ -176,7 +176,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts
-    command: python scripts/discord_bot.py
+    command: python -m scripts.discord_bot
     networks:
       - faceit-network
 
@@ -204,7 +204,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts
-    command: python scripts/telegram_bot.py
+    command: python -m scripts.telegram_bot
     networks:
       - faceit-network
 
