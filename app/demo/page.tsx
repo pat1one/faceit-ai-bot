@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import API_ENDPOINTS from '../../src/config/api';
 
+const MAX_DEMO_SIZE_MB = 200;
+const MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024;
+
 export default function DemoPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -33,7 +36,35 @@ export default function DemoPage() {
   }
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      setError(
+        t('demo.error_no_file', {
+          defaultValue: 'Сначала выберите демо-файл в формате .dem.',
+        }),
+      );
+      return;
+    }
+
+    const name = file.name?.toLowerCase() || '';
+    if (!name.endsWith('.dem')) {
+      setError(
+        t('demo.error_invalid_demo_format', {
+          defaultValue: 'Неверный формат файла. Загрузите демо в формате .dem.',
+        }),
+      );
+      return;
+    }
+
+    if (file.size > MAX_DEMO_SIZE_BYTES) {
+      setError(
+        t('demo.error_demo_too_large', {
+          maxSizeMb: MAX_DEMO_SIZE_MB,
+          defaultValue: `Файл слишком большой. Максимальный размер ${MAX_DEMO_SIZE_MB} МБ.`,
+        }),
+      );
+      return;
+    }
+
     setLoading(true);
     setResult(null);
     setError(null);
@@ -52,8 +83,31 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        setError(text || t('demo.error_sbp'));
+        let message = t('demo.error_sbp');
+
+        try {
+          const data = await response.json();
+          const detail: any = (data && (data.detail ?? data)) as any;
+          const errorMessage =
+            typeof detail === 'string'
+              ? detail
+              : detail && (detail.error || detail.message);
+
+          if (errorMessage) {
+            message = errorMessage;
+          }
+        } catch {
+          try {
+            const text = await response.text();
+            if (text) {
+              message = text;
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        setError(message);
         return;
       }
 
@@ -79,7 +133,41 @@ export default function DemoPage() {
             <input
               type="file"
               accept=".dem"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const selected = e.target.files?.[0] || null;
+                setResult(null);
+
+                if (!selected) {
+                  setFile(null);
+                  setError(null);
+                  return;
+                }
+
+                const name = selected.name?.toLowerCase() || '';
+                if (!name.endsWith('.dem')) {
+                  setFile(null);
+                  setError(
+                    t('demo.error_invalid_demo_format', {
+                      defaultValue: 'Неверный формат файла. Загрузите демо в формате .dem.',
+                    }),
+                  );
+                  return;
+                }
+
+                if (selected.size > MAX_DEMO_SIZE_BYTES) {
+                  setFile(null);
+                  setError(
+                    t('demo.error_demo_too_large', {
+                      maxSizeMb: MAX_DEMO_SIZE_MB,
+                      defaultValue: `Файл слишком большой. Максимальный размер ${MAX_DEMO_SIZE_MB} МБ.`,
+                    }),
+                  );
+                  return;
+                }
+
+                setError(null);
+                setFile(selected);
+              }}
               className="hidden"
               id="demo-upload"
             />

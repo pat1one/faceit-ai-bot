@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from io import BytesIO
 from typing import Optional
 
@@ -15,6 +16,7 @@ except ImportError:
 
 from src.server.database.connection import SessionLocal
 from src.server.database.models import User
+from src.server.exceptions import DemoAnalysisException
 from src.server.features.player_analysis.service import PlayerAnalysisService
 from src.server.features.demo_analyzer.service import DemoAnalyzer
 from src.server.features.teammates.models import TeammatePreferences
@@ -46,6 +48,10 @@ player_service = PlayerAnalysisService()
 demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
 
+MAX_DEMO_SIZE_MB = 200
+MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
+_SNIFF_BYTES = 4096
+
 if REDIS_AVAILABLE:
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
     try:
@@ -66,6 +72,7 @@ async def check_bot_rate_limit(
     user_key: str,
     operation: str,
     limit_per_minute: int,
+    limit_per_day: Optional[int] = None,
 ) -> bool:
     """Rate limit Discord bot commands per user.
 
@@ -79,7 +86,19 @@ async def check_bot_rate_limit(
         count = await redis_client.incr(key)
         if count == 1:
             await redis_client.expire(key, 60)
-        return count <= limit_per_minute
+        if count > limit_per_minute:
+            return False
+
+        if limit_per_day is not None and limit_per_day > 0:
+            day_suffix = datetime.utcnow().strftime("%Y%m%d")
+            day_key = f"rl:bot:discord:{operation}:{user_key}:day:{day_suffix}"
+            day_count = await redis_client.incr(day_key)
+            if day_count == 1:
+                await redis_client.expire(day_key, 86400)
+            if day_count > limit_per_day:
+                return False
+
+        return True
     except Exception as e:
         logger.error("Discord bot rate limit error: %s", e)
         return True
@@ -155,7 +174,12 @@ async def faceit_stats(
     nickname: str,
 ) -> None:
     user_key = f"{interaction.user.id}"
-    if not await check_bot_rate_limit(user_key, "faceit_stats", limit_per_minute=20):
+    if not await check_bot_rate_limit(
+        user_key,
+        "faceit_stats",
+        limit_per_minute=20,
+        limit_per_day=200,
+    ):
         await interaction.response.send_message(
             "Превышен лимит запросов для этой команды, попробуй позже.",
             ephemeral=True,
@@ -208,7 +232,12 @@ async def tm_find(
     role: str = "any",
 ) -> None:
     user_key = f"{interaction.user.id}"
-    if not await check_bot_rate_limit(user_key, "tm_find", limit_per_minute=5):
+    if not await check_bot_rate_limit(
+        user_key,
+        "tm_find",
+        limit_per_minute=5,
+        limit_per_day=50,
+    ):
         await interaction.response.send_message(
             "Превышен лимит запросов для этой команды, попробуй позже.",
             ephemeral=True,
@@ -292,7 +321,12 @@ async def demo_analyze(
     language: str = "ru",
 ) -> None:
     user_key = f"{interaction.user.id}"
-    if not await check_bot_rate_limit(user_key, "demo_analyze", limit_per_minute=3):
+    if not await check_bot_rate_limit(
+        user_key,
+        "demo_analyze",
+        limit_per_minute=3,
+        limit_per_day=10,
+    ):
         await interaction.response.send_message(
             "Превышен лимит анализов демок для этой команды, попробуй позже.",
             ephemeral=True,
@@ -304,15 +338,64 @@ async def demo_analyze(
     filename = demo.filename or ""
     if not filename.lower().endswith(".dem"):
         await interaction.followup.send(
-            "Прикрепи, пожалуйста, файл демки с расширением .dem", ephemeral=True
+            "Прикрепи, пожалуйста, файл демки с расширением .dem",
+            ephemeral=True,
+        )
+        return
+
+    if demo.size and demo.size > MAX_DEMO_SIZE_BYTES:
+        await interaction.followup.send(
+            f"Файл слишком большой. Максимальный размер {MAX_DEMO_SIZE_MB} МБ.",
+            ephemeral=True,
         )
         return
 
     data = await demo.read()
+    if not data:
+        await interaction.followup.send(
+            "Файл пустой, пришли, пожалуйста, валидную демку .dem.",
+            ephemeral=True,
+        )
+        return
+
+    sniff = data[:_SNIFF_BYTES].lower()
+    suspicious_markers = (
+        b"<html",
+        b"<script",
+        b"<?php",
+        b"#!/bin/bash",
+        b"#!/usr/bin/env",
+        b"import os",
+        b"import sys",
+    )
+    if any(marker in sniff for marker in suspicious_markers):
+        await interaction.followup.send(
+            "Похоже, это не бинарная демка CS2. Пришли корректный .dem файл.",
+            ephemeral=True,
+        )
+        return
+
     file_obj = BytesIO(data)
     upload = UploadFile(filename=filename, file=file_obj)  # type: ignore[arg-type]
 
-    analysis = await demo_analyzer.analyze_demo(upload, language=language)
+    try:
+        analysis = await demo_analyzer.analyze_demo(upload, language=language)
+    except DemoAnalysisException as exc:
+        detail = getattr(exc, "detail", None)
+        message = "Не удалось проанализировать демку."
+        if isinstance(detail, dict):
+            message = str(detail.get("error") or detail) or message
+        elif isinstance(detail, str):
+            message = detail or message
+        await interaction.followup.send(message, ephemeral=True)
+        return
+    except Exception:
+        logger.exception("Discord demo_analyze failed")
+        await interaction.followup.send(
+            "Произошла внутренняя ошибка при анализе демки.",
+            ephemeral=True,
+        )
+        return
 
     metadata = analysis.metadata
     coach = analysis.coach_report
@@ -352,7 +435,12 @@ async def faceit_analyze(
     language: str = "ru",
 ) -> None:
     user_key = f"{interaction.user.id}"
-    if not await check_bot_rate_limit(user_key, "faceit_analyze", limit_per_minute=5):
+    if not await check_bot_rate_limit(
+        user_key,
+        "faceit_analyze",
+        limit_per_minute=5,
+        limit_per_day=50,
+    ):
         await interaction.response.send_message(
             "Превышен лимит AI-анализов для этой команды, попробуй позже.",
             ephemeral=True,
