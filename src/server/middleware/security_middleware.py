@@ -22,6 +22,29 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
+        csp = (
+            "default-src 'self'; "
+            "img-src 'self' data: https:; "
+            "style-src 'self' 'unsafe-inline' https:; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'"
+        )
+        if "Content-Security-Policy" not in response.headers:
+            response.headers["Content-Security-Policy"] = csp
+
+        if "Permissions-Policy" not in response.headers:
+            response.headers["Permissions-Policy"] = (
+                "geolocation=(), microphone=(), camera=(), fullscreen=(self), "
+                "payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()"
+            )
+
+        response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+        response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
+        response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
+
         # Remove server header
         if "server" in response.headers:
             del response.headers["server"]

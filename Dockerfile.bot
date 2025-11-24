@@ -6,17 +6,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Устанавливаем зависимости, включая библиотеки ботов
+# Install dependencies, including bot libraries
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Копируем исходники API и скрипты ботов
+# Copy API sources and bot scripts
 COPY ./src /app/src
 COPY ./scripts /app/scripts
 
-# Порт по умолчанию не нужен, боты сами открывают соединения наружу,
-# но оставим на всякий случай для универсальности образа
+# Default port is not strictly required (bots open outbound connections),
+# but we expose it for image flexibility
 EXPOSE 8000
 
-# Команда по умолчанию — Discord-бот, в docker-compose она переопределяется
+# Default command is the Discord bot; overridden in docker-compose
 CMD ["python", "-m", "scripts.discord_bot"]

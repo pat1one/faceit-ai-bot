@@ -17,7 +17,7 @@ class RateLimitService:
 
     Uses Redis (via cache_service) to store counters per user and operation.
     Fallback: if Redis is not available, limits are not enforced here
-    (остаются только глобальные IP/user лимиты в middleware).
+    (only global IP/user limits in middleware remain).
     """
 
     def __init__(self) -> None:
@@ -28,9 +28,9 @@ class RateLimitService:
         )
 
         # Per-operation limits per subscription tier.
-        # Values are chosen так, чтобы пользователям хватало, а сервер не перегружался.
-        # per_min: максимум операций в минуту
-        # per_day: максимум операций в сутки
+        # Values are chosen to be sufficient for users and safe for the server.
+        # per_min: maximum operations per minute
+        # per_day: maximum operations per day
         self.operation_limits: Dict[str, Dict[str, Dict[str, int]]] = {
             "demo_analyze": {
                 "free": {"per_min": 1, "per_day": 5},
