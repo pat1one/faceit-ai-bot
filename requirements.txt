@@ -9,6 +9,7 @@ email-validator>=2.0.0
 # Database
 sqlalchemy>=2.0.0
 psycopg2-binary>=2.9.0
+alembic>=1.14.0
 
 # HTTP & Auth
 httpx>=0.24.1
