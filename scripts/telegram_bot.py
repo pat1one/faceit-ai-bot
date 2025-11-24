@@ -10,6 +10,12 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
 )
+try:
+    import redis.asyncio as redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None  # type: ignore[assignment]
 
 from src.server.database.connection import SessionLocal
 from src.server.database.models import User
@@ -27,6 +33,44 @@ player_service = PlayerAnalysisService()
 demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
 
+if REDIS_AVAILABLE:
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+    try:
+        redis_client = redis.from_url(
+            REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+        logger.info("Telegram bot rate limiting enabled via Redis")
+    except Exception:
+        logger.exception("Failed to connect to Redis for Telegram bot rate limiting")
+        redis_client = None
+else:
+    redis_client = None
+
+
+async def check_bot_rate_limit(
+    user_key: str,
+    operation: str,
+    limit_per_minute: int,
+) -> bool:
+    """Rate limit Telegram bot commands per user.
+
+    Returns True if allowed, False if limit exceeded.
+    """
+    if redis_client is None:
+        return True
+
+    try:
+        key = f"rl:bot:telegram:{operation}:{user_key}:minute"
+        count = await redis_client.incr(key)
+        if count == 1:
+            await redis_client.expire(key, 60)
+        return count <= limit_per_minute
+    except Exception as e:
+        logger.error("Telegram bot rate limit error: %s", e)
+        return True
+
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.effective_chat.send_message(
@@ -40,6 +84,14 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cmd_faceit_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_key = f"{user.id if user else 0}"
+    if not await check_bot_rate_limit(user_key, "faceit_stats", limit_per_minute=20):
+        await update.effective_chat.send_message(
+            "Превышен лимит запросов для этой команды, попробуй позже.",
+        )
+        return
+
     if not context.args:
         await update.effective_chat.send_message(
             "Использование: /faceit_stats <faceit_ник>"
@@ -76,6 +128,14 @@ async def cmd_faceit_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def cmd_faceit_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_key = f"{user.id if user else 0}"
+    if not await check_bot_rate_limit(user_key, "faceit_analyze", limit_per_minute=5):
+        await update.effective_chat.send_message(
+            "Превышен лимит AI-анализов для этой команды, попробуй позже.",
+        )
+        return
+
     if not context.args:
         await update.effective_chat.send_message(
             "Использование: /faceit_analyze <faceit_ник> [ru|en]"
@@ -129,6 +189,14 @@ async def cmd_tm_find(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if len(context.args) < 2:
         await update.effective_chat.send_message(
             "Использование: /tm_find <min_elo> <max_elo> [lang] [role]"
+        )
+        return
+
+    user = update.effective_user
+    user_key = f"{user.id if user else 0}"
+    if not await check_bot_rate_limit(user_key, "tm_find", limit_per_minute=5):
+        await update.effective_chat.send_message(
+            "Превышен лимит запросов для этой команды, попробуй позже.",
         )
         return
 
@@ -204,6 +272,14 @@ async def cmd_tm_find(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def cmd_demo_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_key = f"{user.id if user else 0}"
+    if not await check_bot_rate_limit(user_key, "demo_analyze", limit_per_minute=3):
+        await update.effective_chat.send_message(
+            "Превышен лимит анализов демок для этой команды, попробуй позже.",
+        )
+        return
+
     message = update.effective_message
     args = context.args
     language = "ru"

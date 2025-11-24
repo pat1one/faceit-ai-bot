@@ -3,16 +3,36 @@ Player Analysis Routes
 Routes for player analysis
 """
 import logging
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 from .service import PlayerAnalysisService
 from .schemas import PlayerAnalysisResponse
+from ...auth.dependencies import get_optional_current_user
+from ...database.connection import get_db
+from ...database.models import User
 from ...middleware.rate_limiter import rate_limiter
+from ...services.rate_limit_service import rate_limit_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/players", tags=["players"])
+
+
+async def enforce_player_analysis_rate_limit(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
+):
+    if current_user is None:
+        return
+
+    await rate_limit_service.enforce_user_operation_limit(
+        db=db,
+        user_id=current_user.id,
+        operation="player_analysis",
+    )
 
 
 @router.get("/{nickname}/analysis", response_model=PlayerAnalysisResponse)
@@ -21,6 +41,7 @@ async def analyze_player(
     language: str = "ru",
     service: PlayerAnalysisService = Depends(),
     _: None = Depends(rate_limiter),
+    __: None = Depends(enforce_player_analysis_rate_limit),
 ):
     """
     Analyze player by nickname

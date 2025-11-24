@@ -43,6 +43,33 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        return None
+
+    try:
+        payload = decode_access_token(token)
+    except Exception:
+        return None
+
+    if payload is None:
+        return None
+
+    user_id: Optional[int] = payload.get("sub")
+    if user_id is None:
+        return None
+
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    return user
+
+
 async def get_current_active_user(
     current_user: User = Depends(get_current_user)
 ) -> User:

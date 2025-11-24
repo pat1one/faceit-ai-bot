@@ -6,6 +6,12 @@ from typing import Optional
 import discord
 from discord import app_commands
 from fastapi import UploadFile
+try:
+    import redis.asyncio as redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None  # type: ignore[assignment]
 
 from src.server.database.connection import SessionLocal
 from src.server.database.models import User
@@ -39,6 +45,44 @@ if _guild_env:
 player_service = PlayerAnalysisService()
 demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
+
+if REDIS_AVAILABLE:
+    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+    try:
+        redis_client = redis.from_url(
+            REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+        )
+        logger.info("Discord bot rate limiting enabled via Redis")
+    except Exception:
+        logger.exception("Failed to connect to Redis for Discord bot rate limiting")
+        redis_client = None
+else:
+    redis_client = None
+
+
+async def check_bot_rate_limit(
+    user_key: str,
+    operation: str,
+    limit_per_minute: int,
+) -> bool:
+    """Rate limit Discord bot commands per user.
+
+    Returns True if allowed, False if limit exceeded.
+    """
+    if redis_client is None:
+        return True
+
+    try:
+        key = f"rl:bot:discord:{operation}:{user_key}:minute"
+        count = await redis_client.incr(key)
+        if count == 1:
+            await redis_client.expire(key, 60)
+        return count <= limit_per_minute
+    except Exception as e:
+        logger.error("Discord bot rate limit error: %s", e)
+        return True
 
 
 @tree.command(name="hello", description="Тестовая команда")
@@ -110,6 +154,13 @@ async def faceit_stats(
     interaction: discord.Interaction,
     nickname: str,
 ) -> None:
+    user_key = f"{interaction.user.id}"
+    if not await check_bot_rate_limit(user_key, "faceit_stats", limit_per_minute=20):
+        await interaction.response.send_message(
+            "Превышен лимит запросов для этой команды, попробуй позже.",
+            ephemeral=True,
+        )
+        return
     await interaction.response.defer(thinking=True, ephemeral=True)
 
     stats = await player_service.get_player_stats(nickname)
@@ -156,6 +207,14 @@ async def tm_find(
     language: str = "ru",
     role: str = "any",
 ) -> None:
+    user_key = f"{interaction.user.id}"
+    if not await check_bot_rate_limit(user_key, "tm_find", limit_per_minute=5):
+        await interaction.response.send_message(
+            "Превышен лимит запросов для этой команды, попробуй позже.",
+            ephemeral=True,
+        )
+        return
+
     await interaction.response.defer(thinking=True, ephemeral=True)
 
     db = SessionLocal()
@@ -232,6 +291,14 @@ async def demo_analyze(
     demo: discord.Attachment,
     language: str = "ru",
 ) -> None:
+    user_key = f"{interaction.user.id}"
+    if not await check_bot_rate_limit(user_key, "demo_analyze", limit_per_minute=3):
+        await interaction.response.send_message(
+            "Превышен лимит анализов демок для этой команды, попробуй позже.",
+            ephemeral=True,
+        )
+        return
+
     await interaction.response.defer(thinking=True, ephemeral=True)
 
     filename = demo.filename or ""
@@ -284,6 +351,14 @@ async def faceit_analyze(
     nickname: str,
     language: str = "ru",
 ) -> None:
+    user_key = f"{interaction.user.id}"
+    if not await check_bot_rate_limit(user_key, "faceit_analyze", limit_per_minute=5):
+        await interaction.response.send_message(
+            "Превышен лимит AI-анализов для этой команды, попробуй позже.",
+            ephemeral=True,
+        )
+        return
+
     await interaction.response.defer(thinking=True, ephemeral=True)
 
     analysis = await player_service.analyze_player(nickname, language=language)

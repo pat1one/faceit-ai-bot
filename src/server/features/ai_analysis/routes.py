@@ -1,10 +1,17 @@
 """
 AI Analysis API Routes
 """
-from fastapi import APIRouter, HTTPException
-from typing import Dict, List
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Dict, List, Optional
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 import logging
+
+from ...auth.dependencies import get_optional_current_user
+from ...database.connection import get_db
+from ...database.models import User
+from ...middleware.rate_limiter import rate_limiter
+from ...services.rate_limit_service import rate_limit_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ai", tags=["ai-analysis"])
@@ -27,8 +34,27 @@ class PlayerAnalysisResponse(BaseModel):
     weaknesses: List[str]
 
 
+async def enforce_ai_player_analysis_rate_limit(
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
+):
+    if current_user is None:
+        return
+
+    await rate_limit_service.enforce_user_operation_limit(
+        db=db,
+        user_id=current_user.id,
+        operation="player_analysis",
+    )
+
+
 @router.post("/analyze-player", response_model=PlayerAnalysisResponse)
-async def analyze_player(request: PlayerAnalysisRequest, language: str = "ru"):
+async def analyze_player(
+    request: PlayerAnalysisRequest,
+    language: str = "ru",
+    _: None = Depends(rate_limiter),
+    __: None = Depends(enforce_ai_player_analysis_rate_limit),
+):
     """
     AI player analysis based on Faceit statistics
 
@@ -129,7 +155,11 @@ async def analyze_player(request: PlayerAnalysisRequest, language: str = "ru"):
 
 
 @router.post("/training-plan/{player_id}")
-async def get_training_plan(player_id: str):
+async def get_training_plan(
+    player_id: str,
+    _: None = Depends(rate_limiter),
+    __: None = Depends(enforce_ai_player_analysis_rate_limit),
+):
     """
     Get personalized training plan
     """

@@ -8,6 +8,7 @@ from typing import Dict, Tuple
 from fastapi import Request, HTTPException
 from collections import defaultdict
 from ..services.cache_service import cache_service
+from ..auth.security import decode_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,29 @@ class RateLimiter:
 
         return "unknown"
 
+    def _get_rate_identity(self, request: Request) -> Tuple[str, str | None]:
+        """Get rate limiting identity (IP and optional user id)"""
+        client_ip = self._get_client_ip(request)
+
+        user_id: str | None = None
+        auth_header = request.headers.get("Authorization") or ""
+        token = None
+
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+
+        if not token:
+            token = request.cookies.get("access_token")
+
+        if token:
+            payload = decode_access_token(token)
+            if payload:
+                sub = payload.get("sub")
+                if sub is not None:
+                    user_id = str(sub)
+
+        return client_ip, user_id
+
     async def check_rate_limit(self, request: Request) -> Tuple[bool, str]:
         """
         Check rate limit
@@ -68,21 +92,39 @@ class RateLimiter:
         Returns:
             (allowed, message)
         """
-        client_ip = self._get_client_ip(request)
+        client_ip, user_id = self._get_rate_identity(request)
         current_time = time.time()
 
         if self.redis_client is not None:
             try:
-                minute_key = f"rate:ip:{client_ip}:minute"
-                hour_key = f"rate:ip:{client_ip}:hour"
+                minute_key_ip = f"rate:ip:{client_ip}:minute"
+                hour_key_ip = f"rate:ip:{client_ip}:hour"
 
-                minute_count = await self.redis_client.incr(minute_key)
-                if minute_count == 1:
-                    await self.redis_client.expire(minute_key, 60)
+                minute_count_ip = await self.redis_client.incr(minute_key_ip)
+                if minute_count_ip == 1:
+                    await self.redis_client.expire(minute_key_ip, 60)
 
-                hour_count = await self.redis_client.incr(hour_key)
-                if hour_count == 1:
-                    await self.redis_client.expire(hour_key, 3600)
+                hour_count_ip = await self.redis_client.incr(hour_key_ip)
+                if hour_count_ip == 1:
+                    await self.redis_client.expire(hour_key_ip, 3600)
+
+                minute_count = minute_count_ip
+                hour_count = hour_count_ip
+
+                if user_id is not None:
+                    minute_key_user = f"rate:user:{user_id}:minute"
+                    hour_key_user = f"rate:user:{user_id}:hour"
+
+                    minute_count_user = await self.redis_client.incr(minute_key_user)
+                    if minute_count_user == 1:
+                        await self.redis_client.expire(minute_key_user, 60)
+
+                    hour_count_user = await self.redis_client.incr(hour_key_user)
+                    if hour_count_user == 1:
+                        await self.redis_client.expire(hour_key_user, 3600)
+
+                    minute_count = max(minute_count_ip, minute_count_user)
+                    hour_count = max(hour_count_ip, hour_count_user)
 
                 if minute_count > self.requests_per_minute:
                     return (
