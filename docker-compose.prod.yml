@@ -141,6 +141,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
+        NEXT_PUBLIC_CAPTCHA_PROVIDER: ${NEXT_PUBLIC_CAPTCHA_PROVIDER}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY}
     restart: always
     depends_on:
       api:
@@ -148,6 +153,9 @@ services:
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=https://${DOMAIN}/api
+      - NEXT_PUBLIC_CAPTCHA_PROVIDER=${NEXT_PUBLIC_CAPTCHA_PROVIDER}
+      - NEXT_PUBLIC_TURNSTILE_SITE_KEY=${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+      - NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY=${NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY}
     networks:
       - faceit-network
 
