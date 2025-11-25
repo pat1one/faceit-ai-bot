@@ -22,6 +22,7 @@ from .features.player_analysis.routes import router as player_router
 from .features.player_analysis.service import PlayerAnalysisService
 from .features.player_analysis.schemas import PlayerAnalysisResponse
 from .features.tasks.routes import router as tasks_router
+from .features.admin.routes import router as admin_router
 
 # Configure logging
 setup_logging()
@@ -126,6 +127,7 @@ app.include_router(teammates_router)
 app.include_router(player_router)
 app.include_router(ai_router)
 app.include_router(tasks_router)
+app.include_router(admin_router)
 
 
 @app.get("/players/{nickname}/analysis", response_model=PlayerAnalysisResponse, tags=["players"])

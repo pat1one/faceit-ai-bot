@@ -92,8 +92,32 @@ export default function AuthPage() {
       router.push('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '';
+      let message = errorMessage;
+
+      if (message) {
+        const lower = message.toLowerCase();
+
+        if (lower.includes('captcha verification failed')) {
+          message = t('auth.captcha_failed', {
+            defaultValue:
+              'Проверка CAPTCHA не пройдена. Пожалуйста, попробуйте ещё раз.',
+          });
+        } else if (
+          lower.includes('rate limit exceeded') ||
+          lower.includes('too many requests') ||
+          lower.includes('access temporarily blocked') ||
+          lower.includes('превышен лимит') ||
+          lower.includes('достигнут дневной лимит')
+        ) {
+          message = t('auth.error_rate_limited', {
+            defaultValue:
+              'Слишком много запросов. Доступ временно ограничен, попробуйте позже.',
+          });
+        }
+      }
+
       setError(
-        errorMessage ||
+        message ||
           (isLogin
             ? t('auth.login_failed')
             : t('auth.register_failed'))

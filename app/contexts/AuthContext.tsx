@@ -69,13 +69,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!response.ok) {
       const raw = await response.text();
+      let message = '';
+
       try {
-        const data = JSON.parse(raw);
-        const message = (data && (data.detail || data.message)) || raw;
-        throw new Error(message || 'Login failed');
+        const data = raw ? JSON.parse(raw) : null;
+        const detail: any = data && (data.detail ?? data);
+
+        if (typeof detail === 'string') {
+          message = detail;
+        } else if (detail && typeof detail === 'object') {
+          message =
+            (detail.error as string) ||
+            (detail.message as string) ||
+            (detail.detail as string) ||
+            '';
+        }
       } catch {
-        throw new Error(raw || 'Login failed');
+        // ignore JSON parse errors
       }
+
+      if (!message) {
+        message = raw || 'Login failed';
+      }
+
+      throw new Error(message);
     }
 
     const data = await response.json();
@@ -104,13 +121,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!response.ok) {
       const raw = await response.text();
+      let message = '';
+
       try {
-        const data = JSON.parse(raw);
-        const message = (data && (data.detail || data.message)) || raw;
-        throw new Error(message || 'Registration failed');
+        const data = raw ? JSON.parse(raw) : null;
+        const detail: any = data && (data.detail ?? data);
+
+        if (typeof detail === 'string') {
+          message = detail;
+        } else if (detail && typeof detail === 'object') {
+          message =
+            (detail.error as string) ||
+            (detail.message as string) ||
+            (detail.detail as string) ||
+            '';
+        }
       } catch {
-        throw new Error(raw || 'Registration failed');
+        // ignore JSON parse errors
       }
+
+      if (!message) {
+        message = raw || 'Registration failed';
+      }
+
+      throw new Error(message);
     }
 
     // Auto-login after registration

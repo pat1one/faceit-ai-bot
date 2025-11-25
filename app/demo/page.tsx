@@ -6,7 +6,11 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import API_ENDPOINTS from '../../src/config/api';
 
-const MAX_DEMO_SIZE_MB = 200;
+const ENV_MAX_DEMO_SIZE_MB = Number(process.env.NEXT_PUBLIC_MAX_DEMO_SIZE_MB || 0);
+const MAX_DEMO_SIZE_MB =
+  Number.isFinite(ENV_MAX_DEMO_SIZE_MB) && ENV_MAX_DEMO_SIZE_MB > 0
+    ? ENV_MAX_DEMO_SIZE_MB
+    : 100;
 const MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024;
 
 export default function DemoPage() {
@@ -83,7 +87,10 @@ export default function DemoPage() {
       });
 
       if (!response.ok) {
-        let message = t('demo.error_sbp');
+        let message = t('demo.error_sbp', {
+          defaultValue:
+            'Произошла ошибка при анализе демо. Попробуйте ещё раз позже.',
+        });
 
         try {
           const data = await response.json();
@@ -105,6 +112,31 @@ export default function DemoPage() {
           } catch {
             // ignore
           }
+        }
+
+        const lower = (message || '').toLowerCase();
+
+        if (
+          response.status === 429 ||
+          lower.includes('rate limit exceeded') ||
+          lower.includes('too many requests') ||
+          lower.includes('temporarily blocked') ||
+          lower.includes('превышен лимит') ||
+          lower.includes('достигнут дневной лимит')
+        ) {
+          message = t('demo.error_rate_limited', {
+            defaultValue:
+              'Слишком много запросов. Доступ временно ограничен, попробуйте позже.',
+          });
+        } else if (
+          response.status === 413 ||
+          lower.includes('file too large') ||
+          lower.includes('слишком большой')
+        ) {
+          message = t('demo.error_demo_too_large', {
+            maxSizeMb: MAX_DEMO_SIZE_MB,
+            defaultValue: `Файл слишком большой. Максимальный размер ${MAX_DEMO_SIZE_MB} МБ.`,
+          });
         }
 
         setError(message);

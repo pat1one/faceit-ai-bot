@@ -1,0 +1,94 @@
+import logging
+from typing import Any, Dict, List, Literal
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from ...auth.dependencies import get_current_admin_user
+from ...services.cache_service import cache_service
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/admin/rate-limit", tags=["admin"])
+
+
+@router.get("/bans")
+async def list_rate_limit_bans(
+    _: Any = Depends(get_current_admin_user),
+) -> Dict[str, Any]:
+    """List active rate limit bans (IP and users) from Redis."""
+    if not getattr(cache_service, "enabled", False) or cache_service.redis_client is None:
+        return {"enabled": False, "bans": []}
+
+    client = cache_service.redis_client
+    bans: List[Dict[str, Any]] = []
+
+    try:
+        cursor: int = 0
+        pattern = "rate:ban:*"
+
+        while True:
+            cursor, keys = await client.scan(cursor=cursor, match=pattern, count=100)
+            for key in keys:
+                ttl = await client.ttl(key)
+
+                if key.startswith("rate:ban:ip:"):
+                    ban_type = "ip"
+                    value = key[len("rate:ban:ip:") :]
+                elif key.startswith("rate:ban:user:"):
+                    ban_type = "user"
+                    value = key[len("rate:ban:user:") :]
+                else:
+                    continue
+
+                bans.append({"type": ban_type, "value": value, "ttl": ttl})
+
+            if cursor == 0:
+                break
+    except Exception as e:  # pragma: no cover - defensive logging
+        logger.error("Failed to list rate limit bans: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to list rate limit bans")
+
+    return {"enabled": True, "bans": bans}
+
+
+@router.delete("/bans/{kind}/{value}")
+async def delete_rate_limit_ban(
+    kind: Literal["ip", "user"],
+    value: str,
+    _: Any = Depends(get_current_admin_user),
+) -> Dict[str, Any]:
+    """Remove rate limit ban and violation counters for IP or user."""
+    if not getattr(cache_service, "enabled", False) or cache_service.redis_client is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Rate limiting with Redis is not enabled",
+        )
+
+    client = cache_service.redis_client
+
+    try:
+        ban_key = f"rate:ban:{kind}:{value}"
+        viol_key = f"rate:viol:{kind}:{value}"
+
+        removed_ban = await client.delete(ban_key)
+        removed_viol = await client.delete(viol_key)
+
+        logger.info(
+            "Rate limit ban cleared: kind=%s value=%s removed_ban=%s removed_viol=%s",
+            kind,
+            value,
+            removed_ban,
+            removed_viol,
+        )
+
+        return {
+            "kind": kind,
+            "value": value,
+            "removed_ban": int(removed_ban),
+            "removed_violations": int(removed_viol),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:  # pragma: no cover - defensive logging
+        logger.error("Failed to clear rate limit ban for %s=%s: %s", kind, value, e)
+        raise HTTPException(status_code=500, detail="Failed to clear rate limit ban")

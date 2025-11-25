@@ -12,6 +12,7 @@ from ...database.models import User
 from ...middleware.rate_limiter import rate_limiter
 from ...services.rate_limit_service import rate_limit_service
 from ...exceptions import DemoAnalysisException
+from ...config.settings import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -22,7 +23,7 @@ router = APIRouter(
 demo_analyzer = DemoAnalyzer()
 
 
-MAX_DEMO_SIZE_MB = 200
+MAX_DEMO_SIZE_MB = settings.MAX_DEMO_FILE_MB
 MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
 _SNIFF_BYTES = 4096
 
