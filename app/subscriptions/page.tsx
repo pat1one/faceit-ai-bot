@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import API_ENDPOINTS from '../../src/config/api';
 import { useTranslation } from 'react-i18next';
-import TurnstileWidget from '../../src/components/TurnstileWidget';
+import CaptchaWidget from '../../src/components/CaptchaWidget';
 
 export default function SubscriptionsPage() {
   const { user } = useAuth();
@@ -72,9 +72,10 @@ export default function SubscriptionsPage() {
     try {
       setLoadingTier(tier);
 
-      const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER?.toLowerCase();
+      const captchaEnabled = !!captchaProvider;
 
-      if (turnstileEnabled && !captchaToken) {
+      if (captchaEnabled && !captchaToken) {
         setStatus({
           type: 'error',
           message: t('auth.captcha_required', {
@@ -132,7 +133,7 @@ export default function SubscriptionsPage() {
     <div className="min-h-screen py-20 px-6 bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white animate-fade-in">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8 flex justify-center">
-          <TurnstileWidget onTokenChange={handleCaptchaTokenChange} action="payment_create" />
+          <CaptchaWidget onTokenChange={handleCaptchaTokenChange} action="payment_create" />
         </div>
         {status && (
           <div

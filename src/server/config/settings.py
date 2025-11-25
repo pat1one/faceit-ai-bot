@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     TURNSTILE_SITE_KEY: Optional[str] = None
     TURNSTILE_SECRET_KEY: Optional[str] = None
 
+    # Yandex SmartCaptcha settings
+    SMARTCAPTCHA_SITE_KEY: Optional[str] = None
+    SMARTCAPTCHA_SECRET_KEY: Optional[str] = None
+
     # Payment settings
     WEBSITE_URL: str = "http://localhost:3000"
     API_URL: str = "http://localhost:8000"

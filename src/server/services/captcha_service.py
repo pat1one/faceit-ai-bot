@@ -20,10 +20,19 @@ class CaptchaService:
         self.turnstile_secret_key: Optional[str] = getattr(
             settings, "TURNSTILE_SECRET_KEY", None
         )
+        self.smartcaptcha_secret_key: Optional[str] = getattr(
+            settings, "SMARTCAPTCHA_SECRET_KEY", None
+        )
 
     def is_enabled(self) -> bool:
         """Return True if CAPTCHA checks should be enforced."""
-        return self.provider == "turnstile" and bool(self.turnstile_secret_key)
+        if self.provider == "turnstile":
+            return bool(self.turnstile_secret_key)
+
+        if self.provider in ("smartcaptcha", "yandex_smartcaptcha", "yandex"):
+            return bool(self.smartcaptcha_secret_key)
+
+        return False
 
     async def verify_token(
         self,
@@ -45,6 +54,9 @@ class CaptchaService:
 
         if self.provider == "turnstile":
             return await self._verify_turnstile(token, remote_ip=remote_ip, action=action)
+
+        if self.provider in ("smartcaptcha", "yandex_smartcaptcha", "yandex"):
+            return await self._verify_smartcaptcha(token, remote_ip=remote_ip)
 
         # Unknown provider – fail open to avoid blocking legit users
         logger.warning("Unknown CAPTCHA provider configured: %s", self.provider)
@@ -92,6 +104,53 @@ class CaptchaService:
             logger.info("Turnstile verification failed: %s", payload)
 
         return success
+
+    async def _verify_smartcaptcha(
+        self,
+        token: str,
+        remote_ip: Optional[str] = None,
+    ) -> bool:
+        """Verify token against Yandex SmartCaptcha API.
+
+        SmartCaptcha documentation specifies validation via a GET request to
+        https://smartcaptcha.yandexcloud.net/valid with query parameters:
+        secret, token, and optional ip.
+        """
+        if not self.smartcaptcha_secret_key:
+            return False
+
+        params = {
+            "secret": self.smartcaptcha_secret_key,
+            "token": token,
+        }
+        if remote_ip:
+            params["ip"] = remote_ip
+
+        url = "https://smartcaptcha.yandexcloud.net/valid"
+
+        try:
+            timeout = aiohttp.ClientTimeout(total=5)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.get(url, params=params) as resp:
+                    if resp.status != 200:
+                        text = await resp.text()
+                        logger.warning(
+                            "SmartCaptcha verification HTTP %s: %s", resp.status, text
+                        )
+                        return False
+
+                    payload = await resp.json()
+        except Exception as exc:  # pragma: no cover - network/SaaS errors
+            logger.error("SmartCaptcha verification error: %s", exc)
+            return False
+
+        status = payload.get("status")
+
+        if status != "ok":
+            logger.info("SmartCaptcha verification failed: %s", payload)
+            return False
+
+        return True
 
 
 captcha_service = CaptchaService()

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { API_ENDPOINTS } from '../../src/config/api';
-import TurnstileWidget from '../../src/components/TurnstileWidget';
+import CaptchaWidget from '../../src/components/CaptchaWidget';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -71,9 +71,10 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const turnstileEnabled = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER?.toLowerCase();
+      const captchaEnabled = !!captchaProvider;
 
-      if (turnstileEnabled && !captchaToken) {
+      if (captchaEnabled && !captchaToken) {
         setError(
           t('auth.captcha_required', {
             defaultValue: 'Подтвердите, что вы не бот, выполнив проверку CAPTCHA.',
@@ -164,7 +165,10 @@ export default function AuthPage() {
           </div>
 
           <div>
-            <TurnstileWidget onTokenChange={handleCaptchaTokenChange} action={isLogin ? 'auth_login' : 'auth_register'} />
+            <CaptchaWidget
+              onTokenChange={handleCaptchaTokenChange}
+              action={isLogin ? 'auth_login' : 'auth_register'}
+            />
           </div>
 
           {error && (
