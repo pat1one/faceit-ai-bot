@@ -25,6 +25,7 @@ from src.server.features.player_analysis.service import PlayerAnalysisService
 from src.server.features.demo_analyzer.service import DemoAnalyzer
 from src.server.features.teammates.models import TeammatePreferences
 from src.server.features.teammates.service import TeammateService
+from src.server.config.settings import settings
 
 
 logger = logging.getLogger("telegram_bot")
@@ -35,7 +36,7 @@ player_service = PlayerAnalysisService()
 demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
 
-MAX_DEMO_SIZE_MB = 200
+MAX_DEMO_SIZE_MB = settings.MAX_DEMO_FILE_MB
 MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
 _SNIFF_BYTES = 4096
 
