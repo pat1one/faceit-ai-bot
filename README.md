@@ -200,7 +200,6 @@ cd faceit-ai-bot
 cp .env.example .env
 
 # Заполните API ключи в .env
-# FACEIT_API_KEY=your_key
 
 # Запустите через Docker (рекомендуется)
 docker-compose up -d
