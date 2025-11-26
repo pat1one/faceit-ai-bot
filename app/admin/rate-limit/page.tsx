@@ -453,14 +453,14 @@ export default function AdminRateLimitPage() {
 
   if (!authLoading && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 py-20">
+      <div className="min-h-screen flex items-center justify-center px-6 py-20 bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
         <div className="card w-full max-w-md text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {t('adminRateLimit.login_required_title', {
               defaultValue: 'Только для админов',
             })}
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('adminRateLimit.login_required_text', {
               defaultValue:
                 'Эта страница доступна только авторизованным пользователям.',
@@ -482,14 +482,14 @@ export default function AdminRateLimitPage() {
 
   if (!authLoading && user && !user.is_admin) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 py-20">
+      <div className="min-h-screen flex items-center justify-center px-6 py-20 bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
         <div className="card w-full max-w-md text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             {t('adminRateLimit.no_admin_title', {
               defaultValue: 'Нет доступа',
             })}
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('adminRateLimit.no_admin_text', {
               defaultValue: 'Эта страница доступна только администраторам.',
             })}
@@ -509,7 +509,7 @@ export default function AdminRateLimitPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 py-10 flex justify-center bg-gray-900 text-white">
+    <div className="min-h-screen px-6 py-10 flex justify-center bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white">
       <div className="w-full max-w-5xl space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">
