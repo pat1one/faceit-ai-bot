@@ -342,6 +342,64 @@ class AIService:
             "влияние на её игру",
         ]
 
+        # CS2-related keywords that indicate a line is really about
+        # in-game improvement, not abstract text.
+        cs2_keywords_ru = [
+            "аим",
+            "aim",
+            "хедшот",
+            "хедшоты",
+            "headshot",
+            "спрей",
+            "spray",
+            "раскид",
+            "гранат",
+            "smoke",
+            "смоук",
+            "flash",
+            "флеш",
+            "позиционирован",
+            "позиция",
+            "позиции",
+            "демо",
+            "матч",
+            "матчей",
+            "deathmatch",
+            "dm ",
+            "карта",
+            "карты",
+            "тимплей",
+            "командн",
+            "крестик",
+            "прицел",
+            "movement",
+            "мувмент",
+        ]
+
+        cs2_keywords_en = [
+            "aim",
+            "headshot",
+            "spray",
+            "spray control",
+            "grenade",
+            "grenades",
+            "smoke",
+            "flash",
+            "utility",
+            "position",
+            "positioning",
+            "demo",
+            "match",
+            "matches",
+            "deathmatch",
+            "dm ",
+            "map",
+            "teamplay",
+            "team play",
+            "crosshair",
+            "movement",
+        ]
+
         try:
             for raw_line in detailed_text.splitlines():
                 line = raw_line.strip()
@@ -371,10 +429,20 @@ class AIService:
                 if any(bad in lower for bad in banned_substrings):
                     continue
 
-                # For Russian we expect at least some Cyrillic characters,
-                # иначе это, скорее всего, мусор или общее описание.
-                if lang == "ru" and not _contains_cyrillic(clean_line):
-                    continue
+                # For Russian we expect at least some Cyrillic characters и
+                # хотя бы одно CS2-ключевое слово, иначе это, скорее всего,
+                # мусор или слишком общий текст.
+                if lang == "ru":
+                    if not _contains_cyrillic(clean_line):
+                        continue
+                    if not any(kw in lower for kw in cs2_keywords_ru):
+                        continue
+
+                # For English we also require at least one CS2 keyword to
+                # avoid keeping very abstract lines.
+                if lang == "en":
+                    if not any(kw in lower for kw in cs2_keywords_en):
+                        continue
 
                 recommendations.append(clean_line)
 
