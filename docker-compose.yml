@@ -20,6 +20,7 @@ services:
       POSTGRES_USER: faceit_user
       POSTGRES_PASSWORD: faceit_local_2024
       POSTGRES_DB: faceit_user
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - '5432:5432'
     volumes:
