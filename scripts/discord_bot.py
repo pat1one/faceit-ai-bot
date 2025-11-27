@@ -471,6 +471,7 @@ async def faceit_analyze(
 
     strengths = analysis.strengths
     weaknesses = analysis.weaknesses
+    training_plan = analysis.training_plan
 
     embed.add_field(
         name="Сильные стороны",
@@ -493,6 +494,36 @@ async def faceit_analyze(
     embed.add_field(
         name="Рекомендации",
         value="\n".join(weaknesses.recommendations),
+        inline=False,
+    )
+
+    focus = ", ".join(training_plan.focus_areas) if training_plan.focus_areas else "—"
+    exercises_lines = []
+    for ex in training_plan.daily_exercises[:5]:
+        if isinstance(ex, dict):
+            name = ex.get("name") or "Упражнение"
+            duration = ex.get("duration") or ""
+            description = ex.get("description") or ""
+            parts = [name]
+            if duration:
+                parts.append(f"({duration})")
+            if description:
+                parts.append(f"- {description}")
+            exercises_lines.append(" ".join(parts))
+        else:
+            exercises_lines.append(str(ex))
+    if not exercises_lines:
+        exercises_lines.append("План пока недоступен.")
+
+    plan_text = (
+        f"Фокус: {focus}\n\n" +
+        "\n".join(exercises_lines) +
+        f"\n\nСрок: {training_plan.estimated_time}"
+    )[:1024]
+
+    embed.add_field(
+        name="Тренировочный план",
+        value=plan_text,
         inline=False,
     )
 
