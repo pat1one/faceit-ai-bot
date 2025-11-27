@@ -155,6 +155,7 @@ services:
 
   nginx:
     image: nginx:alpine
+    entrypoint: ["nginx", "-g", "daemon off;"]
     depends_on:
       web:
         condition: service_started
