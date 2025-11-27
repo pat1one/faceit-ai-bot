@@ -97,6 +97,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_CAPTCHA_PROVIDER: ${NEXT_PUBLIC_CAPTCHA_PROVIDER}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY}
     depends_on:
       api:
         condition: service_started
@@ -106,7 +111,7 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/ > /dev/null || exit 1']
       interval: 10s
