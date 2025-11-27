@@ -351,7 +351,7 @@ class GroqService:
         try:
             if lang == "en":
                 prompt = f"""
-                Create a detailed training plan for a CS2 player.
+                Create a detailed training plan specifically for a CS2 player.
 
                 Player statistics:
                 - K/D: {player_stats.get('kd_ratio', 'N/A')}
@@ -360,19 +360,27 @@ class GroqService:
 
                 Main focus areas for improvement: {', '.join(focus_areas)}
 
-                Return ONLY one valid JSON object with the following fields:
-                - daily_exercises: list of objects with fields name, duration, description
-                - weekly_goals: list of strings
-                - estimated_time: string
+                Strict requirements for the answer:
+                - The plan MUST ONLY describe in-game CS2 activities
+                  (aim training, spray control, movement, utility practice,
+                  map/position study, demo review, teamplay, etc.).
+                - Do NOT mention running, cardio, fitness, stretching, yoga,
+                  skiing, swimming, nutrition, sleep, general health,
+                  psychology, or any real-life wellness routines.
+                - Return ONLY one valid JSON object with the following fields:
+                  * daily_exercises: list of objects with fields
+                    name, duration, description (all about CS2 practice).
+                  * weekly_goals: list of strings with CS2-related goals.
+                  * estimated_time: string with approximate time to see
+                    improvement (for example, "4 weeks").
+                - Do not add ANY explanations, comments or markdown outside JSON.
 
                 All text fields (name, description, weekly_goals, estimated_time)
                 must be in ENGLISH.
-
-                Do not add any explanations, comments or markdown, only pure JSON.
                 """
             else:
                 prompt = f"""
-                Составь подробный тренировочный план для игрока CS2.
+                Составь подробный тренировочный план по игре CS2 для одного игрока.
 
                 Статистика игрока:
                 - K/D: {player_stats.get('kd_ratio', 'N/A')}
@@ -381,15 +389,23 @@ class GroqService:
 
                 Основные направления для улучшения: {', '.join(focus_areas)}
 
-                Верни ТОЛЬКО один корректный JSON-объект со следующими полями:
-                - daily_exercises: список объектов с полями name, duration, description
-                - weekly_goals: список строк
-                - estimated_time: строка
+                Жёсткие требования к ответу:
+                - План должен касаться ТОЛЬКО игровых активностей в CS2
+                  (тренировка аима, спрея, мувмента, раскидок, позиционирования,
+                  командного взаимодействия, разбора демок и т.п.).
+                - НЕ упоминай бег, кардио, фитнес, зарядку, растяжку, йогу,
+                  плавание, питание, сон, здоровье, психологию, отдых вне игры
+                  и любые другие темы, не связанные напрямую с CS2.
+                - Верни ТОЛЬКО один корректный JSON-объект со следующими полями:
+                  * daily_exercises: список объектов с полями name, duration, description
+                    (все упражнения связаны с практикой в CS2).
+                  * weekly_goals: список строк с целями по CS2.
+                  * estimated_time: строка с примерным сроком достижения целей
+                    (например, "4 недели").
+                - Никакого текста вне JSON (никаких комментариев или markdown).
 
                 Все текстовые поля (name, description, weekly_goals, estimated_time)
                 должны быть НА РУССКОМ ЯЗЫКЕ.
-
-                Не добавляй никаких пояснений, комментариев или markdown, только чистый JSON.
                 """
 
             headers = {

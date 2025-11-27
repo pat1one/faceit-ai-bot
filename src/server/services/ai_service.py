@@ -203,6 +203,54 @@ class AIService:
         else:
             estimated_time = "4 weeks" if language == "en" else "4 недели"
 
+        # Heuristic validation: if the AI returned an obviously non-CS2 or
+        # malformed plan (fitness, skiing, non-Russian/CJK, etc.),
+        # treat it as invalid so that we fall back to the static CS2 plan below.
+        invalid_plan = False
+
+        # Collect all text fields for inspection
+        text_parts: List[str] = []
+        for ex in daily_exercises:
+            if isinstance(ex, dict):
+                text_parts.append(str(ex.get("name", "")))
+                text_parts.append(str(ex.get("description", "")))
+        text_parts.append(estimated_time)
+        all_text = " ".join(text_parts).strip()
+
+        def _contains_cjk(s: str) -> bool:
+            for ch in s:
+                if "\u4e00" <= ch <= "\u9fff":
+                    return True
+            return False
+
+        if all_text and _contains_cjk(all_text):
+            invalid_plan = True
+
+        lowered = all_text.lower()
+        banned_keywords = [
+            "warm-up",
+            "warm up",
+            "cardio",
+            "yoga",
+            "meditation",
+            "stretch",
+            "stretching",
+            "mobility",
+            "ski",
+            "skiing",
+            "walking",
+            "walk ",
+            "running",
+            "run ",
+            "jogging",
+            "jog ",
+        ]
+        if any(bad in lowered for bad in banned_keywords):
+            invalid_plan = True
+
+        if invalid_plan:
+            daily_exercises = []
+
         # Fallback to previous static plan if AI did not provide anything useful
         if not daily_exercises:
             if language == "en":
