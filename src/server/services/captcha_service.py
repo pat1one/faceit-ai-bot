@@ -112,26 +112,26 @@ class CaptchaService:
     ) -> bool:
         """Verify token against Yandex SmartCaptcha API.
 
-        SmartCaptcha documentation specifies validation via a GET request to
-        https://smartcaptcha.yandexcloud.net/valid with query parameters:
-        secret, token, and optional ip.
+        According to current SmartCaptcha docs, validation is done via a
+        POST request to https://smartcaptcha.cloud.yandex.ru/validate with
+        x-www-form-urlencoded body: secret, token, optional ip.
         """
         if not self.smartcaptcha_secret_key:
             return False
 
-        params = {
+        data = {
             "secret": self.smartcaptcha_secret_key,
             "token": token,
         }
         if remote_ip:
-            params["ip"] = remote_ip
+            data["ip"] = remote_ip
 
-        url = "https://smartcaptcha.yandexcloud.net/valid"
+        url = "https://smartcaptcha.cloud.yandex.ru/validate"
 
         try:
             timeout = aiohttp.ClientTimeout(total=5)
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.get(url, params=params) as resp:
+                async with session.post(url, data=data) as resp:
                     if resp.status != 200:
                         text = await resp.text()
                         logger.warning(
