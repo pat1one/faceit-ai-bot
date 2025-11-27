@@ -3,8 +3,6 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    ports:
-      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
@@ -17,12 +15,10 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_USER: faceit_user
-      POSTGRES_PASSWORD: faceit_local_2024
-      POSTGRES_DB: faceit_user
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - '5432:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -38,8 +34,8 @@ services:
     env_file:
       - ./.env
     environment:
-      - DATABASE_URL=postgresql://faceit_user:faceit_local_2024@db:5432/faceit_user
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
     ports:
       - '8000:8000'
     volumes:
@@ -59,8 +55,8 @@ services:
     env_file:
       - ./.env
     environment:
-      - DATABASE_URL=postgresql://faceit_user:faceit_local_2024@db:5432/faceit_user
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
     volumes:
       - ./:/app:cached
     restart: always
@@ -76,8 +72,8 @@ services:
     env_file:
       - ./.env
     environment:
-      - DATABASE_URL=postgresql://faceit_user:FaceitDB_Secure_Pass_2024!@db:5432/faceit_user
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
     volumes:
       - ./:/app:cached
     restart: always
@@ -93,7 +89,7 @@ services:
     env_file:
       - ./.env
     environment:
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=${REDIS_URL}
     ports:
       - '5555:5555'
     restart: always
@@ -215,7 +211,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
     restart: always
     depends_on:
