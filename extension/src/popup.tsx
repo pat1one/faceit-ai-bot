@@ -200,7 +200,39 @@ const Popup: React.FC = () => {
       );
 
       if (!res.ok) {
-        setAnalysisError('Не удалось выполнить анализ игрока.');
+        let message = 'Не удалось выполнить анализ игрока.';
+        try {
+          const errorBody = await res.json();
+          const detail =
+            typeof errorBody === 'string'
+              ? errorBody
+              : errorBody?.detail || errorBody?.error || '';
+
+          if (res.status === 404) {
+            message =
+              typeof detail === 'string' && detail.includes('not found')
+                ? 'Игрок не найден на Faceit.'
+                : 'Игрок не найден.';
+          } else if (res.status === 429) {
+            message = 'Превышен лимит запросов к Faceit. Попробуйте позже.';
+          } else if (res.status >= 500 && res.status < 600) {
+            message =
+              typeof detail === 'string' && detail
+                ? `Сервис анализа временно недоступен: ${detail}`
+                : 'Сервис анализа временно недоступен.';
+          } else if (detail) {
+            message = typeof detail === 'string' ? detail : message;
+          }
+
+          // Для отладки можно посмотреть точный ответ сервера
+          // eslint-disable-next-line no-console
+          console.error('AI analysis failed', res.status, errorBody);
+        } catch {
+          // eslint-disable-next-line no-console
+          console.error('AI analysis failed', res.status);
+        }
+
+        setAnalysisError(message);
         return;
       }
 
