@@ -247,8 +247,92 @@ class AIService:
             "run ",
             "jogging",
             "jog ",
+            # Russian/other non-CS2 wellness / fitness terms that indicate
+            # the model went off-topic.
+            "физическ",
+            "здоров",
+            "питание",
+            "сон ",
+            "отдых",
+            "фитнес",
+            "йога",
+            "кардио",
+            "woche",
         ]
         if any(bad in lowered for bad in banned_keywords):
+            invalid_plan = True
+
+        # Additionally require that the plan text actually looks like a CS2
+        # training plan: it should contain at least some CS2-related
+        # vocabulary (aim, spray, grenades, maps, demos, matches, etc.).
+        lang_norm = str(language or "ru").lower()
+        if lang_norm.startswith("en"):
+            lang_norm = "en"
+        elif lang_norm.startswith("ru"):
+            lang_norm = "ru"
+        else:
+            lang_norm = "en"
+
+        cs2_keywords_ru = [
+            "аим",
+            "aim",
+            "хедшот",
+            "хедшоты",
+            "спрей",
+            "раскид",
+            "гранат",
+            "смоук",
+            "flash",
+            "флеш",
+            "демо",
+            "матч",
+            "матчей",
+            "карта",
+            "карты",
+            "deathmatch",
+            "dm ",
+            "позиционирован",
+            "позиция",
+            "позиции",
+            "соревновательн",
+            "прицел",
+            "movement",
+            "мувмент",
+        ]
+
+        cs2_keywords_en = [
+            "aim",
+            "headshot",
+            "spray",
+            "spray control",
+            "grenade",
+            "grenades",
+            "smoke",
+            "flash",
+            "utility",
+            "demo",
+            "match",
+            "matches",
+            "deathmatch",
+            "dm ",
+            "map",
+            "position",
+            "positioning",
+            "crosshair",
+            "teamplay",
+            "team play",
+            "competitive",
+        ]
+
+        has_cs2_keyword = False
+        if lang_norm == "ru":
+            if any(kw in lowered for kw in cs2_keywords_ru):
+                has_cs2_keyword = True
+        elif lang_norm == "en":
+            if any(kw in lowered for kw in cs2_keywords_en):
+                has_cs2_keyword = True
+
+        if not has_cs2_keyword:
             invalid_plan = True
 
         if invalid_plan:
