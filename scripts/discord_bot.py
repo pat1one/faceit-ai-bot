@@ -105,6 +105,357 @@ async def check_bot_rate_limit(
         return True
 
 
+class FaceitStatsModal(discord.ui.Modal, title="📊 Статистика игрока"):
+    nickname: discord.ui.TextInput = discord.ui.TextInput(
+        label="Faceit ник",
+        placeholder="s1mple",
+        max_length=32,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        user_key = f"{interaction.user.id}"
+        if not await check_bot_rate_limit(
+            user_key,
+            "faceit_stats",
+            limit_per_minute=20,
+            limit_per_day=200,
+        ):
+            await interaction.response.send_message(
+                "Превышен лимит запросов для этой команды, попробуй позже.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        nickname = str(self.nickname)
+        stats = await player_service.get_player_stats(nickname)
+        if not stats:
+            await interaction.followup.send(
+                f"Не удалось найти статистику для **{nickname}**", ephemeral=True
+            )
+            return
+
+        game_data = stats.get("stats", {}).get("lifetime", {})
+
+        elo = stats.get("elo")
+        level = stats.get("level")
+        kd_ratio = game_data.get("Average K/D Ratio") or game_data.get("K/D Ratio")
+        winrate = game_data.get("Win Rate %")
+
+        embed = discord.Embed(
+            title=f"Статистика Faceit: {nickname}",
+            color=discord.Color.green(),
+        )
+        if elo is not None:
+            embed.add_field(name="ELO", value=str(elo), inline=True)
+        if level is not None:
+            embed.add_field(name="Уровень", value=str(level), inline=True)
+        if kd_ratio is not None:
+            embed.add_field(name="K/D", value=str(kd_ratio), inline=True)
+        if winrate is not None:
+            embed.add_field(name="Winrate %", value=str(winrate), inline=True)
+
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+class FaceitAnalyzeModal(discord.ui.Modal, title="🤖 AI-анализ игрока"):
+    nickname: discord.ui.TextInput = discord.ui.TextInput(
+        label="Faceit ник",
+        placeholder="s1mple",
+        max_length=32,
+    )
+    language: discord.ui.TextInput = discord.ui.TextInput(
+        label="Язык (ru/en)",
+        placeholder="ru",
+        required=False,
+        max_length=4,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        user_key = f"{interaction.user.id}"
+        if not await check_bot_rate_limit(
+            user_key,
+            "faceit_analyze",
+            limit_per_minute=5,
+            limit_per_day=50,
+        ):
+            await interaction.response.send_message(
+                "Превышен лимит AI-анализов для этой команды, попробуй позже.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        nickname = str(self.nickname)
+        lang = str(self.language).strip().lower() or "ru"
+        if lang not in {"ru", "en"}:
+            lang = "ru"
+
+        analysis = await player_service.analyze_player(nickname, language=lang)
+        if not analysis:
+            await interaction.followup.send(
+                f"Не удалось проанализировать игрока **{nickname}**",
+                ephemeral=True,
+            )
+            return
+
+        embed = discord.Embed(
+            title=f"AI-анализ игрока: {nickname}",
+            color=discord.Color.gold(),
+        )
+
+        embed.add_field(
+            name="Общий рейтинг",
+            value=str(analysis.overall_rating),
+            inline=False,
+        )
+
+        strengths = analysis.strengths
+        weaknesses = analysis.weaknesses
+        training_plan = analysis.training_plan
+
+        embed.add_field(
+            name="Сильные стороны",
+            value=(
+                f"Aim: {strengths.aim}\n"
+                f"Game sense: {strengths.game_sense}\n"
+                f"Positioning: {strengths.positioning}\n"
+                f"Teamwork: {strengths.teamwork}\n"
+                f"Consistency: {strengths.consistency}"
+            ),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Слабые стороны (priority: " f"{weaknesses.priority})",
+            value="\n".join(weaknesses.areas),
+            inline=False,
+        )
+
+        embed.add_field(
+            name="Рекомендации",
+            value="\n".join(weaknesses.recommendations),
+            inline=False,
+        )
+
+        focus = ", ".join(training_plan.focus_areas) if training_plan.focus_areas else "—"
+        exercises_lines = []
+        for ex in training_plan.daily_exercises[:5]:
+            if isinstance(ex, dict):
+                name = ex.get("name") or "Упражнение"
+                duration = ex.get("duration") or ""
+                description = ex.get("description") or ""
+                parts = [name]
+                if duration:
+                    parts.append(f"({duration})")
+                if description:
+                    parts.append(f"- {description}")
+                exercises_lines.append(" ".join(parts))
+            else:
+                exercises_lines.append(str(ex))
+        if not exercises_lines:
+            exercises_lines.append("План пока недоступен.")
+
+        plan_text = (
+            f"Фокус: {focus}\n\n"
+            + "\n".join(exercises_lines)
+            + f"\n\nСрок: {training_plan.estimated_time}"
+        )[:1024]
+
+        embed.add_field(
+            name="Тренировочный план",
+            value=plan_text,
+            inline=False,
+        )
+
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+class TeammatesModal(discord.ui.Modal, title="👥 Поиск тиммейтов"):
+    min_elo: discord.ui.TextInput = discord.ui.TextInput(
+        label="Минимальный ELO",
+        placeholder="1500",
+    )
+    max_elo: discord.ui.TextInput = discord.ui.TextInput(
+        label="Максимальный ELO",
+        placeholder="2000",
+    )
+    language: discord.ui.TextInput = discord.ui.TextInput(
+        label="Язык (ru/en)",
+        placeholder="ru",
+        required=False,
+    )
+    role: discord.ui.TextInput = discord.ui.TextInput(
+        label="Роль (entry/support/igl/any)",
+        placeholder="any",
+        required=False,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        user_key = f"{interaction.user.id}"
+        if not await check_bot_rate_limit(
+            user_key,
+            "tm_find",
+            limit_per_minute=5,
+            limit_per_day=50,
+        ):
+            await interaction.response.send_message(
+                "Превышен лимит запросов для этой команды, попробуй позже.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(thinking=True, ephemeral=True)
+
+        try:
+            min_elo = int(str(self.min_elo))
+            max_elo = int(str(self.max_elo))
+        except ValueError:
+            await interaction.followup.send(
+                "min_elo и max_elo должны быть целыми числами",
+                ephemeral=True,
+            )
+            return
+
+        language = str(self.language).strip() or "ru"
+        role = str(self.role).strip() or "any"
+
+        db = SessionLocal()
+        try:
+            user = User(
+                id=0,
+                username=f"discord_{interaction.user.id}",
+                email=f"discord_{interaction.user.id}@local",
+                hashed_password="",
+            )
+
+            preferences = TeammatePreferences(
+                min_elo=min_elo,
+                max_elo=max_elo,
+                preferred_maps=[],
+                preferred_roles=[] if role == "any" else [role],
+                communication_lang=[language],
+                play_style="unknown",
+                time_zone="unknown",
+            )
+
+            profiles = await teammate_service.find_teammates(
+                db=db,
+                current_user=user,
+                preferences=preferences,
+            )
+
+            if not profiles:
+                await interaction.followup.send(
+                    "Не удалось найти подходящих тиммейтов с такими параметрами.",
+                    ephemeral=True,
+                )
+                return
+
+            embed = discord.Embed(
+                title="Найденные тиммейты",
+                color=discord.Color.blurple(),
+            )
+
+            for p in profiles[:5]:
+                score = (
+                    f"{p.compatibility_score:.1f}"
+                    if p.compatibility_score is not None
+                    else "—"
+                )
+                value_lines = [
+                    f"ELO: {p.stats.faceit_elo}",
+                    f"Языки: {', '.join(p.preferences.communication_lang) or '—'}",
+                    f"Роли: {', '.join(p.preferences.preferred_roles) or '—'}",
+                    f"Стиль: {p.preferences.play_style}",
+                ]
+                if p.match_summary:
+                    value_lines.append("")
+                    value_lines.append(p.match_summary[:256])
+
+                embed.add_field(
+                    name=f"{p.faceit_nickname or 'Неизвестный игрок'} (score: {score})",
+                    value="\n".join(value_lines),
+                    inline=False,
+                )
+
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        finally:
+            db.close()
+
+
+class FaceitAIMenuView(discord.ui.View):
+    def __init__(self) -> None:
+        super().__init__(timeout=120)
+
+    @discord.ui.button(
+        label="📊 Статистика игрока",
+        style=discord.ButtonStyle.primary,
+    )
+    async def stats_button(  # type: ignore[override]
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(FaceitStatsModal())
+
+    @discord.ui.button(
+        label="🤖 AI-анализ игрока",
+        style=discord.ButtonStyle.primary,
+    )
+    async def analyze_button(  # type: ignore[override]
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(FaceitAnalyzeModal())
+
+    @discord.ui.button(
+        label="👥 Поиск тиммейтов",
+        style=discord.ButtonStyle.secondary,
+    )
+    async def teammates_button(  # type: ignore[override]
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_modal(TeammatesModal())
+
+    @discord.ui.button(
+        label="🎮 Анализ демки",
+        style=discord.ButtonStyle.secondary,
+    )
+    async def demo_button(  # type: ignore[override]
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ) -> None:
+        await interaction.response.send_message(
+            "🎮 Анализ демки\n\n"
+            "Используй слэш-команду `/demo_analyze`, указав файл демки (.dem) и язык (ru/en).",
+            ephemeral=True,
+        )
+
+
+@tree.command(name="menu", description="Главное меню Faceit AI Bot")
+async def menu(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(
+        title="🤖 Faceit AI Bot",
+        description=(
+            "Главное меню бота.\n\n"
+            "• Статистика игрока\n"
+            "• AI-анализ игрока\n"
+            "• Поиск тиммейтов\n"
+            "• Анализ CS2 демок"
+        ),
+        color=discord.Color.blurple(),
+    )
+    view = FaceitAIMenuView()
+    await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
 @tree.command(name="hello", description="Тестовая команда")
 async def hello(interaction: discord.Interaction) -> None:
     await interaction.response.send_message("Работает!", ephemeral=True)
