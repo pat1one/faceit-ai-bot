@@ -44,6 +44,15 @@ services:
     networks:
       - default
       - faceit-network
+
+  singbox:
+    image: ghcr.io/sagernet/sing-box:v1.12.12
+    command: ["run", "-c", "/etc/sing-box/config.json"]
+    volumes:
+      - /etc/sing-box/config.json:/etc/sing-box/config.json:ro
+    restart: always
+    networks:
+      - default
   celery_worker:
     build:
       context: .
@@ -132,16 +141,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://faceit_user:faceit_local_2024@db:5432/faceit_user
       - REDIS_URL=redis://redis:6379
-      - ALL_PROXY=http://host.docker.internal:2080
-      - HTTPS_PROXY=http://host.docker.internal:2080
-      - HTTP_PROXY=http://host.docker.internal:2080
-      - DISCORD_PROXY_URL=http://host.docker.internal:2080
+      - ALL_PROXY=http://singbox:2080
+      - HTTPS_PROXY=http://singbox:2080
+      - HTTP_PROXY=http://singbox:2080
+      - DISCORD_PROXY_URL=http://singbox:2080
       - NO_PROXY=localhost,127.0.0.1,db,redis,api
     command: python -m scripts.discord_bot
     volumes:
       - ./:/app:cached
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     restart: always
     networks:
       - default
