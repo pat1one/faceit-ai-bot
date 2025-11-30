@@ -123,7 +123,8 @@ async def handle_main_menu_button(
         await query.edit_message_text(
             "📊 Статистика игрока\n\n"
             "Отправь Faceit ник игрока для получения статистики.\n\n"
-            "Пример: s1mple",
+            "Пример: s1mple\n\n"
+            "Можно нажать /cancel, чтобы выйти в меню.",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("◀️ Назад", callback_data="back_main")]]
             ),
@@ -136,7 +137,8 @@ async def handle_main_menu_button(
             "🤖 AI-анализ игрока\n\n"
             "Отправь Faceit ник для глубокого анализа.\n"
             "Можно добавить язык (ru/en) через пробел.\n\n"
-            "Примеры:\n  s1mple\n  s1mple en",
+            "Примеры:\n  s1mple\n  s1mple en\n\n"
+            "Можно нажать /cancel, чтобы выйти в меню.",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("◀️ Назад", callback_data="back_main")]]
             ),
@@ -149,7 +151,8 @@ async def handle_main_menu_button(
             "👥 Поиск тиммейтов\n\n"
             "Отправь параметры поиска:\n"
             "<min_elo> <max_elo> [язык] [роль]\n\n"
-            "Примеры:\n  1500 2000\n  1500 2000 ru\n  1500 2000 ru rifler",
+            "Примеры:\n  1500 2000\n  1500 2000 ru\n  1500 2000 ru rifler\n\n"
+            "Можно нажать /cancel, чтобы выйти в меню.",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("◀️ Назад", callback_data="back_main")]]
             ),
@@ -161,7 +164,8 @@ async def handle_main_menu_button(
         await query.edit_message_text(
             "🎮 Анализ демки\n\n"
             "Пришли сюда демку CS2 в файле .dem.\n"
-            "Опционально в подписи к файлу можно указать язык: ru или en.",
+            "Опционально в подписи к файлу можно указать язык: ru или en.\n\n"
+            "Можно нажать /cancel, чтобы выйти в меню.",
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton("◀️ Назад", callback_data="back_main")]]
             ),
@@ -278,11 +282,20 @@ async def handle_demo_message(
     return ConversationHandler.END
 
 
+async def cancel_conversation(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    await update.effective_chat.send_message(
+        "Диалог отменён. Главное меню:",
+        reply_markup=get_main_menu_keyboard(),
+    )
+    return ConversationHandler.END
+
+
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.effective_chat.send_message(
         "Привет! Я Faceit AI Bot в Telegram.\n\n"
-        "Выбери нужный раздел в меню ниже "
-        "или используй команды вручную: /faceit_stats, /faceit_analyze, /tm_find, /demo_analyze.",
+        "Выбери нужный раздел в меню ниже.",
         reply_markup=get_main_menu_keyboard(),
     )
 
@@ -647,22 +660,27 @@ def main() -> None:
         states={
             WAITING_NICKNAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_stats_nickname),
+                CallbackQueryHandler(handle_main_menu_button, pattern="^menu_"),
             ],
             WAITING_ANALYZE_PARAMS: [
                 MessageHandler(
                     filters.TEXT & ~filters.COMMAND,
                     handle_analyze_params,
                 ),
+                CallbackQueryHandler(handle_main_menu_button, pattern="^menu_"),
             ],
             WAITING_TM_PARAMS: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, handle_tm_params),
+                CallbackQueryHandler(handle_main_menu_button, pattern="^menu_"),
             ],
             WAITING_DEMO: [
                 MessageHandler(filters.Document.ALL, handle_demo_message),
+                CallbackQueryHandler(handle_main_menu_button, pattern="^menu_"),
             ],
         },
         fallbacks=[
             CallbackQueryHandler(handle_back_to_main, pattern="^back_main$"),
+            CommandHandler("cancel", cancel_conversation),
         ],
     )
 
