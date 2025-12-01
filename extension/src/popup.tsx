@@ -176,10 +176,6 @@ const Popup: React.FC = () => {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [nickname, setNickname] = useState(() => getInitialNicknameFromLocation());
   const [analysis, setAnalysis] = useState<PlayerAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -280,59 +276,6 @@ const Popup: React.FC = () => {
   }, [lang]);
 
   const tr = POPUP_TRANSLATIONS[lang];
-
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setAuthLoading(true);
-    setAuthError(null);
-
-    try {
-      const res = await fetch(API_BASE + '/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      if (!res.ok) {
-        setAuthError(tr.loginFailed);
-        return;
-      }
-
-      const data = (await res.json()) as LoginResponse;
-      if (!data.access_token) {
-        setAuthError(tr.noToken);
-        return;
-      }
-
-      window.localStorage.setItem(TOKEN_KEY, data.access_token);
-      setToken(data.access_token);
-
-      const meRes = await fetch(API_BASE + '/auth/me', {
-        headers: {
-          Authorization: `Bearer ${data.access_token}`,
-        },
-        credentials: 'include',
-      });
-
-      if (meRes.ok) {
-        const meData = await meRes.json();
-        setUser(meData);
-      } else {
-        setUser(null);
-      }
-    } catch {
-      setAuthError(tr.networkError);
-    } finally {
-      setAuthLoading(false);
-      setLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     window.localStorage.removeItem(TOKEN_KEY);
@@ -606,54 +549,6 @@ const Popup: React.FC = () => {
             <div style={{ fontSize: 12, color: '#9ca3af' }}>
               {tr.loginPrompt}
             </div>
-            <form
-              onSubmit={handleLogin}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-                marginTop: 6,
-              }}
-            >
-              <input
-                type="email"
-                placeholder={tr.emailPlaceholder}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  padding: '6px 8px',
-                  borderRadius: 6,
-                  border: '1px solid #374151',
-                  backgroundColor: '#020617',
-                  color: '#f9fafb',
-                  fontSize: 12,
-                }}
-              />
-              <input
-                type="password"
-                placeholder={tr.passwordPlaceholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  padding: '6px 8px',
-                  borderRadius: 6,
-                  border: '1px solid #374151',
-                  backgroundColor: '#020617',
-                  color: '#f9fafb',
-                  fontSize: 12,
-                }}
-              />
-              {authError && (
-                <div style={{ fontSize: 11, color: '#f87171' }}>{authError}</div>
-              )}
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={authLoading}
-              >
-                {authLoading ? tr.loginButtonLoading : tr.loginButtonIdle}
-              </button>
-            </form>
             <div
               style={{
                 marginTop: 8,
@@ -664,18 +559,19 @@ const Popup: React.FC = () => {
             >
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-primary"
                 onClick={() => openInNewTab('/auth')}
               >
                 {tr.steamLoginButton}
               </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => openInNewTab('/demo/example')}
+              >
+                {tr.demoExampleButton}
+              </button>
             </div>
-            <button
-              className="btn-secondary"
-              onClick={() => openInNewTab('/demo/example')}
-            >
-              {tr.demoExampleButton}
-            </button>
           </>
         )}
       </main>
