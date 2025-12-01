@@ -80,7 +80,25 @@ const Popup: React.FC = () => {
   useEffect(() => {
     const controller = new AbortController();
 
-    const loadFromToken = async () => {
+    const loadSession = async () => {
+      // 1) Try to use website cookie-based session first
+      try {
+        const cookieRes = await fetch(API_BASE + '/auth/me', {
+          credentials: 'include',
+          signal: controller.signal,
+        });
+
+        if (cookieRes.ok) {
+          const data = await cookieRes.json();
+          setUser(data);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // ignore and fall back to extension token
+      }
+
+      // 2) If cookies don't work, try the extension token
       const storedToken = window.localStorage.getItem(TOKEN_KEY);
       if (!storedToken) {
         setLoading(false);
@@ -94,6 +112,7 @@ const Popup: React.FC = () => {
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
+          credentials: 'include',
           signal: controller.signal,
         });
 
@@ -110,7 +129,7 @@ const Popup: React.FC = () => {
       }
     };
 
-    loadFromToken();
+    loadSession();
     return () => controller.abort();
   }, []);
 
@@ -131,6 +150,7 @@ const Popup: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           email,
           password,
@@ -155,6 +175,7 @@ const Popup: React.FC = () => {
         headers: {
           Authorization: `Bearer ${data.access_token}`,
         },
+        credentials: 'include',
       });
 
       if (meRes.ok) {
@@ -196,6 +217,7 @@ const Popup: React.FC = () => {
                 Authorization: `Bearer ${token}`,
               }
             : undefined,
+          credentials: 'include',
         }
       );
 
