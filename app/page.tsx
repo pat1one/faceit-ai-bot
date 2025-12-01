@@ -35,6 +35,15 @@ export default function HomePage() {
                 })}
               </Link>
               <Link
+                href="/teammates"
+                className="btn-primary"
+              >
+                {t('landing.cta_teammates', {
+                  defaultValue:
+                    lang === 'en' ? 'Find teammates' : 'Найти тиммейтов',
+                })}
+              </Link>
+              <Link
                 href="/demo/example"
                 className="btn-primary"
               >
@@ -53,6 +62,15 @@ export default function HomePage() {
                 className="btn-primary"
               >
                 {t('landing.cta_get_started')}
+              </Link>
+              <Link
+                href="/teammates"
+                className="btn-primary"
+              >
+                {t('landing.cta_teammates', {
+                  defaultValue:
+                    lang === 'en' ? 'Find teammates' : 'Найти тиммейтов',
+                })}
               </Link>
               <Link
                 href="/demo/example"

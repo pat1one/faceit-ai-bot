@@ -390,6 +390,14 @@ class TeammatesModal(discord.ui.Modal, title="👥 Поиск тиммейтов
 class FaceitAIMenuView(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=120)
+        # Direct link to web party finder page
+        self.add_item(
+            discord.ui.Button(
+                label="🌐 Патифайндер (сайт)",
+                style=discord.ButtonStyle.link,
+                url="https://pattmsc.online/teammates",
+            )
+        )
 
     @discord.ui.button(
         label="📊 Статистика игрока",
