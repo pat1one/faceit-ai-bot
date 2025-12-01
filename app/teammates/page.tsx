@@ -59,7 +59,7 @@ export default function TeammatesPage() {
   }
 
   const handleSearch = async () => {
-    if (!user || !token) return;
+    if (!user) return;
 
     setLoading(true);
     setError(null);
@@ -92,24 +92,25 @@ export default function TeammatesPage() {
       contact_url: profile.contact_url || undefined,
     };
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     try {
       // Сохраняем предпочтения пользователя (профиль тиммейта)
       await fetch(API_ENDPOINTS.TEAMMATES_PREFERENCES, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(preferences),
       });
 
       // Ищем тиммейтов по этим же предпочтениям
       const response = await fetch(API_ENDPOINTS.TEAMMATES_SEARCH, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify(preferences),
       });
 

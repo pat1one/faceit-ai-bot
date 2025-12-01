@@ -104,8 +104,7 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton("📊 Статистика игрока", callback_data="menu_stats")],
         [InlineKeyboardButton("🤖 AI-анализ игрока", callback_data="menu_analyze")],
         [InlineKeyboardButton("👥 Поиск тиммейтов", callback_data="menu_teammates")],
-        [InlineKeyboardButton("� Патифайндер (сайт)", url="https://pattmsc.online/teammates")],
-        [InlineKeyboardButton("�🎮 Анализ демки", callback_data="menu_demo")],
+        [InlineKeyboardButton("🎮 Анализ демки", callback_data="menu_demo")],
         [InlineKeyboardButton("ℹ️ Помощь", callback_data="menu_help")],
     ]
     return InlineKeyboardMarkup(keyboard)
