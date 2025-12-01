@@ -518,6 +518,17 @@ async def cmd_tm_find(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             lines.append(f"Языки: {langs}")
             lines.append(f"Роли: {roles}")
             lines.append(f"Стиль: {p.preferences.play_style}")
+            contact_parts: list[str] = []
+            if p.discord_contact:
+                contact_parts.append(f"Discord: {p.discord_contact}")
+            if p.telegram_contact:
+                contact_parts.append(f"Telegram: {p.telegram_contact}")
+            if p.contact_url:
+                contact_parts.append(f"Ссылка: {p.contact_url}")
+            if contact_parts:
+                lines.append("Контакты:")
+                for part in contact_parts:
+                    lines.append(f"  - {part}")
             if p.match_summary:
                 lines.append("Кратко: " + p.match_summary[:200])
 

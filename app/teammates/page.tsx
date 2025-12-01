@@ -386,8 +386,16 @@ export default function TeammatesPage() {
                 className="px-6 py-2 bg-gradient-to-r from-primary to-primary-dark rounded-lg font-medium"
                 onClick={async () => {
                   try {
-                    if (p.faceit_nickname) {
-                      await navigator.clipboard.writeText(p.faceit_nickname);
+                    if (p.contact_url) {
+                      window.open(p.contact_url, '_blank', 'noopener,noreferrer');
+                      return;
+                    }
+
+                    const contactToCopy =
+                      p.discord_contact || p.telegram_contact || p.faceit_nickname;
+
+                    if (contactToCopy) {
+                      await navigator.clipboard.writeText(contactToCopy);
                     }
                   } catch (err) {
                     console.error('Clipboard copy failed', err);

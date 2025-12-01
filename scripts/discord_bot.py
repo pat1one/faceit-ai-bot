@@ -372,6 +372,16 @@ class TeammatesModal(discord.ui.Modal, title="👥 Поиск тиммейтов
                     f"Роли: {', '.join(p.preferences.preferred_roles) or '—'}",
                     f"Стиль: {p.preferences.play_style}",
                 ]
+                contact_lines = []
+                if p.discord_contact:
+                    contact_lines.append(f"Discord: {p.discord_contact}")
+                if p.telegram_contact:
+                    contact_lines.append(f"Telegram: {p.telegram_contact}")
+                if p.contact_url:
+                    contact_lines.append(f"Ссылка: {p.contact_url}")
+                if contact_lines:
+                    value_lines.append("")
+                    value_lines.extend(contact_lines)
                 if p.match_summary:
                     value_lines.append("")
                     value_lines.append(p.match_summary[:256])
@@ -648,6 +658,16 @@ async def tm_find(
                 f"Роли: {', '.join(p.preferences.preferred_roles) or '—'}",
                 f"Стиль: {p.preferences.play_style}",
             ]
+            contact_lines = []
+            if p.discord_contact:
+                contact_lines.append(f"Discord: {p.discord_contact}")
+            if p.telegram_contact:
+                contact_lines.append(f"Telegram: {p.telegram_contact}")
+            if p.contact_url:
+                contact_lines.append(f"Ссылка: {p.contact_url}")
+            if contact_lines:
+                value_lines.append("")
+                value_lines.extend(contact_lines)
             if p.match_summary:
                 value_lines.append("")
                 value_lines.append(p.match_summary[:256])
