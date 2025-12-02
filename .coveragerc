@@ -1,0 +1,22 @@
+[run]
+source = src/server
+branch = True
+
+[report]
+# Игнорируем legacy/CLI и вспомогательные модули, не относящиеся к основному backend API
+omit =
+    src/health.py
+    src/logging_config.py
+    src/metrics.py
+    src/rate_limit.py
+    src/sentry_config.py
+    src/ml/*
+    src/server/ai/demo_coach_model.py
+    src/server/ai/sample_store.py
+    src/server/database.py
+    src/server/database/migrations.py
+    src/server/models/*
+
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.: 
