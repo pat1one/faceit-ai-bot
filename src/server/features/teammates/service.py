@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 from ...database.models import TeammateProfile as TeammateProfileDB, User
 from .models import TeammateProfile, PlayerStats, TeammatePreferences
 from ...ai.groq_service import GroqService
+from ...integrations.faceit_client import FaceitAPIClient
 import logging
 
 
@@ -17,6 +19,69 @@ class TeammateService:
 
     def __init__(self) -> None:
         self.ai = GroqService()
+        self.faceit_client = FaceitAPIClient()
+
+    async def ensure_profile_from_faceit(
+        self,
+        db: Session,
+        current_user: User,
+        current_profile: Optional[TeammateProfileDB] = None,
+    ) -> Optional[TeammateProfileDB]:
+        """Best-effort sync of teammate profile from Faceit for current user."""
+        try:
+            profile = current_profile or (
+                db.query(TeammateProfileDB)
+                .filter(TeammateProfileDB.user_id == current_user.id)
+                .first()
+            )
+
+            # If we already have basic Faceit data, keep it as is
+            if profile and (profile.elo is not None or profile.level is not None):
+                return profile
+
+            nickname: Optional[str] = None
+            if profile and profile.faceit_nickname:
+                nickname = profile.faceit_nickname
+            elif current_user.username:
+                nickname = current_user.username
+
+            if not nickname:
+                return profile
+
+            player = await self.faceit_client.get_player_by_nickname(nickname)
+            if not isinstance(player, dict):
+                return profile
+
+            game_data = (player.get("games") or {}).get("cs2") or {}
+            elo = game_data.get("faceit_elo")
+            level = game_data.get("skill_level")
+
+            if not profile:
+                profile = TeammateProfileDB(user_id=current_user.id)
+                db.add(profile)
+
+            profile.faceit_nickname = (
+                player.get("nickname") or profile.faceit_nickname or nickname
+            )
+            if elo is not None:
+                profile.elo = elo
+            if level is not None:
+                profile.level = level
+            profile.updated_at = datetime.utcnow()
+
+            db.commit()
+            db.refresh(profile)
+            return profile
+        except Exception:
+            logger.exception(
+                "Failed to sync teammate profile from Faceit in teammate service"
+            )
+            try:
+                db.rollback()
+            except Exception:
+                # If rollback itself fails, just ignore to not break the main flow
+                pass
+            return current_profile
 
     async def find_teammates(
         self,
@@ -36,6 +101,22 @@ class TeammateService:
                 .filter(TeammateProfileDB.user_id == current_user.id)
                 .first()
             )
+
+            if current_profile is None or (
+                current_profile.elo is None
+                and current_profile.level is None
+                and not current_profile.faceit_nickname
+            ):
+                try:
+                    current_profile = await self.ensure_profile_from_faceit(
+                        db=db,
+                        current_user=current_user,
+                        current_profile=current_profile,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Failed to sync teammate profile from Faceit during teammate search"
+                    )
 
             query = (
                 db.query(TeammateProfileDB)
