@@ -1,5 +1,7 @@
 # 📚 Faceit AI Bot Documentation
 
+**Language:** Русский | [English](./index.en.md)
+
 ## 🌐 Основной сайт
 
 ✅ **Сайт активно работает:** [pattmsc.online](https://pattmsc.online)
