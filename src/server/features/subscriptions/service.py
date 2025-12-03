@@ -1,6 +1,6 @@
 from typing import Optional, Dict
 from fastapi import HTTPException
-from .models import SubscriptionTier, Subscription, UserSubscription
+from .models import SubscriptionTier, Subscription, UserSubscription, SubscriptionFeatures
 import logging
 from datetime import datetime, timedelta
 
@@ -66,9 +66,12 @@ class SubscriptionService:
             return {
                 tier.value: Subscription(
                     tier=tier,
-                    price=plan['price'],
-                    features=plan['features'],
-                    description=self._get_plan_description(tier)
+                    price=plan["price"],
+                    features=SubscriptionFeatures(
+                        demos_per_month=plan["demos_per_month"],
+                        **plan["features"],
+                    ),
+                    description=self._get_plan_description(tier),
                 )
                 for tier, plan in self.subscription_plans.items()
             }
