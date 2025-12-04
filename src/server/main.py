@@ -4,7 +4,7 @@ import logging
 from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from prometheus_client import generate_latest, Counter, Histogram
+from prometheus_client import generate_latest, Counter
 
 from .config.settings import settings
 from .core.logging import setup_logging
@@ -23,6 +23,7 @@ from .features.player_analysis.service import PlayerAnalysisService
 from .features.player_analysis.schemas import PlayerAnalysisResponse
 from .features.tasks.routes import router as tasks_router
 from .features.admin.routes import router as admin_router
+from .metrics_business import ANALYSIS_REQUESTS, ANALYSIS_DURATION, ACTIVE_USERS
 
 # Configure logging
 setup_logging()
@@ -33,16 +34,7 @@ init_sentry()
 # Configure telemetry
 init_telemetry()
 
-# Business metrics
-ANALYSIS_REQUESTS = Counter(
-    "faceit_analysis_requests_total", "Total analysis requests"
-)
-ANALYSIS_DURATION = Histogram(
-    "faceit_analysis_duration_seconds", "Analysis duration"
-)
-ACTIVE_USERS = Counter(
-    "faceit_active_users", "Active user sessions"
-)
+# Business metrics are defined in metrics_business and imported above
 
 app = FastAPI(
     title=settings.APP_TITLE,

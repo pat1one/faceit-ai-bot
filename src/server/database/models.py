@@ -44,6 +44,9 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    # Authentication activity tracking
+    last_login = Column(DateTime, nullable=True)
+    login_count = Column(Integer, default=0, nullable=False)
 
     subscription = relationship("Subscription", back_populates="user")
     payments = relationship("Payment", back_populates="user")

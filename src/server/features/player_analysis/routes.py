@@ -15,6 +15,7 @@ from ...database.connection import get_db
 from ...database.models import User
 from ...middleware.rate_limiter import rate_limiter
 from ...services.rate_limit_service import rate_limit_service
+from ...metrics_business import ANALYSIS_REQUESTS, ANALYSIS_DURATION
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,14 @@ async def analyze_player(
         Detailed player analysis with recommendations
     """
     try:
-        analysis = await service.analyze_player(nickname, language=language)
+        # Business metrics for analysis requests
+        try:  # Metrics must never break the API flow
+            ANALYSIS_REQUESTS.inc()
+        except Exception:
+            pass
+
+        with ANALYSIS_DURATION.time():
+            analysis = await service.analyze_player(nickname, language=language)
         if not analysis:
             raise HTTPException(
                 status_code=404,
