@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 
 from fastapi import HTTPException
 
+import src.server.features.payments.service as payments_module
 from src.server.features.payments.models import (
     PaymentRequest,
     PaymentProvider,
@@ -150,6 +151,56 @@ def test_validate_payment_method_invalid_method(settings_stub):
     assert "not available" in exc.value.detail
 
 
+def test_validate_payment_method_unsupported_region(settings_stub):
+    """_validate_payment_method should reject unsupported regions."""
+
+    service = PaymentService(settings_stub)
+
+    request = PaymentRequest(
+        subscription_tier="basic",
+        amount=100.0,
+        currency=Currency.USD,
+        payment_method=PaymentMethod.BANK_CARD,
+        provider=PaymentProvider.STRIPE,
+        description="Test payment",
+        user_id="1",
+    )
+
+    def fake_detect_region(req: PaymentRequest) -> str:  # noqa: ARG001
+        return "UNKNOWN"
+
+    service._detect_region = fake_detect_region  # type: ignore[method-assign]
+
+    with pytest.raises(HTTPException) as exc:
+        service._validate_payment_method(request)
+
+    assert exc.value.status_code == 400
+    assert "Unsupported region" in exc.value.detail
+
+
+def test_validate_payment_method_provider_not_enabled_for_region(settings_stub):
+    """_validate_payment_method should reject providers not enabled for region."""
+
+    service = PaymentService(settings_stub)
+
+    # For RU region (currency RUB) STRIPE is not in enabled_providers
+    request = PaymentRequest(
+        subscription_tier="basic",
+        amount=100.0,
+        currency=Currency.RUB,
+        payment_method=PaymentMethod.SBP,  # allowed method in RU
+        provider=PaymentProvider.STRIPE,   # provider not enabled in RU
+        description="Test payment",
+        user_id="1",
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        service._validate_payment_method(request)
+
+    assert exc.value.status_code == 400
+    assert "Payment provider" in exc.value.detail
+
+
 @pytest.mark.asyncio
 async def test_handle_sbp_webhook_happy_path(settings_stub, db_session):
     service = PaymentService(settings_stub)
@@ -218,6 +269,38 @@ async def test_handle_sbp_webhook_ignores_non_final_status(settings_stub, db_ses
 
 
 @pytest.mark.asyncio
+async def test_handle_sbp_webhook_amount_mismatch_is_ignored(settings_stub, db_session):
+    """SBP webhook with mismatched amount must not complete or change payment."""
+
+    service = PaymentService(settings_stub)
+
+    db_payment = DBPayment(
+        user_id=1,
+        amount=100.0,
+        currency="RUB",
+        status=DBPaymentStatus.PENDING,
+        provider="sbp",
+        provider_payment_id="sbp_mismatch",
+        subscription_tier=DBSubscriptionTier.BASIC,
+        description="Test",
+    )
+    db_session.add(db_payment)
+    db_session.commit()
+
+    data = {
+        "payment_id": "sbp_mismatch",
+        "amount": {"value": "50.0", "currency": "RUB"},  # mismatched value
+        "status": "paid",
+    }
+
+    await service._handle_sbp_webhook(data, db_session)
+
+    db_session.refresh(db_payment)
+    assert db_payment.status == DBPaymentStatus.PENDING
+    assert db_payment.completed_at is None
+
+
+@pytest.mark.asyncio
 async def test_handle_yookassa_webhook_happy_path(settings_stub, db_session):
     service = PaymentService(settings_stub)
 
@@ -255,3 +338,68 @@ async def test_handle_yookassa_webhook_happy_path(settings_stub, db_session):
     )
     assert subscription is not None
     assert subscription.tier == DBSubscriptionTier.PRO
+
+
+@pytest.mark.asyncio
+async def test_handle_yookassa_webhook_amount_mismatch_is_ignored(settings_stub, db_session):
+    """YooKassa webhook with mismatched amount must not complete payment."""
+
+    service = PaymentService(settings_stub)
+
+    db_payment = DBPayment(
+        user_id=3,
+        amount=50.0,
+        currency="RUB",
+        status=DBPaymentStatus.PENDING,
+        provider="yookassa",
+        provider_payment_id="yk_mismatch",
+        subscription_tier=DBSubscriptionTier.BASIC,
+        description="Test",
+    )
+    db_session.add(db_payment)
+    db_session.commit()
+
+    data = {
+        "object": {
+            "id": "yk_mismatch",
+            "status": "succeeded",
+            "amount": {"value": "10.0", "currency": "RUB"},  # mismatched amount
+        }
+    }
+
+    await service._handle_yookassa_webhook(data, db_session)
+
+    db_session.refresh(db_payment)
+    assert db_payment.status == DBPaymentStatus.PENDING
+    assert db_payment.completed_at is None
+
+
+@pytest.mark.asyncio
+async def test_process_webhook_records_failure_and_raises_on_error(settings_stub, db_session, monkeypatch):
+    """process_webhook should record failure metric and raise 500 on handler error."""
+
+    service = PaymentService(settings_stub)
+
+    class DummyCounter:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def labels(self, **kwargs):  # noqa: ANN001, D401
+            return self
+
+        def inc(self) -> None:
+            self.calls += 1
+
+    dummy_failed = DummyCounter()
+    monkeypatch.setattr(payments_module, "PAYMENT_WEBHOOK_FAILED_TOTAL", dummy_failed)
+
+    async def boom(data, db):  # noqa: ARG001, ANN001
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(service, "_handle_sbp_webhook", boom)
+
+    with pytest.raises(HTTPException) as exc:
+        await service.process_webhook(PaymentProvider.SBP, {"payment_id": "123"}, db_session)
+
+    assert exc.value.status_code == 500
+    assert dummy_failed.calls == 1
