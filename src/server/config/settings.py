@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production-min-32-characters-long"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # CAPTCHA settings (e.g. Cloudflare Turnstile)
     CAPTCHA_PROVIDER: Optional[str] = None

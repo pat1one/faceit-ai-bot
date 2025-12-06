@@ -1,5 +1,5 @@
 """Database package"""
-from .models import Base, User, Subscription, Payment, TeammateProfile
+from .models import Base, User, Subscription, Payment, TeammateProfile, UserSession
 from .connection import get_db, engine, SessionLocal
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     "Subscription",
     "Payment",
     "TeammateProfile",
+    "UserSession",
     "get_db",
     "engine",
     "SessionLocal",

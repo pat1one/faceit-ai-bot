@@ -5,6 +5,8 @@ from typing import Optional
 import bcrypt
 import jwt
 from jwt.exceptions import InvalidTokenError
+import secrets
+import hashlib
 
 from ..config.settings import settings
 
@@ -60,3 +62,13 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except InvalidTokenError:
         return None
+
+
+def create_refresh_token() -> str:
+    """Generate a strong random refresh token string."""
+    return secrets.token_urlsafe(32)
+
+
+def hash_refresh_token(token: str) -> str:
+    """Hash refresh token with SHA-256 for safe storage in DB."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

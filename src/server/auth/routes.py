@@ -19,11 +19,19 @@ from .security import (
     get_password_hash,
     create_access_token,
     decode_access_token,
+    create_refresh_token,
+    hash_refresh_token,
 )
 from .dependencies import get_current_active_user
 from ..config.settings import settings
 from ..middleware.rate_limiter import rate_limiter
-from ..database.models import User, Subscription, SubscriptionTier, TeammateProfile as TeammateProfileDB
+from ..database.models import (
+    User,
+    Subscription,
+    SubscriptionTier,
+    TeammateProfile as TeammateProfileDB,
+    UserSession,
+)
 from ..database import get_db
 from ..services.captcha_service import captcha_service
 from ..metrics_business import ACTIVE_USERS
@@ -491,6 +499,30 @@ async def faceit_callback(
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
+    # Issue refresh token session for Faceit login as well
+    refresh_token = create_refresh_token()
+    refresh_hash = hash_refresh_token(refresh_token)
+    now = datetime.utcnow()
+    session = UserSession(
+        user_id=user.id,
+        token_hash=refresh_hash,
+        created_at=now,
+        expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        user_agent=(request.headers.get("user-agent") or "")[:255],
+        ip_address=request.client.host if request.client else None,
+    )
+    try:
+        db.add(session)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(
+            "Failed to create refresh session for Faceit login user %s: %s",
+            user.id,
+            str(e),
+        )
+        session = None
+
     redirect_url = f"{settings.WEBSITE_URL.rstrip('/')}/auth?faceit_token={access_token}&auto=1"
 
     response = RedirectResponse(redirect_url)
@@ -503,6 +535,17 @@ async def faceit_callback(
         samesite="lax",
         max_age=60 * 60 * 24 * 30,
     )
+
+    if session is not None:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=secure_cookie,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        )
+
     return response
 
 
@@ -601,6 +644,30 @@ async def steam_callback(
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
+    # Issue refresh token session for Steam login as well
+    refresh_token = create_refresh_token()
+    refresh_hash = hash_refresh_token(refresh_token)
+    now = datetime.utcnow()
+    session = UserSession(
+        user_id=user.id,
+        token_hash=refresh_hash,
+        created_at=now,
+        expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        user_agent=(request.headers.get("user-agent") or "")[:255],
+        ip_address=request.client.host if request.client else None,
+    )
+    try:
+        db.add(session)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(
+            "Failed to create refresh session for Steam login user %s: %s",
+            user.id,
+            str(e),
+        )
+        session = None
+
     # Redirect back to frontend auth page, which will store the token and
     # then redirect to /analysis?auto=1 for immediate player analysis.
     redirect_url = f"{settings.WEBSITE_URL.rstrip('/')}/auth?steam_token={access_token}&auto=1"
@@ -615,6 +682,17 @@ async def steam_callback(
         samesite="lax",
         max_age=60 * 60 * 24 * 30,
     )
+
+    if session is not None:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=secure_cookie,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        )
+
     return response
 
 
@@ -818,6 +896,30 @@ async def login(
 
     access_token = create_access_token(data={"sub": str(user.id)})
 
+    # Create refresh token session
+    refresh_token = create_refresh_token()
+    refresh_hash = hash_refresh_token(refresh_token)
+    now = datetime.utcnow()
+    session = UserSession(
+        user_id=user.id,
+        token_hash=refresh_hash,
+        created_at=now,
+        expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        user_agent=(request.headers.get("user-agent") or "")[:255],
+        ip_address=remote_ip,
+    )
+    try:
+        db.add(session)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(
+            "Failed to create refresh session for user %s during login: %s",
+            user.id,
+            str(e),
+        )
+        session = None
+
     # Set httpOnly cookie for 30 days in addition to returning the token in JSON
     secure_cookie = settings.WEBSITE_URL.startswith("https://")
     response.set_cookie(
@@ -828,6 +930,16 @@ async def login(
         samesite="lax",
         max_age=60 * 60 * 24 * 30,
     )
+
+    if session is not None:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=secure_cookie,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        )
 
     logger.info(f"User logged in: {user.email}")
     return {"access_token": access_token, "token_type": "bearer"}
@@ -842,10 +954,136 @@ async def get_current_user_info(
 
 
 @router.post("/logout")
-async def logout_user(response: Response):
-    """Logout user by clearing the access_token cookie"""
+async def logout_user(request: Request, response: Response, db: Session = Depends(get_db)):
+    """Logout user by clearing auth cookies and revoking refresh session if present"""
+
+    refresh_cookie = request.cookies.get("refresh_token")
+    if refresh_cookie:
+        token_hash = hash_refresh_token(refresh_cookie)
+        try:
+            session = (
+                db.execute(
+                    select(UserSession).where(UserSession.token_hash == token_hash)
+                )
+                .scalars()
+                .first()
+            )
+            if session and session.revoked_at is None:
+                session.revoked_at = datetime.utcnow()
+                db.add(session)
+                db.commit()
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Failed to revoke refresh token on logout: {str(e)}")
+
     response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
     return {"detail": "Logged out"}
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_access_token(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+):
+    """Refresh access token using a valid refresh_token cookie and active session."""
+
+    raw_refresh = request.cookies.get("refresh_token")
+    if not raw_refresh:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    token_hash = hash_refresh_token(raw_refresh)
+    now = datetime.utcnow()
+
+    session = (
+        db.execute(
+            select(UserSession)
+            .where(UserSession.token_hash == token_hash)
+            .where(UserSession.revoked_at.is_(None))
+            .where(UserSession.expires_at > now)
+        )
+        .scalars()
+        .first()
+    )
+
+    if not session:
+        response.delete_cookie(key="refresh_token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        )
+
+    user = db.execute(select(User).where(User.id == session.user_id)).scalars().first()
+    if not user or not user.is_active:
+        session.revoked_at = now
+        try:
+            db.add(session)
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            logger.error(
+                "Failed to revoke session for missing/inactive user %s: %s",
+                session.user_id,
+                str(e),
+            )
+        response.delete_cookie(key="refresh_token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+        )
+
+    # Rotate refresh token: revoke old session and create a new one
+    new_refresh = create_refresh_token()
+    new_hash = hash_refresh_token(new_refresh)
+    new_expires = now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+
+    session.revoked_at = now
+    new_session = UserSession(
+        user_id=user.id,
+        token_hash=new_hash,
+        created_at=now,
+        expires_at=new_expires,
+        user_agent=(request.headers.get("user-agent") or "")[:255],
+        ip_address=request.client.host if request.client else None,
+    )
+
+    try:
+        db.add(session)
+        db.add(new_session)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error("Failed to rotate refresh token for user %s: %s", user.id, str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not refresh token",
+        )
+
+    access_token = create_access_token(data={"sub": str(user.id)})
+
+    secure_cookie = settings.WEBSITE_URL.startswith("https://")
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 30,
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/steam/link", response_model=UserResponse)

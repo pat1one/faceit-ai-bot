@@ -11,7 +11,7 @@ import pytest
 from src.server.auth import routes as auth_routes
 from src.server.auth.security import get_password_hash
 from src.server.config.settings import settings
-from src.server.database.models import User
+from src.server.database.models import User, UserSession
 from src.server.services.captcha_service import captcha_service
 import src.server.integrations.faceit_client as faceit_client_module
 
@@ -506,6 +506,216 @@ class TestAuthRoutesExtended:
         assert isinstance(user.last_login, datetime)
 
         assert dummy_counter.calls == 1
+
+
+    def test_login_sets_refresh_cookie_and_creates_session(self, test_client, db_session):
+        """Successful login should set refresh_token cookie and create UserSession row."""
+
+        email = "refresh-login@example.com"
+        password = "password123"
+
+        user = User(
+            email=email,
+            username="refresh_user",
+            hashed_password=get_password_hash(password),
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+
+        response = test_client.post(
+            "/auth/login",
+            data={
+                "username": email,
+                "password": password,
+                "captcha_token": "dummy-token",
+            },
+            # Chrome extension origin skips CAPTCHA verification path
+            headers={"Origin": "chrome-extension://extension-id"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "access_token" in data
+
+        # Both access and refresh cookies should be set
+        set_cookie = response.headers.get("set-cookie") or ""
+        assert "access_token=" in set_cookie
+        assert "refresh_token=" in set_cookie
+
+        sessions = (
+            db_session.query(UserSession)
+            .filter(UserSession.user_id == user.id)
+            .all()
+        )
+        assert len(sessions) == 1
+        assert sessions[0].revoked_at is None
+
+
+    def test_refresh_rotates_tokens_and_sessions(self, test_client, db_session):
+        """POST /auth/refresh should issue new access/refresh tokens and rotate sessions."""
+
+        email = "refresh-flow@example.com"
+        password = "password123"
+
+        user = User(
+            email=email,
+            username="refresh_flow_user",
+            hashed_password=get_password_hash(password),
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+
+        login_resp = test_client.post(
+            "/auth/login",
+            data={
+                "username": email,
+                "password": password,
+                "captcha_token": "dummy-token",
+            },
+            headers={"Origin": "chrome-extension://extension-id"},
+        )
+
+        assert login_resp.status_code == 200
+        first_access = login_resp.json()["access_token"]
+        first_refresh = test_client.cookies.get("refresh_token")
+        assert first_refresh
+
+        refresh_resp = test_client.post("/auth/refresh")
+
+        assert refresh_resp.status_code == 200
+        second_access = refresh_resp.json()["access_token"]
+        assert second_access
+        # Access token should change when refreshed
+        assert second_access != first_access
+
+        second_refresh = test_client.cookies.get("refresh_token")
+        assert second_refresh
+        assert second_refresh != first_refresh
+
+        sessions = (
+            db_session.query(UserSession)
+            .filter(UserSession.user_id == user.id)
+            .all()
+        )
+        assert len(sessions) == 2
+        revoked = [s for s in sessions if s.revoked_at is not None]
+        active = [s for s in sessions if s.revoked_at is None]
+        assert len(revoked) == 1
+        assert len(active) == 1
+
+
+    def test_refresh_with_invalid_cookie_returns_401_and_clears_cookie(
+        self,
+        test_client,
+        db_session,
+    ):
+        """Refreshing with invalid refresh_token cookie should return 401 and clear cookie."""
+
+        email = "refresh-invalid@example.com"
+        password = "password123"
+
+        user = User(
+            email=email,
+            username="refresh_invalid_user",
+            hashed_password=get_password_hash(password),
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+
+        login_resp = test_client.post(
+            "/auth/login",
+            data={
+                "username": email,
+                "password": password,
+                "captcha_token": "dummy-token",
+            },
+            headers={"Origin": "chrome-extension://extension-id"},
+        )
+
+        assert login_resp.status_code == 200
+        assert test_client.cookies.get("refresh_token")
+
+        # Overwrite refresh_token cookie with an invalid value
+        test_client.cookies.set("refresh_token", "invalid-refresh-token")
+
+        resp = test_client.post("/auth/refresh")
+
+        assert resp.status_code == 401
+        assert resp.json()["detail"] == "Invalid or expired refresh token"
+
+        # Cookie should be cleared via Set-Cookie header
+        set_cookie = resp.headers.get("set-cookie") or ""
+        assert "refresh_token=" in set_cookie
+
+
+    def test_logout_revokes_refresh_session_and_clears_cookies(
+        self,
+        test_client,
+        db_session,
+    ):
+        """Logout should revoke current refresh session and clear auth cookies."""
+
+        email = "logout-refresh@example.com"
+        password = "password123"
+
+        user = User(
+            email=email,
+            username="logout_refresh_user",
+            hashed_password=get_password_hash(password),
+            is_active=True,
+            created_at=datetime.utcnow(),
+        )
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+
+        login_resp = test_client.post(
+            "/auth/login",
+            data={
+                "username": email,
+                "password": password,
+                "captcha_token": "dummy-token",
+            },
+            headers={"Origin": "chrome-extension://extension-id"},
+        )
+
+        assert login_resp.status_code == 200
+        assert test_client.cookies.get("access_token")
+        assert test_client.cookies.get("refresh_token")
+
+        sessions_before = (
+            db_session.query(UserSession)
+            .filter(UserSession.user_id == user.id)
+            .all()
+        )
+        assert len(sessions_before) == 1
+        assert sessions_before[0].revoked_at is None
+
+        logout_resp = test_client.post("/auth/logout")
+
+        assert logout_resp.status_code == 200
+        assert logout_resp.json()["detail"] == "Logged out"
+
+        sessions_after = (
+            db_session.query(UserSession)
+            .filter(UserSession.user_id == user.id)
+            .all()
+        )
+        assert len(sessions_after) == 1
+        assert sessions_after[0].revoked_at is not None
+
+        # TestClient cookie jar should no longer have auth cookies
+        assert test_client.cookies.get("access_token") is None
+        assert test_client.cookies.get("refresh_token") is None
 
     def test_steam_callback_creates_user_and_sets_cookie_and_redirect(self, test_client, db_session, monkeypatch):
         """Steam callback should create a new user, update login activity and redirect with token."""
