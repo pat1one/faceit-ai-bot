@@ -148,8 +148,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error(message);
     }
 
-    // Auto-login after registration
-    await login(email, password);
+    const data = await response.json();
+    setToken(data.access_token || null);
+    await fetchUser();
   };
 
   const logout = () => {

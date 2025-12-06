@@ -696,9 +696,10 @@ async def steam_callback(
     return response
 
 
-@router.post("/register")
+@router.post("/register", response_model=Token)
 async def register(
     request: Request,
+    response: Response,
     db: Session = Depends(get_db),
     _: None = Depends(rate_limiter),
 ):
@@ -795,9 +796,71 @@ async def register(
         db.add(subscription)
         db.commit()
 
+        try:
+            new_user.last_login = datetime.utcnow()
+            new_user.login_count = (new_user.login_count or 0) + 1
+            db.add(new_user)
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.error(
+                "Failed to update login activity for newly registered user %s: %s",
+                new_user.id,
+                exc,
+            )
+
+        access_token = create_access_token(data={"sub": str(new_user.id)})
+        refresh_token = create_refresh_token()
+        refresh_hash = hash_refresh_token(refresh_token)
+        now = datetime.utcnow()
+        session = UserSession(
+            user_id=new_user.id,
+            token_hash=refresh_hash,
+            created_at=now,
+            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            user_agent=(request.headers.get("user-agent") or "")[:255],
+            ip_address=remote_ip,
+        )
+        try:
+            db.add(session)
+            db.commit()
+        except Exception as exc:
+            db.rollback()
+            logger.error(
+                "Failed to create refresh session for newly registered user %s: %s",
+                new_user.id,
+                exc,
+            )
+            session = None
+
+        secure_cookie = settings.WEBSITE_URL.startswith("https://")
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=secure_cookie,
+            samesite="lax",
+            max_age=60 * 60 * 24 * 30,
+        )
+
+        if session is not None:
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                secure=secure_cookie,
+                samesite="lax",
+                max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            )
+
+        try:
+            ACTIVE_USERS.inc()
+        except Exception:
+            pass
+
         logger.info(f"New user registered: {new_user.email}")
 
-        return UserResponse.model_validate(new_user)
+        return Token(access_token=access_token, token_type="bearer")
     except HTTPException:
         raise
     except Exception as e:
