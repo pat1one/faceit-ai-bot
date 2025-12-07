@@ -52,6 +52,16 @@ def test_create_access_token_uses_settings_default_expire(monkeypatch) -> None:
     # Ensure default expiration reads from settings.ACCESS_TOKEN_EXPIRE_MINUTES
     monkeypatch.setattr(security.settings, "ACCESS_TOKEN_EXPIRE_MINUTES", 5, raising=False)
 
+    fixed_now = datetime(2030, 1, 1, 12, 0, 0)
+
+    class _FixedDatetime(datetime):  # type: ignore[misc]
+        @classmethod
+        def utcnow(cls):  # type: ignore[override]
+            return fixed_now
+
+    # Patch datetime used inside security module so exp is deterministic
+    monkeypatch.setattr(security, "datetime", _FixedDatetime)
+
     data = {"sub": "123"}
     token = security.create_access_token(data)
 
@@ -60,7 +70,6 @@ def test_create_access_token_uses_settings_default_expire(monkeypatch) -> None:
     assert payload is not None
     assert payload["sub"] == "123"
 
-    now_ts = datetime.utcnow().timestamp()
     exp_ts = payload["exp"]
-    # Expect expiration to be approximately 5 minutes from now
-    assert 5 * 60 - 15 <= exp_ts - now_ts <= 5 * 60 + 15
+    expected_exp_ts = int((fixed_now + timedelta(minutes=5)).timestamp())
+    assert exp_ts == expected_exp_ts
