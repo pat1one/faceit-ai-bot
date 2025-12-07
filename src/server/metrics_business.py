@@ -19,3 +19,18 @@ ACTIVE_USERS = Counter(
     "faceit_active_users",
     "Active user sessions",
 )
+
+CAPTCHA_SUCCESS = Counter(
+    "faceit_captcha_success_total",
+    "Successful CAPTCHA verifications",
+)
+
+CAPTCHA_FAILED = Counter(
+    "faceit_captcha_failed_total",
+    "Failed CAPTCHA verifications",
+)
+
+CAPTCHA_ERRORS = Counter(
+    "faceit_captcha_errors_total",
+    "Errors during CAPTCHA provider communication or configuration",
+)

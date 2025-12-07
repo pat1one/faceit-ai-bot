@@ -4,6 +4,7 @@ from typing import Optional
 import aiohttp
 
 from ..config.settings import settings
+from ..metrics_business import CAPTCHA_SUCCESS, CAPTCHA_FAILED, CAPTCHA_ERRORS
 
 logger = logging.getLogger(__name__)
 
@@ -59,26 +60,33 @@ class CaptchaService:
 
         try:
             if self.provider == "turnstile":
-                return await self._verify_turnstile(
+                success = await self._verify_turnstile(
                     token,
                     remote_ip=remote_ip,
                     action=action,
                 )
-
-            if self.provider in ("smartcaptcha", "yandex_smartcaptcha", "yandex"):
-                return await self._verify_smartcaptcha(
+            elif self.provider in ("smartcaptcha", "yandex_smartcaptcha", "yandex"):
+                success = await self._verify_smartcaptcha(
                     token,
                     remote_ip=remote_ip,
                 )
+            else:
+                # Unknown provider – fail open
+                logger.warning("Unknown CAPTCHA provider configured: %s", self.provider)
+                return True
         except CaptchaProviderError as exc:
             logger.error("CAPTCHA provider error for %s: %s", self.provider, exc)
             # For login-like flows we may choose fail-open (do not block user),
             # while for registration or sensitive operations we fail-closed.
+            CAPTCHA_ERRORS.inc()
             return True if fail_open_on_error else False
 
-        # Unknown provider – fail open to avoid blocking legit users
-        logger.warning("Unknown CAPTCHA provider configured: %s", self.provider)
-        return True
+        if success:
+            CAPTCHA_SUCCESS.inc()
+        else:
+            CAPTCHA_FAILED.inc()
+
+        return success
 
     async def _verify_turnstile(
         self,
@@ -120,6 +128,17 @@ class CaptchaService:
         success = bool(payload.get("success"))
 
         # Optionally check action or hostname if needed in the future
+        if success and action:
+            reported_action = payload.get("action")
+            if reported_action and reported_action != action:
+                logger.warning(
+                    "Turnstile action mismatch. Expected %s, got %s. Payload: %s",
+                    action,
+                    reported_action,
+                    payload,
+                )
+                return False
+
         if not success:
             logger.info("Turnstile verification failed: %s", payload)
 
