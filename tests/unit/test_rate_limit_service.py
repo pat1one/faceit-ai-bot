@@ -171,3 +171,38 @@ async def test_enforce_user_operation_limit_unknown_operation_does_nothing(monke
     )
 
     assert dummy.counters == {}
+
+
+@pytest.mark.asyncio
+async def test_enforce_user_operation_limit_exceeds_day_limit_raises(monkeypatch, db_session, service_with_redis):
+    service, dummy = service_with_redis
+    user = create_user(db_session)
+    add_subscription(db_session, user, SubscriptionTier.FREE, expired=False)
+
+    monkeypatch.setattr(settings, "RATE_LIMIT_BYPASS_USER_ID", None, raising=False)
+
+    # Disable per-minute limit for this test so we can hit the daily limit path
+    service.operation_limits["player_analysis"]["free"]["per_min"] = 0
+    service.operation_limits["player_analysis"]["free"]["per_day"] = 2
+
+    # Two allowed requests
+    await service.enforce_user_operation_limit(
+        db=db_session,
+        user_id=user.id,
+        operation="player_analysis",
+    )
+    await service.enforce_user_operation_limit(
+        db=db_session,
+        user_id=user.id,
+        operation="player_analysis",
+    )
+
+    # Third request should exceed daily limit
+    with pytest.raises(HTTPException) as exc:
+        await service.enforce_user_operation_limit(
+            db=db_session,
+            user_id=user.id,
+            operation="player_analysis",
+        )
+
+    assert exc.value.status_code == 429
