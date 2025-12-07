@@ -91,3 +91,63 @@ def test_qiwi_webhook_success(client, mock_payment_service):
     mock_payment_service.process_webhook.assert_awaited()
     args, _ = mock_payment_service.process_webhook.call_args
     assert args[0] == PaymentProvider.QIWI
+
+
+def test_sbp_webhook_requires_signature_when_not_test_env(client, mock_payment_service, monkeypatch):
+    # In non-test environment with SBP_WEBHOOK_SECRET set, missing or invalid signature
+    # must result in 401 and no webhook processing.
+    monkeypatch.setattr(settings, "TEST_ENV", False, raising=False)
+    monkeypatch.setattr(settings, "SBP_WEBHOOK_SECRET", "secret", raising=False)
+
+    payload = {"payment_id": "sbp123"}
+
+    # Missing signature
+    response = client.post("/payments/webhook/sbp", json=payload)
+    assert response.status_code == 401
+    mock_payment_service.process_webhook.assert_not_awaited()
+
+    # Valid signature
+    response_ok = client.post(
+        "/payments/webhook/sbp",
+        json=payload,
+        headers={"Signature": "secret"},
+    )
+    assert response_ok.status_code == 200
+    mock_payment_service.process_webhook.assert_awaited()
+
+
+def test_yookassa_webhook_requires_valid_auth_when_not_test_env(client, mock_payment_service, monkeypatch):
+    # In non-test environment, YooKassa webhook must validate Authorization header.
+    monkeypatch.setattr(settings, "TEST_ENV", False, raising=False)
+    monkeypatch.setattr(settings, "YOOKASSA_SHOP_ID", "shop", raising=False)
+    monkeypatch.setattr(settings, "YOOKASSA_SECRET_KEY", "secret", raising=False)
+
+    payload = {"object": {"id": "yk1"}}
+
+    # Missing Authorization header -> 401
+    response = client.post("/payments/webhook/yookassa", json=payload)
+    assert response.status_code == 401
+    mock_payment_service.process_webhook.assert_not_awaited()
+
+    # Wrong Authorization header -> 401
+    response_bad = client.post(
+        "/payments/webhook/yookassa",
+        json=payload,
+        headers={"Authorization": "Basic wrong"},
+    )
+    assert response_bad.status_code == 401
+    mock_payment_service.process_webhook.assert_not_awaited()
+
+    # Correct Authorization header -> 200 and webhook processed
+    import base64
+
+    credentials = "shop:secret"
+    expected = "Basic " + base64.b64encode(credentials.encode("utf-8")).decode("utf-8")
+
+    response_ok = client.post(
+        "/payments/webhook/yookassa",
+        json=payload,
+        headers={"Authorization": expected},
+    )
+    assert response_ok.status_code == 200
+    mock_payment_service.process_webhook.assert_awaited()
