@@ -5,9 +5,10 @@ Redis caching service
 import json
 import logging
 import os
+import time
 from typing import Any, Optional
 
-from prometheus_client import Counter
+from prometheus_client import Counter, Histogram
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,13 @@ CACHE_MISSES_TOTAL = Counter(
     "redis_cache_misses_total",
     "Total Redis cache misses",
     ["cache"],
+)
+
+
+REDIS_OPERATION_DURATION_SECONDS = Histogram(
+    "redis_operation_duration_seconds",
+    "Redis operation duration in seconds",
+    ["operation"],
 )
 
 
@@ -61,7 +69,14 @@ class CacheService:
             return None
 
         try:
+            start = time.perf_counter()
             value = await self.redis_client.get(key)
+            duration = time.perf_counter() - start
+            try:
+                REDIS_OPERATION_DURATION_SECONDS.labels(operation="get").observe(duration)
+            except Exception:
+                # Metrics must not affect cache behavior
+                pass
             cache_label = "generic"
             if key.startswith("player:analysis:"):
                 cache_label = "player_analysis"
@@ -97,7 +112,14 @@ class CacheService:
 
         try:
             serialized = json.dumps(value)
+            start = time.perf_counter()
             await self.redis_client.setex(key, ttl, serialized)
+            duration = time.perf_counter() - start
+            try:
+                REDIS_OPERATION_DURATION_SECONDS.labels(operation="set").observe(duration)
+            except Exception:
+                # Metrics must not affect cache behavior
+                pass
             return True
         except Exception as e:
             logger.error(f"Cache set error: {e}")
@@ -109,7 +131,14 @@ class CacheService:
             return False
 
         try:
+            start = time.perf_counter()
             await self.redis_client.delete(key)
+            duration = time.perf_counter() - start
+            try:
+                REDIS_OPERATION_DURATION_SECONDS.labels(operation="delete").observe(duration)
+            except Exception:
+                # Metrics must not affect cache behavior
+                pass
             return True
         except Exception as e:
             logger.error(f"Cache delete error: {e}")
@@ -121,7 +150,15 @@ class CacheService:
             return False
 
         try:
-            return await self.redis_client.exists(key) > 0
+            start = time.perf_counter()
+            result = await self.redis_client.exists(key)
+            duration = time.perf_counter() - start
+            try:
+                REDIS_OPERATION_DURATION_SECONDS.labels(operation="exists").observe(duration)
+            except Exception:
+                # Metrics must not affect cache behavior
+                pass
+            return result > 0
         except Exception as e:
             logger.error(f"Cache exists error: {e}")
             return False

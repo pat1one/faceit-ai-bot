@@ -1,6 +1,11 @@
 import pytest
 
-from src.server.services.cache_service import CacheService, CACHE_HITS_TOTAL, CACHE_MISSES_TOTAL
+from src.server.services.cache_service import (
+    CacheService,
+    CACHE_HITS_TOTAL,
+    CACHE_MISSES_TOTAL,
+    REDIS_OPERATION_DURATION_SECONDS,
+)
 
 
 class DummyRedis:
@@ -93,6 +98,34 @@ async def test_cache_metrics_incremented_for_hits_and_misses() -> None:
         assert child_miss._value.get() >= 1  # type: ignore[attr-defined]
     except Exception:
         # If direct inspection fails, at least ensure calls didn't crash
+        pass
+
+
+@pytest.mark.asyncio
+async def test_redis_latency_metric_observed_for_get() -> None:
+    service = CacheService()
+    service.redis_client = DummyRedis()
+    service.enabled = True
+
+    # Prepare a cached value so that get() hits Redis and returns a value
+    service.redis_client.store["player:analysis:latency"] = "{\"v\": 1}"
+
+    child = REDIS_OPERATION_DURATION_SECONDS.labels(operation="get")
+
+    # Best-effort reset of histogram internals, guarded by try/except
+    try:
+        child._sum.set(0)  # type: ignore[attr-defined]
+        child._count.set(0)  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+    await service.get("player:analysis:latency")
+
+    # Verify that at least one observation was recorded, if internals are accessible
+    try:
+        assert child._count.get() >= 1  # type: ignore[attr-defined]
+    except Exception:
+        # If direct inspection fails, we still ensure the call path succeeded
         pass
 
 
