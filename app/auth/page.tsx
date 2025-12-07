@@ -15,6 +15,7 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
   
   const { login, register, loginWithToken } = useAuth();
   const router = useRouter();
@@ -123,6 +124,10 @@ export default function AuthPage() {
             : t('auth.register_failed'))
       );
       console.error('Auth error:', err);
+
+      // После любой ошибки сбрасываем капчу, чтобы пользователь мог пройти её заново
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
     } finally {
       setLoading(false);
     }
@@ -138,6 +143,8 @@ export default function AuthPage() {
           defaultValue: 'Подтвердите, что вы не бот, выполнив проверку CAPTCHA.',
         }),
       );
+      // Просим пользователя пройти капчу ещё раз
+      setCaptchaReset((prev) => prev + 1);
       return;
     }
 
@@ -171,6 +178,7 @@ export default function AuthPage() {
           defaultValue: 'Подтвердите, что вы не бот, выполнив проверку CAPTCHA.',
         }),
       );
+      setCaptchaReset((prev) => prev + 1);
       return;
     }
 
@@ -258,6 +266,7 @@ export default function AuthPage() {
             <CaptchaWidget
               onTokenChange={handleCaptchaTokenChange}
               action={isLogin ? 'auth_login' : 'auth_register'}
+              resetSignal={captchaReset}
             />
           </div>
 
@@ -319,7 +328,12 @@ export default function AuthPage() {
               : t('auth.have_account')}
             {' '}
             <button 
-              onClick={() => setIsLogin(!isLogin)} 
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setCaptchaToken(null);
+                setCaptchaReset((prev) => prev + 1);
+                setError('');
+              }} 
               className="text-orange-500 hover:text-orange-400 underline"
             >
               {isLogin
