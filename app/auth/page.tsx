@@ -81,6 +81,8 @@ export default function AuthPage() {
             defaultValue: 'Подтвердите, что вы не бот, выполнив проверку CAPTCHA.',
           }),
         );
+        // Обновляем виджет, если пользователь попытался отправить форму без токена
+        setCaptchaReset((prev) => prev + 1);
         setLoading(false);
         return;
       }
@@ -90,6 +92,11 @@ export default function AuthPage() {
       } else {
         await register(email, username, password, captchaToken);
       }
+
+      // Считаем токен израсходованным для обычного логина/регистрации
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
+
       router.push('/');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '';
@@ -149,22 +156,29 @@ export default function AuthPage() {
     }
 
     const baseUrl = API_ENDPOINTS.AUTH_STEAM_LOGIN;
+    const token = captchaToken;
 
     try {
       const url = new URL(baseUrl, window.location.origin);
-      if (captchaToken) {
-        url.searchParams.set('captcha_token', captchaToken);
+      if (token) {
+        url.searchParams.set('captcha_token', token);
       }
+      // считаем токен израсходованным при клике по внешнему логину
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
       window.location.href = url.toString();
     } catch {
-      if (captchaToken) {
+      if (token) {
         const separator = baseUrl.includes('?') ? '&' : '?';
         window.location.href = `${baseUrl}${separator}captcha_token=${encodeURIComponent(
-          captchaToken,
+          token,
         )}`;
       } else {
         window.location.href = baseUrl;
       }
+      // на всякий случай тоже обнуляем токен, если редирект не сработал как ожидалось
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
     }
   };
 
@@ -183,22 +197,27 @@ export default function AuthPage() {
     }
 
     const baseUrl = API_ENDPOINTS.AUTH_FACEIT_LOGIN;
+    const token = captchaToken;
 
     try {
       const url = new URL(baseUrl, window.location.origin);
-      if (captchaToken) {
-        url.searchParams.set('captcha_token', captchaToken);
+      if (token) {
+        url.searchParams.set('captcha_token', token);
       }
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
       window.location.href = url.toString();
     } catch {
-      if (captchaToken) {
+      if (token) {
         const separator = baseUrl.includes('?') ? '&' : '?';
         window.location.href = `${baseUrl}${separator}captcha_token=${encodeURIComponent(
-          captchaToken,
+          token,
         )}`;
       } else {
         window.location.href = baseUrl;
       }
+      setCaptchaToken(null);
+      setCaptchaReset((prev) => prev + 1);
     }
   };
 

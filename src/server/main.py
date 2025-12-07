@@ -40,8 +40,9 @@ app = FastAPI(
     title=settings.APP_TITLE,
     version=settings.APP_VERSION,
     debug=False,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
     description="""
     Faceit AI Bot API - Аналитическая платформа для игроков Faceit
 
