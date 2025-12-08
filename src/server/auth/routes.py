@@ -1044,7 +1044,7 @@ async def logout_user(request: Request, response: Response, db: Session = Depend
     return {"detail": "Logged out"}
 
 
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh")
 async def refresh_access_token(
     request: Request,
     response: Response,
@@ -1054,10 +1054,10 @@ async def refresh_access_token(
 
     raw_refresh = request.cookies.get("refresh_token")
     if not raw_refresh:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        # Clear any stale refresh cookie and return 401
+        response.delete_cookie(key="refresh_token")
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"detail": "Not authenticated"}
 
     token_hash = hash_refresh_token(raw_refresh)
     now = datetime.utcnow()
@@ -1074,11 +1074,10 @@ async def refresh_access_token(
     )
 
     if not session:
+        # Invalid or expired refresh token: clear cookie and return 401
         response.delete_cookie(key="refresh_token")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token",
-        )
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"detail": "Invalid or expired refresh token"}
 
     user = db.execute(select(User).where(User.id == session.user_id)).scalars().first()
     if not user or not user.is_active:
@@ -1093,11 +1092,10 @@ async def refresh_access_token(
                 session.user_id,
                 str(e),
             )
+        # User is missing or inactive: revoke session, clear cookie and return 401
         response.delete_cookie(key="refresh_token")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive",
-        )
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        return {"detail": "User not found or inactive"}
 
     # Rotate refresh token: revoke old session and create a new one
     new_refresh = create_refresh_token()

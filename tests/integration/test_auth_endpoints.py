@@ -10,26 +10,41 @@ from src.server.services.captcha_service import captcha_service, CaptchaProvider
 class TestAuthEndpoints:
     """Test authentication API endpoints"""
 
-    def test_register_user(self, test_client):
+    def test_register_user(self, test_client, monkeypatch):
         """Test user registration"""
+
+        async def always_ok(token, remote_ip=None, action=None, fail_open_on_error=False):  # noqa: ARG001
+            return True
+
+        monkeypatch.setattr(captcha_service, "verify_token", always_ok)
+
         response = test_client.post(
             "/auth/register",
             data={
                 "email": "test@example.com",
                 "username": "testuser",
-                "password": "TestPassword123!"
-            }
+                "password": "TestPassword123!",
+                "captcha_token": "dummy-token",
+            },
         )
         assert response.status_code in [200, 201]
 
-    def test_login_user(self, test_client):
+    def test_login_user(self, test_client, monkeypatch):
         """Test user login"""
+
+        async def always_ok(token, remote_ip=None, action=None, fail_open_on_error=False):  # noqa: ARG001
+            return True
+
+        monkeypatch.setattr(captcha_service, "verify_token", always_ok)
+
         response = test_client.post(
             "/auth/login",
             data={
                 "username": "test@example.com",
-                "password": "TestPassword123!"
-            }
+                "password": "TestPassword123!",
+                "captcha_token": "dummy-token",
+            },
+            headers={"Origin": "https://frontend.test"},
         )
         assert response.status_code in [200, 401]
 

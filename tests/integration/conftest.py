@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 import os
 from faker import Faker
 from unittest.mock import patch
@@ -43,11 +44,23 @@ def test_db_engine(test_db_url):
 
     engine = create_engine(test_db_url, echo=False, connect_args=connect_args)
     # Обнуляем схему, если файл БД уже существует от прошлых прогонов
-    Base.metadata.drop_all(bind=engine)
+    try:
+        Base.metadata.drop_all(bind=engine)
+    except OperationalError:
+        # Игнорируем ошибки удаления несуществующих таблиц в тестовой БД
+        pass
+
     # Создаем все таблицы для текущего тестового запуска
     Base.metadata.create_all(bind=engine)
     yield engine
-    Base.metadata.drop_all(bind=engine)
+
+    # Аккуратно пытаемся удалить все таблицы после завершения тестов
+    try:
+        Base.metadata.drop_all(bind=engine)
+    except OperationalError:
+        # Если каких-то таблиц нет (например, из-за изменений схемы),
+        # не ломаем весь тестовый прогон
+        pass
 
 
 @pytest.fixture
