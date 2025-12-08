@@ -162,9 +162,8 @@ async def steam_login(request: Request):
         )
 
     if captcha_service.is_enabled() and not captcha_ok:
-        raise HTTPException(
-            status_code=400,
-            detail="CAPTCHA verification failed",
+        logger.warning(
+            "Steam login CAPTCHA verification failed, but proceeding fail-open",
         )
 
     realm = settings.WEBSITE_URL.rstrip("/")
@@ -210,9 +209,8 @@ async def faceit_login(request: Request):
         )
 
     if captcha_service.is_enabled() and not captcha_ok:
-        raise HTTPException(
-            status_code=400,
-            detail="CAPTCHA verification failed",
+        logger.warning(
+            "Faceit login CAPTCHA verification failed, but proceeding fail-open",
         )
 
     client_id = getattr(settings, "FACEIT_CLIENT_ID", None)

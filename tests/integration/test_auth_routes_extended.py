@@ -372,8 +372,8 @@ class TestAuthRoutesExtended:
         assert location is not None
         assert "steamcommunity.com/openid/login" in location
 
-    def test_steam_login_captcha_invalid_returns_400(self, test_client, monkeypatch):
-        """Steam login should fail when CAPTCHA verification fails."""
+    def test_steam_login_captcha_invalid_still_redirects_fail_open(self, test_client, monkeypatch):
+        """Steam login should still redirect when CAPTCHA verification fails (fail-open)."""
 
         async def bad_verify(token, remote_ip=None, action=None, fail_open_on_error=False):  # noqa: ARG001, ARG002
             return False
@@ -384,8 +384,10 @@ class TestAuthRoutesExtended:
             "/auth/steam/login?captcha_token=dummy",
         )
 
-        assert response.status_code == 400
-        assert response.json()["detail"] == "CAPTCHA verification failed"
+        assert response.status_code in (302, 303, 307)
+        location = response.headers.get("location") or response.headers.get("Location")
+        assert location is not None
+        assert "steamcommunity.com/openid/login" in location
 
     def test_link_steam_account_success(self, authenticated_client, db_session):
         """Authenticated user can link a new Steam account."""
