@@ -10,9 +10,9 @@ import sys
 from typing import Any, Dict
 
 try:
-    import structlog
-    from structlog.stdlib import LoggerFactory
-    from structlog.processors import (
+    import structlog  # type: ignore[import-not-found]
+    from structlog.stdlib import LoggerFactory  # type: ignore[import-not-found]
+    from structlog.processors import (  # type: ignore[import-not-found]
         TimeStamper,
         add_log_level,
         StackInfoRenderer,
@@ -22,8 +22,8 @@ try:
 
     STRUCTLOG_AVAILABLE = True
 except ImportError:  # structlog не установлен
-    structlog = None  # type: ignore[assignment]
-    LoggerFactory = None  # type: ignore[assignment]
+    structlog = None
+    LoggerFactory = None
     TimeStamper = add_log_level = StackInfoRenderer = JSONRenderer = ConsoleRenderer = None
     STRUCTLOG_AVAILABLE = False
 
@@ -60,7 +60,7 @@ def configure_logging() -> None:
     If structlog is not available, only standard logging is configured.
     """
 
-    if not STRUCTLOG_AVAILABLE or structlog is None:  # type: ignore[truthy-function]
+    if not STRUCTLOG_AVAILABLE or structlog is None:
         logging.basicConfig(
             level=settings.LOG_LEVEL,
             format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -177,7 +177,7 @@ class RequestLogger:
         method: str,
         path: str,
         headers: Dict[str, Any],
-        user_id: str = None,
+        user_id: str | None = None,
     ) -> None:
         """Log incoming HTTP request."""
         self.logger.info(
@@ -194,7 +194,7 @@ class RequestLogger:
         path: str,
         status_code: int,
         duration_ms: float,
-        user_id: str = None,
+        user_id: str | None = None,
     ) -> None:
         """Log HTTP response."""
         self.logger.info(
@@ -211,7 +211,7 @@ class RequestLogger:
         method: str,
         path: str,
         error: Exception,
-        user_id: str = None,
+        user_id: str | None = None,
     ) -> None:
         """Log HTTP error."""
         self.logger.error(
