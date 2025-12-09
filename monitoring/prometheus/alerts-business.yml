@@ -1,0 +1,75 @@
+groups:
+  - name: business-auth-alerts
+    rules:
+      - alert: AuthFailureRateHigh
+        expr: |
+          sum(rate(faceit_auth_failed_total[5m]))
+            / clamp_min(sum(rate(faceit_auth_success_total[5m])), 1) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High authentication failure rate"
+          description: "More than 50% of authentication attempts are failing over the last 10 minutes. Check login page, CAPTCHA, and external providers."
+
+      - alert: AuthFailureSpikeByIP
+        expr: |
+          sum(rate(faceit_auth_failed_total[5m])) by (ip) > 20
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Authentication failure spike for IP {{ $labels.ip }}"
+          description: "More than 20 failed authentication attempts per 5 minutes from a single IP. Possible credential stuffing or abuse."
+
+  - name: business-captcha-alerts
+    rules:
+      - alert: CaptchaErrorRateNonZero
+        expr: |
+          rate(faceit_captcha_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CAPTCHA provider errors detected"
+          description: "faceit_captcha_errors_total is non-zero over the last 5 minutes. Check CAPTCHA provider integration and network connectivity."
+
+      - alert: CaptchaFailureRateHigh
+        expr: |
+          sum(rate(faceit_captcha_failed_total[5m]))
+            / clamp_min(
+                sum(rate(faceit_captcha_failed_total[5m]))
+                + sum(rate(faceit_captcha_success_total[5m])),
+                1
+              ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CAPTCHA failure rate"
+          description: "More than 50% of CAPTCHA verifications are failing over the last 10 minutes. This may indicate integration issues or bot activity."
+
+  - name: business-analysis-alerts
+    rules:
+      - alert: AnalysisDurationP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(faceit_analysis_duration_seconds_bucket[5m]))
+          ) > 60
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High analysis duration (p95)"
+          description: "p95 of faceit analysis duration is above 60 seconds over the last 15 minutes. Check demo analyzer and LLM backends."
+
+      - alert: AnalysisRequestsDropToZero
+        expr: |
+          sum(rate(faceit_analysis_requests_total[15m])) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No analysis requests observed"
+          description: "No faceit analysis requests have been observed for 30 minutes. This may indicate a traffic drop, ingress issue, or misconfigured routing."
