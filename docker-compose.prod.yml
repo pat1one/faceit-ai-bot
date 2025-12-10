@@ -56,6 +56,10 @@ services:
       - ollama_data:/root/.ollama
     networks:
       - faceit-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
 
   api:
     image: ghcr.io/pat1one/faceit-ai-bot/api:latest
@@ -86,7 +90,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.70'
+          cpus: '0.60'
           memory: 600M
     networks:
       - faceit-network
@@ -112,7 +116,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.40'
+          cpus: '0.35'
           memory: 300M
     networks:
       - faceit-network
@@ -169,7 +173,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'
+          cpus: '0.30'
           memory: 512M
     networks:
       - faceit-network
@@ -202,6 +206,11 @@ services:
       - ./src:/app/src
       - ./scripts:/app/scripts
     command: python -m scripts.discord_bot
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 256M
     networks:
       - faceit-network
 
@@ -232,6 +241,11 @@ services:
       - ./src:/app/src
       - ./scripts:/app/scripts
     command: python -m scripts.telegram_bot
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     networks:
       - faceit-network
 

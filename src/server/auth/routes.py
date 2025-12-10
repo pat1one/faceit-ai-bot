@@ -423,10 +423,10 @@ async def faceit_callback(
 
     try:
         timeout = aiohttp.ClientTimeout(total=5)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
+        async with aiohttp.ClientSession(timeout=timeout) as http_session:
             token_data = None
             # Exchange code for tokens
-            async with session.post(
+            async with http_session.post(
                 FACEIT_TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
@@ -459,7 +459,7 @@ async def faceit_callback(
                 )
 
             # Fetch user info
-            async with session.get(
+            async with http_session.get(
                 FACEIT_USERINFO_URL,
                 headers={
                     "Authorization": f"Bearer {access_token_faceit}",

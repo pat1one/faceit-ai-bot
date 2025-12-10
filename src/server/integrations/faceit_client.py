@@ -3,7 +3,7 @@ Faceit API Client
 Client for Faceit API integration
 """
 import aiohttp
-from typing import Optional, Dict, List
+from typing import Any, Dict, List, Optional, cast
 import logging
 from ..config.settings import settings
 from ..exceptions import (
@@ -66,7 +66,8 @@ class FaceitAPIClient:
                     timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status == 200:
-                        return await response.json()
+                        data: Dict[str, Any] = await response.json()
+                        return data
                     elif response.status == 404:
                         logger.warning(f"Player not found: {nickname}")
                         raise PlayerNotFoundError(nickname)
@@ -113,7 +114,8 @@ class FaceitAPIClient:
                     timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status == 200:
-                        return await response.json()
+                        data: Dict[str, Any] = await response.json()
+                        return data
                     elif response.status == 404:
                         logger.warning(f"Stats not found for player: {player_id}")
                         raise FaceitAPIError("Player statistics not found", status_code=404)
@@ -164,8 +166,9 @@ class FaceitAPIClient:
                     timeout=aiohttp.ClientTimeout(total=15)
                 ) as response:
                     if response.status == 200:
-                        data = await response.json()
-                        return data.get("items", [])
+                        data: Dict[str, Any] = await response.json()
+                        items = data.get("items", [])
+                        return cast(List[Dict[str, Any]], items)
                     elif response.status == 429:
                         raise RateLimitExceededError()
                     else:
@@ -201,7 +204,7 @@ class FaceitAPIClient:
             raise FaceitAPIKeyMissingError()
 
         try:
-            params = {"nickname": nickname, "limit": limit}
+            params: Dict[str, str | int] = {"nickname": nickname, "limit": limit}
             if country:
                 params["country"] = country
 
@@ -213,8 +216,9 @@ class FaceitAPIClient:
                     timeout=aiohttp.ClientTimeout(total=10)
                 ) as response:
                     if response.status == 200:
-                        data = await response.json()
-                        return data.get("items", [])
+                        data: Dict[str, Any] = await response.json()
+                        items = data.get("items", [])
+                        return cast(List[Dict[str, Any]], items)
                     elif response.status == 429:
                         raise RateLimitExceededError()
                     else:
@@ -245,7 +249,8 @@ class FaceitAPIClient:
                     timeout=aiohttp.ClientTimeout(total=15),
                 ) as response:
                     if response.status == 200:
-                        return await response.json()
+                        data: Dict[str, Any] = await response.json()
+                        return data
                     elif response.status == 404:
                         logger.warning(f"Match not found: {match_id}")
                         raise FaceitAPIError(

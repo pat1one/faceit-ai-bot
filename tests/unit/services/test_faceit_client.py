@@ -5,116 +5,156 @@
 на базе aiohttp и требует отдельных тестов.
 """
 
+from typing import Any, Dict
+
+import aiohttp
 import pytest
-from unittest.mock import Mock, patch
 
-
-pytestmark = pytest.mark.skip(
-    reason="Legacy FaceitClient removed; tests will be rewritten for FaceitAPIClient",
+from src.server.exceptions import (
+    FaceitAPIError,
+    FaceitAPIKeyMissingError,
+    PlayerNotFoundError,
+    RateLimitExceededError,
 )
+from src.server.integrations.faceit_client import FaceitAPIClient
 
 
-class TestFaceitClient:
-    """Test Faceit API client"""
+pytestmark = pytest.mark.asyncio
 
-    def test_client_initialization(self):
-        """Test client initialization"""
-        from src.server.integrations.faceit_client import FaceitClient
 
-        client = FaceitClient(api_key="test_key")
-        assert client.api_key == "test_key"
-        assert hasattr(client, "get_player")
-        assert hasattr(client, "get_player_stats")
-        assert hasattr(client, "get_player_history")
+class _DummyResponse:
+    def __init__(
+        self,
+        status: int,
+        json_data: Dict[str, Any] | None = None,
+        text_data: str = "",
+    ) -> None:
+        self.status = status
+        self._json = json_data or {}
+        self._text = text_data
 
-    @patch("httpx.get")
-    def test_get_player_success(self, mock_get):
-        """Test successful player retrieval"""
-        from src.server.integrations.faceit_client import FaceitClient
+    async def __aenter__(self) -> "_DummyResponse":
+        return self
 
-        # Mock successful response
-        mock_response = Mock()
-        mock_response.json.return_value = {
+    async def __aexit__(self, exc_type, exc, tb) -> bool:  # noqa: ANN001, ANN003
+        return False
+
+    async def json(self) -> Dict[str, Any]:
+        return self._json
+
+    async def text(self) -> str:
+        return self._text
+
+
+class _DummySession:
+    def __init__(self, response_or_error: Any) -> None:
+        self._response_or_error = response_or_error
+
+    async def __aenter__(self) -> "_DummySession":
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> bool:  # noqa: ANN001, ANN003
+        return False
+
+    def get(self, *args: Any, **kwargs: Any):  # noqa: ANN002, ANN003
+        if isinstance(self._response_or_error, Exception):
+            raise self._response_or_error
+        return self._response_or_error
+
+
+async def _patch_client_session(monkeypatch: pytest.MonkeyPatch, response: Any) -> None:
+    import src.server.integrations.faceit_client as faceit_client_module
+
+    monkeypatch.setattr(
+        faceit_client_module.aiohttp,
+        "ClientSession",
+        lambda *args, **kwargs: _DummySession(response),  # noqa: ARG005
+    )
+
+
+class TestFaceitAPIClient:
+    async def test_get_player_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        player_payload = {
             "player_id": "test-player-123",
             "nickname": "test_player",
             "country": "RU",
             "games": {"cs2": {"skill_level": 7, "faceit_elo": 1500}},
         }
-        mock_get.return_value = mock_response
+        response = _DummyResponse(status=200, json_data=player_payload)
+        await _patch_client_session(monkeypatch, response)
 
-        client = FaceitClient(api_key="test_key")
-        result = client.get_player("test-player-123")
+        client = FaceitAPIClient(api_key="test_key")
+        result = await client.get_player_by_nickname("test_player")
 
-        assert result["player_id"] == "test-player-123"
-        assert result["nickname"] == "test_player"
-        assert result["games"]["cs2"]["skill_level"] == 7
+        assert result == player_payload
 
-    @patch("httpx.get")
-    def test_get_player_not_found(self, mock_get):
-        """Test player not found"""
-        from src.server.integrations.faceit_client import FaceitClient
+    async def test_get_player_not_found(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        response = _DummyResponse(status=404, json_data={})
+        await _patch_client_session(monkeypatch, response)
 
-        # Mock 404 response
-        mock_response = Mock()
-        mock_response.raise_for_status.side_effect = Exception("404 Not Found")
-        mock_get.return_value = mock_response
+        client = FaceitAPIClient(api_key="test_key")
 
-        client = FaceitClient(api_key="test_key")
+        with pytest.raises(PlayerNotFoundError):
+            await client.get_player_by_nickname("unknown_player")
 
-        with pytest.raises(Exception, match="404 Not Found"):
-            client.get_player("nonexistent-player")
+    async def test_get_player_rate_limit(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        response = _DummyResponse(status=429, json_data={})
+        await _patch_client_session(monkeypatch, response)
 
-    @patch("httpx.get")
-    def test_get_player_stats(self, mock_get):
-        """Test player stats retrieval"""
-        from src.server.integrations.faceit_client import FaceitClient
+        client = FaceitAPIClient(api_key="test_key")
 
-        mock_response = Mock()
-        mock_response.json.return_value = {
+        with pytest.raises(RateLimitExceededError):
+            await client.get_player_by_nickname("any_player")
+
+    async def test_get_player_missing_api_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        import src.server.integrations.faceit_client as faceit_client_module
+
+        monkeypatch.setattr(
+            faceit_client_module.settings,
+            "FACEIT_API_KEY",
+            None,
+            raising=False,
+        )
+
+        client = FaceitAPIClient(api_key=None)
+
+        with pytest.raises(FaceitAPIKeyMissingError):
+            await client.get_player_by_nickname("any_player")
+
+    async def test_get_player_network_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        error = aiohttp.ClientError("boom")
+        await _patch_client_session(monkeypatch, error)
+
+        client = FaceitAPIClient(api_key="test_key")
+
+        with pytest.raises(FaceitAPIError) as exc_info:
+            await client.get_player_by_nickname("any_player")
+
+        assert "Network error" in str(exc_info.value.detail)
+
+    async def test_get_player_stats_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        stats_payload = {
             "lifetime": {
                 "matches": "150",
                 "k_d_ratio": "1.25",
-                "average_kdr": "1.25",
-                "win_rate": "54.67",
-                "wins": "82",
-            }
+                "Win Rate %": "54.67",
+            },
         }
-        mock_get.return_value = mock_response
+        response = _DummyResponse(status=200, json_data=stats_payload)
+        await _patch_client_session(monkeypatch, response)
 
-        client = FaceitClient(api_key="test_key")
-        result = client.get_player_stats("test-player-123")
+        client = FaceitAPIClient(api_key="test_key")
+        result = await client.get_player_stats("player-id")
 
-        assert result["lifetime"]["matches"] == "150"
-        assert result["lifetime"]["k_d_ratio"] == "1.25"
-        assert result["lifetime"]["win_rate"] == "54.67"
+        assert result == stats_payload
 
+    async def test_get_player_stats_not_found(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        response = _DummyResponse(status=404, json_data={})
+        await _patch_client_session(monkeypatch, response)
 
-class TestFaceitClientErrorHandling:
-    """Test error handling in Faceit client"""
+        client = FaceitAPIClient(api_key="test_key")
 
-    @patch("httpx.get")
-    def test_api_rate_limit(self, mock_get):
-        """Test rate limit handling"""
-        from src.server.integrations.faceit_client import FaceitClient
+        with pytest.raises(FaceitAPIError) as exc_info:
+            await client.get_player_stats("player-id")
 
-        # Mock rate limit response
-        mock_response = Mock()
-        mock_response.raise_for_status.side_effect = Exception("429 Too Many Requests")
-        mock_get.return_value = mock_response
-
-        client = FaceitClient(api_key="test_key")
-
-        with pytest.raises(Exception, match="429 Too Many Requests"):
-            client.get_player("test-player")
-
-    @patch("httpx.get")
-    def test_network_error(self, mock_get):
-        """Test network error handling"""
-        from src.server.integrations.faceit_client import FaceitClient
-
-        mock_get.side_effect = Exception("Connection timeout")
-
-        client = FaceitClient(api_key="test_key")
-
-        with pytest.raises(Exception, match="Connection timeout"):
-            client.get_player("test-player")
+        assert exc_info.value.status_code == 404
