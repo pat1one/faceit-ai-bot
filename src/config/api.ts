@@ -3,6 +3,12 @@
  */
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+// Separate base URL for heavy demo uploads to allow routing through
+// a dedicated origin (e.g. uploads.pattmsc.online) without touching
+// the rest of the API traffic.
+const DEMO_UPLOAD_BASE_URL =
+  process.env.NEXT_PUBLIC_DEMO_UPLOAD_URL || API_BASE_URL;
+
 export const API_ENDPOINTS = {
   // Auth
   AUTH_REGISTER: `${API_BASE_URL}/auth/register`,
@@ -12,8 +18,8 @@ export const API_ENDPOINTS = {
   AUTH_STEAM_LOGIN: `${API_BASE_URL}/auth/steam/login`,
   AUTH_FACEIT_LOGIN: `${API_BASE_URL}/auth/faceit/login`,
   
-  // Demo analysis
-  DEMO_ANALYZE: `${API_BASE_URL}/demo/analyze`,
+  // Demo analysis (can go through a dedicated upload origin)
+  DEMO_ANALYZE: `${DEMO_UPLOAD_BASE_URL}/demo/analyze`,
   // Player analysis
   PLAYER_ANALYSIS: (nickname: string) => `${API_BASE_URL}/players/${encodeURIComponent(nickname)}/analysis`,
   

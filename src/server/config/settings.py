@@ -166,7 +166,7 @@ class Settings(BaseSettings):
     AI_SAMPLES_DIR: str = "data"
 
     # Demo upload limits
-    MAX_DEMO_FILE_MB: int = 100
+    MAX_DEMO_FILE_MB: int = 700
 
     # Test settings
     TEST_ENV: bool = False
