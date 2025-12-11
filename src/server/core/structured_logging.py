@@ -9,16 +9,24 @@ import logging.config
 import sys
 from typing import Any, Dict
 
+structlog: Any | None
+LoggerFactory: Any
+TimeStamper: Any
+add_log_level: Any
+StackInfoRenderer: Any
+JSONRenderer: Any
+ConsoleRenderer: Any
+
 try:
-    import structlog  # type: ignore[import-not-found]
-    from structlog.stdlib import LoggerFactory  # type: ignore[import-not-found]
-    from structlog.processors import (  # type: ignore[import-not-found]
+    import structlog
+    from structlog.stdlib import LoggerFactory
+    from structlog.processors import (
         TimeStamper,
         add_log_level,
         StackInfoRenderer,
         JSONRenderer,
-        ConsoleRenderer,
     )
+    from structlog.dev import ConsoleRenderer
 
     STRUCTLOG_AVAILABLE = True
 except ImportError:  # structlog не установлен
@@ -151,7 +159,7 @@ def get_logger(name: str) -> Any:
     """
 
     if STRUCTLOG_AVAILABLE and structlog is not None:
-        return structlog.get_logger(name)  # type: ignore[no-any-return]
+        return structlog.get_logger(name)
 
     base_logger = logging.getLogger(name)
     return _StdLoggerAdapter(base_logger)
@@ -234,7 +242,7 @@ class DatabaseLogger:
         self,
         query: str,
         duration_ms: float,
-        params: Dict[str, Any] = None,
+        params: Dict[str, Any] | None = None,
     ) -> None:
         """Log database query."""
         self.logger.info(
@@ -360,8 +368,8 @@ class BusinessLogger:
         amount: float,
         currency: str,
         status: str,
-        payment_id: str = None,
-        provider: str = None,
+        payment_id: str | None = None,
+        provider: str | None = None,
     ) -> None:
         """Log payment event."""
         self.logger.info(
