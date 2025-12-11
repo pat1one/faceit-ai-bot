@@ -297,7 +297,7 @@ async def steam_callback(
         value=access_token,
         httponly=True,
         secure=secure_cookie,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24 * 30,
     )
     if session is not None:
@@ -306,7 +306,7 @@ async def steam_callback(
             value=refresh_token,
             httponly=True,
             secure=secure_cookie,
-            samesite="lax",
+            samesite="none",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -685,7 +685,7 @@ async def faceit_callback(
         value=access_token,
         httponly=True,
         secure=secure_cookie,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24 * 30,
     )
     if session is not None:
@@ -694,7 +694,7 @@ async def faceit_callback(
             value=refresh_token,
             httponly=True,
             secure=secure_cookie,
-            samesite="lax",
+            samesite="none",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -860,7 +860,7 @@ async def register(
             value=access_token,
             httponly=True,
             secure=secure_cookie,
-            samesite="lax",
+            samesite="none",
             max_age=60 * 60 * 24 * 30,
         )
 
@@ -870,7 +870,7 @@ async def register(
                 value=refresh_token,
                 httponly=True,
                 secure=secure_cookie,
-                samesite="lax",
+                samesite="none",
                 max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             )
 
@@ -1075,7 +1075,7 @@ async def login(
         value=access_token,
         httponly=True,
         secure=secure_cookie,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24 * 30,
     )
 
@@ -1085,7 +1085,7 @@ async def login(
             value=refresh_token,
             httponly=True,
             secure=secure_cookie,
-            samesite="lax",
+            samesite="none",
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         )
 
@@ -1222,7 +1222,7 @@ async def refresh_access_token(
         value=access_token,
         httponly=True,
         secure=secure_cookie,
-        samesite="lax",
+        samesite="none",
         max_age=60 * 60 * 24 * 30,
     )
     response.set_cookie(
@@ -1230,7 +1230,7 @@ async def refresh_access_token(
         value=new_refresh,
         httponly=True,
         secure=secure_cookie,
-        samesite="lax",
+        samesite="none",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
