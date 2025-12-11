@@ -34,10 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, []);
 
-  const fetchUser = async () => {
+  const fetchUser = async (overrideToken?: string | null) => {
     try {
+      const headers: HeadersInit = {};
+      const effectiveToken = overrideToken ?? token;
+
+      if (effectiveToken) {
+        headers['Authorization'] = `Bearer ${effectiveToken}`;
+      }
+
       const response = await fetch(API_ENDPOINTS.AUTH_ME, {
         credentials: 'include',
+        headers,
       });
 
       if (response.ok) {
@@ -60,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         // backend поддерживает и email, и username; передаём email
         email,
@@ -97,13 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const data = await response.json();
-    setToken(data.access_token || null);
-    await fetchUser();
+    const accessToken = data.access_token || null;
+    setToken(accessToken);
+    await fetchUser(accessToken);
   };
 
   const loginWithToken = async (authToken: string) => {
     setToken(authToken);
-    await fetchUser();
+    await fetchUser(authToken);
   };
 
   const register = async (email: string, username: string, password: string, captchaToken?: string | null) => {
@@ -112,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         email,
         username,
