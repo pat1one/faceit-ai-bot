@@ -138,6 +138,10 @@ class Settings(BaseSettings):
         "http://localhost:8000",
         "https://pattmsc.online",
         "https://www.pattmsc.online",
+        "https://pattmsc.ru",
+        "https://www.pattmsc.ru",
+        "https://pattcs.pro",
+        "https://www.pattcs.pro",
     ]
 
     # Payment settings
