@@ -6,7 +6,7 @@ Create Date: 2025-11-27
 
 """
 
-from alembic import op  # type: ignore[attr-defined]
+from alembic import op
 import sqlalchemy as sa
 
 

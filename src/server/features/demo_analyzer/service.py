@@ -1,30 +1,27 @@
 import logging
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from fastapi import UploadFile
 
 from .models import (
     DemoAnalysis,
     PlayerPerformance,
-    RoundAnalysis
+    RoundAnalysis,
 )
-from exceptions import DemoAnalysisException
+from ...exceptions import DemoAnalysisException
 
 import tempfile
 import os
 
 try:
-    import pandas as pd
+    import pandas as pd  # type: ignore[import-not-found,import-untyped]
 except ImportError:
     pd = None  # type: ignore[assignment]
 
 try:
-    from demoparser2 import DemoParser
+    from demoparser2 import DemoParser  # type: ignore[import-not-found]
 except ImportError:  # demoparser2 может быть не установлен (особенно на Python 3.14)
     DemoParser = None  # type: ignore[assignment]
 

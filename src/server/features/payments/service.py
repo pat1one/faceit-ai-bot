@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Any, cast
 from fastapi import HTTPException
 import httpx
 import logging
@@ -138,6 +138,27 @@ class PaymentService:
                 status_code=500,
                 detail="Payment status check failed"
             )
+
+    async def _check_sbp_status(self, payment_id: str) -> PaymentStatus:
+        """Check SBP payment status.
+
+        Пока внешний статус-чекер не реализован, явно сообщаем об отсутствии
+        поддержки вместо падения с AttributeError.
+        """
+        raise HTTPException(
+            status_code=400,
+            detail=f"Status check for provider SBP is not implemented (payment_id={payment_id})",
+        )
+
+    async def _check_yookassa_status(self, payment_id: str) -> PaymentStatus:
+        """Check YooKassa payment status.
+
+        Аналогично SBP, пока статус не запрашивается у внешнего API, отвечаем 400.
+        """
+        raise HTTPException(
+            status_code=400,
+            detail=f"Status check for provider YooKassa is not implemented (payment_id={payment_id})",
+        )
 
     async def _process_sbp_payment(
         self, request: PaymentRequest
@@ -384,9 +405,14 @@ class PaymentService:
             return
 
         amount_info = data.get("amount") or {}
-        try:
-            amount_value = float(amount_info.get("value")) if amount_info.get("value") is not None else None
-        except (TypeError, ValueError):
+        raw_value: Any = amount_info.get("value")
+        amount_value: Optional[float]
+        if isinstance(raw_value, (int, float, str)):
+            try:
+                amount_value = float(raw_value)
+            except (TypeError, ValueError):
+                amount_value = None
+        else:
             amount_value = None
         currency_code = amount_info.get("currency")
 
@@ -426,8 +452,8 @@ class PaymentService:
             )
             return
 
-        db_payment.status = DBPaymentStatus.COMPLETED
-        db_payment.completed_at = datetime.utcnow()
+        db_payment.status = DBPaymentStatus.COMPLETED  # type: ignore[assignment]
+        db_payment.completed_at = datetime.utcnow()  # type: ignore[assignment]
 
         # Extend or create subscription based on stored subscription_tier
         tier = db_payment.subscription_tier
@@ -446,14 +472,14 @@ class PaymentService:
                 and subscription.expires_at > now
             ):
                 # Extend existing active subscription
-                subscription.expires_at = subscription.expires_at + timedelta(days=30)
-                subscription.tier = tier
+                subscription.expires_at = subscription.expires_at + timedelta(days=30)  # type: ignore[assignment]
+                subscription.tier = tier  # type: ignore[assignment]
             elif subscription:
                 # Reactivate / reset existing subscription
-                subscription.started_at = now
-                subscription.expires_at = now + timedelta(days=30)
-                subscription.is_active = True
-                subscription.tier = tier
+                subscription.started_at = now  # type: ignore[assignment]
+                subscription.expires_at = now + timedelta(days=30)  # type: ignore[assignment]
+                subscription.is_active = True  # type: ignore[assignment]
+                subscription.tier = tier  # type: ignore[assignment]
             else:
                 # Create new subscription
                 subscription = DBSubscription(
@@ -471,7 +497,7 @@ class PaymentService:
         try:
             business_logger.log_payment_event(
                 user_id=str(db_payment.user_id),
-                amount=db_payment.amount,
+                amount=cast(float, db_payment.amount),
                 currency=str(db_payment.currency) if db_payment.currency is not None else "",
                 status="completed",
                 payment_id=str(db_payment.provider_payment_id),
@@ -502,9 +528,14 @@ class PaymentService:
             return
 
         amount_info = payment_obj.get("amount") or {}
-        try:
-            amount_value = float(amount_info.get("value")) if amount_info.get("value") is not None else None
-        except (TypeError, ValueError):
+        raw_value: Any = amount_info.get("value")
+        amount_value: Optional[float]
+        if isinstance(raw_value, (int, float, str)):
+            try:
+                amount_value = float(raw_value)
+            except (TypeError, ValueError):
+                amount_value = None
+        else:
             amount_value = None
         currency_code = amount_info.get("currency")
 
@@ -544,8 +575,8 @@ class PaymentService:
             )
             return
 
-        db_payment.status = DBPaymentStatus.COMPLETED
-        db_payment.completed_at = datetime.utcnow()
+        db_payment.status = DBPaymentStatus.COMPLETED  # type: ignore[assignment]
+        db_payment.completed_at = datetime.utcnow()  # type: ignore[assignment]
 
         # Extend or create subscription based on stored subscription_tier
         tier = db_payment.subscription_tier
@@ -601,7 +632,7 @@ class PaymentService:
         try:
             business_logger.log_payment_event(
                 user_id=str(db_payment.user_id),
-                amount=db_payment.amount,
+                amount=cast(float, db_payment.amount),
                 currency=str(db_payment.currency) if db_payment.currency is not None else "",
                 status="completed",
                 payment_id=str(db_payment.provider_payment_id),
