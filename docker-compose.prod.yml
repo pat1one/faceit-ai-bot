@@ -23,6 +23,8 @@ services:
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
+    ports:
+      - "6379:6379"
     networks:
       - faceit-network
     healthcheck:
@@ -100,7 +102,12 @@ services:
 
   celery_worker:
     image: ghcr.io/pat1one/faceit-ai-bot/api:latest
-    command: celery -A src.server.celery_app worker --loglevel=info --concurrency=4 --max-tasks-per-child=50 --queues=demo_analysis,notifications,webhooks
+    command: celery -A src.server.celery_app worker \
+      --loglevel=info \
+      --concurrency=1 \
+      --prefetch-multiplier=1 \
+      --max-tasks-per-child=10 \
+      --queues=demo_analysis,notifications,webhooks
     restart: on-failure
     depends_on:
       - redis

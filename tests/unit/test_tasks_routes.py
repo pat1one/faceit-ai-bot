@@ -1,14 +1,19 @@
 """Unit tests for background tasks routes (/tasks)."""
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.server.features.tasks.routes import router, TaskSubmitRequest
-from src.server.tasks import analyze_demo_task, analyze_player_task, send_email_task
+import src.server.tasks as tasks_module
 from src.server.celery_app import celery_app
+
+analyze_demo_task = cast(Any, tasks_module).analyze_demo_task
+analyze_player_task = cast(Any, tasks_module).analyze_player_task
+send_email_task = cast(Any, tasks_module).send_email_task
 
 
 @pytest.fixture

@@ -245,7 +245,7 @@ async def test_get_training_plan_success(client, monkeypatch):
             }
         }
 
-    async def make_plan(nickname: str, stats: Dict[str, Any]):  # noqa: ARG002
+    async def make_plan(nickname: str, stats: Dict[str, Any]) -> Dict[str, Any]:  # noqa: ARG002
         return {
             "focus_areas": ["aim"],
             "daily_exercises": [],
