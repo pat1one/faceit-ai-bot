@@ -1,4 +1,6 @@
 import logging
+import os
+import tempfile
 from typing import Optional
 
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status
@@ -13,6 +15,7 @@ from ...middleware.rate_limiter import rate_limiter
 from ...services.rate_limit_service import rate_limit_service
 from ...exceptions import DemoAnalysisException
 from ...config.settings import settings
+from ...tasks import analyze_demo_task
 
 logger = logging.getLogger(__name__)
 router = APIRouter(
@@ -131,3 +134,89 @@ async def analyze_demo(
     demo.file.seek(0)
 
     return await demo_analyzer.analyze_demo(demo, language=language)
+
+
+@router.post(
+    "/analyze/background",
+    summary="Demo file analysis in background",
+)
+async def analyze_demo_background(
+    demo: UploadFile = File(...),
+    language: str = "ru",
+    _: None = Depends(rate_limiter),
+    __: None = Depends(enforce_demo_analyze_rate_limit),
+    current_user: Optional[User] = Depends(get_optional_current_user),
+):
+    filename = (demo.filename or "").lower()
+    if not filename.endswith(".dem"):
+        raise DemoAnalysisException(
+            detail="Invalid file format. Only .dem files are supported.",
+            error_code="INVALID_FILE_FORMAT",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    content = await demo.read(MAX_DEMO_SIZE_BYTES + 1)
+
+    if not content:
+        raise DemoAnalysisException(
+            detail="Empty file. Please upload a valid CS2 demo.",
+            error_code="EMPTY_FILE",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if len(content) > MAX_DEMO_SIZE_BYTES:
+        raise DemoAnalysisException(
+            detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
+            error_code="FILE_TOO_LARGE",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    sniff = content[:_SNIFF_BYTES]
+    lowered_sniff = sniff.lower()
+    suspicious_markers = [
+        b"<html",
+        b"<script",
+        b"<?php",
+        b"#!/bin/bash",
+        b"#!/usr/bin/env",
+        b"import os",
+        b"import sys",
+    ]
+    if any(marker in lowered_sniff for marker in suspicious_markers):
+        raise DemoAnalysisException(
+            detail="Invalid file content. Expected a binary CS2 demo file.",
+            error_code="INVALID_FILE_CONTENT",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    tmp_path: Optional[str] = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".dem", delete=False) as tmp_file:
+            tmp_file.write(content)
+            tmp_path = tmp_file.name
+
+        user_id_value = None
+        if current_user is not None and current_user.id is not None:
+            user_id_value = str(current_user.id)
+
+        task = analyze_demo_task.delay(
+            demo_file_path=tmp_path,
+            user_id=user_id_value,
+            language=language,
+        )
+
+        return {
+            "task_id": task.id,
+            "status": "submitted",
+        }
+    except Exception:
+        logger.exception("Failed to submit demo analysis task")
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to submit demo analysis task",
+        )

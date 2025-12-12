@@ -1,8 +1,14 @@
 """Background tasks"""
 import logging
+import asyncio
+import os
 from typing import Dict, Any
+
 from celery import Task
+from fastapi import UploadFile
+
 from .celery_app import celery_app
+from .features.demo_analyzer.service import DemoAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -23,35 +29,77 @@ class CallbackTask(Task):
     bind=True,
     base=CallbackTask,
     max_retries=3,
-    default_retry_delay=60
+    default_retry_delay=60,
 )
-def analyze_demo_task(self, demo_file_path: str, user_id: str) -> Dict:
-    """
-    Analyze demo file in background
+def analyze_demo_task(
+    self,
+    demo_file_path: str,
+    user_id: str | None = None,
+    language: str = "ru",
+) -> Dict:
+    """Analyze demo file in background.
 
     Args:
         demo_file_path: Path to demo file
-        user_id: User ID
+        user_id: Optional user ID (for logging/trace)
+        language: Target language for analysis ("ru" or "en")
 
     Returns:
-        Analysis results
+        JSON-serializable dict with analysis results
     """
     try:
-        # Analysis logic here
-        logger.info(f"Demo analysis started for user {user_id}")
+        logger.info(
+            "Demo analysis task started: path=%s, user_id=%s, language=%s",
+            demo_file_path,
+            user_id,
+            language,
+        )
+
+        if not os.path.exists(demo_file_path):
+            logger.error("Demo file not found: %s", demo_file_path)
+            return {
+                "status": "failed",
+                "error": "Demo file not found",
+                "user_id": user_id,
+                "demo_path": demo_file_path,
+            }
+
+        analyzer = DemoAnalyzer()
+
+        with open(demo_file_path, "rb") as file_obj:
+            upload = UploadFile(
+                filename=os.path.basename(demo_file_path),
+                file=file_obj,
+            )
+
+            demo_analysis = asyncio.run(
+                analyzer.analyze_demo(demo_file=upload, language=language)
+            )
 
         result = {
             "status": "completed",
             "user_id": user_id,
-            "demo_path": demo_file_path
+            "demo_path": demo_file_path,
+            "analysis": demo_analysis.model_dump(mode="json"),
         }
 
-        logger.info(f"Demo analysis completed for user {user_id}")
+        logger.info(
+            "Demo analysis completed for user %s, path=%s",
+            user_id,
+            demo_file_path,
+        )
         return result
 
     except Exception as exc:
-        logger.exception(f"Demo analysis failed: {exc}")
+        logger.exception("Demo analysis failed: %s", exc)
         raise self.retry(exc=exc)
+    finally:
+        try:
+            if os.path.exists(demo_file_path):
+                os.unlink(demo_file_path)
+        except Exception:
+            # Best-effort cleanup, do not mask original errors
+            pass
 
 
 @celery_app.task(
