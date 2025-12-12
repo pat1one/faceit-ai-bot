@@ -59,7 +59,10 @@ class PlayerAnalysisService:
             if not player:
                 return None
 
-            player_id = player.get("player_id")
+            player_id_value = player.get("player_id")
+            if not isinstance(player_id_value, str):
+                return None
+            player_id = player_id_value
 
             # Fetch statistics
             stats_data = (
@@ -144,7 +147,11 @@ class PlayerAnalysisService:
             if not player:
                 return None
 
-            player_id = player.get("player_id")
+            player_id_value = player.get("player_id")
+            if not isinstance(player_id_value, str):
+                return None
+            player_id = player_id_value
+
             stats = (
                 await self.faceit_client.get_player_stats(
                     player_id
@@ -180,7 +187,11 @@ class PlayerAnalysisService:
             if not player:
                 return []
 
-            player_id = player.get("player_id")
+            player_id_value = player.get("player_id")
+            if not isinstance(player_id_value, str):
+                return []
+            player_id = player_id_value
+
             matches = (
                 await self.faceit_client.get_match_history(
                     player_id,

@@ -46,7 +46,7 @@ class CacheService:
     """Caching service"""
 
     def __init__(self):
-        self.redis_client = None
+        self.redis_client: Any | None = None
         self.enabled = False
 
         if REDIS_AVAILABLE:
@@ -65,7 +65,7 @@ class CacheService:
 
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache"""
-        if not self.enabled:
+        if not self.enabled or self.redis_client is None:
             return None
 
         try:
@@ -107,7 +107,7 @@ class CacheService:
         ttl: int = 3600  # 1 hour by default
     ) -> bool:
         """Save value to cache"""
-        if not self.enabled:
+        if not self.enabled or self.redis_client is None:
             return False
 
         try:
@@ -127,7 +127,7 @@ class CacheService:
 
     async def delete(self, key: str) -> bool:
         """Delete value from cache"""
-        if not self.enabled:
+        if not self.enabled or self.redis_client is None:
             return False
 
         try:
@@ -146,7 +146,7 @@ class CacheService:
 
     async def exists(self, key: str) -> bool:
         """Check if key exists"""
-        if not self.enabled:
+        if not self.enabled or self.redis_client is None:
             return False
 
         try:
@@ -158,7 +158,7 @@ class CacheService:
             except Exception:
                 # Metrics must not affect cache behavior
                 pass
-            return result > 0
+            return bool(result)
         except Exception as e:
             logger.error(f"Cache exists error: {e}")
             return False

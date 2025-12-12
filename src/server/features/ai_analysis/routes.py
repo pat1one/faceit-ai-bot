@@ -1,6 +1,6 @@
 """AI Analysis API Routes"""
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -44,7 +44,7 @@ async def enforce_ai_player_analysis_rate_limit(
 
     await rate_limit_service.enforce_user_operation_limit(
         db=db,
-        user_id=current_user.id,
+        user_id=cast(int, current_user.id),
         operation="player_analysis",
     )
 
@@ -68,16 +68,23 @@ async def analyze_player(
 
         # Fetch player data
         player_data = None
+        player_id: str
         if request.faceit_id:
-            stats = await faceit_client.get_player_stats(request.faceit_id)
+            player_id = request.faceit_id
+            stats = await faceit_client.get_player_stats(player_id)
         else:
             player_data = await faceit_client.get_player_by_nickname(
                 request.player_nickname
             )
             if player_data:
-                stats = await faceit_client.get_player_stats(
-                    player_data['player_id']
-                )
+                raw_player_id = player_data.get("player_id")
+                if not isinstance(raw_player_id, str):
+                    raise HTTPException(
+                        status_code=500,
+                        detail="Invalid player_id format from Faceit API",
+                    )
+                player_id = raw_player_id
+                stats = await faceit_client.get_player_stats(player_id)
             else:
                 raise HTTPException(
                     status_code=404, detail="Player not found"
@@ -101,7 +108,6 @@ async def analyze_player(
         }
 
         # Fetch match history
-        player_id = request.faceit_id or player_data['player_id']
         match_history = await faceit_client.get_match_history(
             player_id, limit=20
         )

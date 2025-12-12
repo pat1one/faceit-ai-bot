@@ -3,7 +3,7 @@ Player Analysis Routes
 Routes for player analysis
 """
 import logging
-from typing import Optional
+from typing import Optional, cast
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -31,7 +31,7 @@ async def enforce_player_analysis_rate_limit(
 
     await rate_limit_service.enforce_user_operation_limit(
         db=db,
-        user_id=current_user.id,
+        user_id=cast(int, current_user.id),
         operation="player_analysis",
     )
 
