@@ -20,8 +20,8 @@ from src.server.database.connection import _classify_sql_operation
         (" delete from users", "delete"),
         ("WITH cte AS (SELECT 1) SELECT * FROM cte", "other"),
         ("", "other"),
-        (None, "other"),  # type: ignore[arg-type]
+        (None, "other"),
     ],
 )
-def test_classify_sql_operation(statement, expected):
+def test_classify_sql_operation(statement: str | None, expected: str) -> None:
     assert _classify_sql_operation(statement) == expected

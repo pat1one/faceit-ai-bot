@@ -3,8 +3,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, List
 
-import pandas as pd
-from demoparser2 import DemoParser
+try:
+    import pandas as pd  # type: ignore[import-untyped]
+except ImportError:
+    pd = None
+
+try:
+    from demoparser2 import DemoParser  # type: ignore[import-not-found]
+except ImportError:
+    DemoParser = None
 
 
 def extract_player_feature_rows(demo_path: Path) -> List[Dict]:
@@ -15,6 +22,11 @@ def extract_player_feature_rows(demo_path: Path) -> List[Dict]:
     """
     if not demo_path.is_file():
         raise FileNotFoundError(f"Demo file not found: {demo_path}")
+
+    if pd is None or DemoParser is None:
+        raise RuntimeError(
+            "pandas and demoparser2 must be installed to use extract_player_feature_rows"
+        )
 
     parser = DemoParser(demopath=str(demo_path))
 

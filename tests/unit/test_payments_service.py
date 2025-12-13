@@ -151,7 +151,7 @@ def test_validate_payment_method_invalid_method(settings_stub):
     assert "not available" in exc.value.detail
 
 
-def test_validate_payment_method_unsupported_region(settings_stub):
+def test_validate_payment_method_unsupported_region(settings_stub, monkeypatch):
     """_validate_payment_method should reject unsupported regions."""
 
     service = PaymentService(settings_stub)
@@ -169,7 +169,7 @@ def test_validate_payment_method_unsupported_region(settings_stub):
     def fake_detect_region(req: PaymentRequest) -> str:  # noqa: ARG001
         return "UNKNOWN"
 
-    service._detect_region = fake_detect_region  # type: ignore[method-assign]
+    monkeypatch.setattr(service, "_detect_region", fake_detect_region)
 
     with pytest.raises(HTTPException) as exc:
         service._validate_payment_method(request)

@@ -108,9 +108,14 @@ async def _get_dynamic_routes() -> list[dict]:
             .all()
         )
         for demo in demos:
-            nickname = demo.faceit_nickname
-            if not nickname or nickname in seen:
+            raw_nickname = getattr(demo, "faceit_nickname", None)
+            if (
+                not isinstance(raw_nickname, str)
+                or not raw_nickname
+                or raw_nickname in seen
+            ):
                 continue
+            nickname = raw_nickname
             seen.add(nickname)
             ts = demo.updated_at or demo.created_at or datetime.utcnow()
             routes.append(
@@ -127,9 +132,14 @@ async def _get_dynamic_routes() -> list[dict]:
             .all()
         )
         for profile in profiles:
-            nickname = profile.faceit_nickname
-            if not nickname or nickname in seen:
+            raw_nickname = getattr(profile, "faceit_nickname", None)
+            if (
+                not isinstance(raw_nickname, str)
+                or not raw_nickname
+                or raw_nickname in seen
+            ):
                 continue
+            nickname = raw_nickname
             seen.add(nickname)
             ts = profile.updated_at or profile.created_at or datetime.utcnow()
             routes.append(

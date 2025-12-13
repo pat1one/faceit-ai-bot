@@ -1,12 +1,15 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from fastapi import UploadFile
 
 from .models import (
+    CoachReport,
     DemoAnalysis,
+    DemoAnalysisInput,
+    DemoMetadata,
     PlayerPerformance,
     RoundAnalysis,
 )
@@ -16,14 +19,14 @@ import tempfile
 import os
 
 try:
-    import pandas as pd  # type: ignore[import-not-found,import-untyped]
+    import pandas as pd  # type: ignore[import-untyped]
 except ImportError:
-    pd = None  # type: ignore[assignment]
+    pd = None
 
 try:
     from demoparser2 import DemoParser  # type: ignore[import-not-found]
 except ImportError:  # demoparser2 может быть не установлен (особенно на Python 3.14)
-    DemoParser = None  # type: ignore[assignment]
+    DemoParser = None
 
 from ...ai.demo_coach_model import DemoCoachModel
 
@@ -120,24 +123,27 @@ class DemoAnalyzer:
                     "DemoCoachModel failed, falling back to stub coach report",
                     exc_info=True,
                 )
-                coach_report = self._build_coach_report_stub(
+                stub_payload = self._build_coach_report_stub(
                     demo_input=demo_input,
                     player_performances=player_performances,
                     improvement_areas=improvement_areas,
                     recommendations=recommendations,
                     language=language,
                 )
+                coach_report = CoachReport.model_validate(stub_payload)
+
+            metadata = DemoMetadata(
+                match_id=demo_data["match_id"],
+                map_name=demo_data["map"],
+                game_mode=demo_data["mode"],
+                date_played=datetime.now(),
+                duration=int(demo_data["duration"]),
+                score=dict(demo_data["score"]),
+            )
 
             return DemoAnalysis(
-                demo_id=demo_data['match_id'],
-                metadata={
-                    'match_id': demo_data['match_id'],
-                    'map_name': demo_data['map'],
-                    'game_mode': demo_data['mode'],
-                    'date_played': datetime.now(),
-                    'duration': demo_data['duration'],
-                    'score': demo_data['score']
-                },
+                demo_id=demo_data["match_id"],
+                metadata=metadata,
                 overall_performance=player_performances,
                 round_analysis=round_analysis,
                 key_moments=key_moments,
@@ -298,13 +304,20 @@ class DemoAnalyzer:
     
         return {main_player: performance}
     
-    async def _aggregate_demo_stats(self, demo_data: Dict) -> Dict:
+    def _aggregate_demo_stats(self, demo_data: Dict) -> Dict[str, float | int]:
         """Aggregate statistics from parsed demo data"""
         kills_data = demo_data.get('kills_data', [])
         damage_data = demo_data.get('damage_data', [])
         main_player = demo_data.get('main_player', 'Player')
         
-        stats = {'kills': 0, 'deaths': 0, 'headshots': 0, 'total_damage': 0, 'assists': 0, 'utility_damage': 0}
+        stats: Dict[str, float | int] = {
+            'kills': 0,
+            'deaths': 0,
+            'headshots': 0,
+            'total_damage': 0,
+            'assists': 0,
+            'utility_damage': 0,
+        }
         
         try:
             import pandas as pd
@@ -741,12 +754,12 @@ class DemoAnalyzer:
 
     def _build_demo_analysis_input(
         self,
-        demo_data: Dict,
+        demo_data: Dict[str, Any],
         player_performances: Dict[str, PlayerPerformance],
         round_analysis: List[RoundAnalysis],
-        key_moments: List[Dict],
+        key_moments: List[Dict[str, Any]],
         language: str,
-    ) -> Dict:
+    ) -> DemoAnalysisInput:
         main_player_id = next(iter(player_performances.keys()), demo_data.get("main_player", "Player"))
         main_perf = player_performances.get(main_player_id)
 
@@ -772,7 +785,7 @@ class DemoAnalyzer:
         if clutches_won == 0 and kills > 10:
             flags.append("weak_clutch_conversion")
 
-        demo_key_rounds: List[Dict] = []
+        demo_key_rounds: List[Dict[str, Any]] = []
         for km in key_moments:
             rn = km.get("round")
             desc = km.get("description") or ""
@@ -791,7 +804,7 @@ class DemoAnalyzer:
                 }
             )
 
-        return {
+        payload: Dict[str, Any] = {
             "language": language,
             "player": {
                 "nickname": demo_data.get("main_player", "Player"),
@@ -825,15 +838,20 @@ class DemoAnalyzer:
             "key_rounds": demo_key_rounds,
         }
 
+        return DemoAnalysisInput(**payload)
+
     def _build_coach_report_stub(
         self,
-        demo_input: Dict,
+        demo_input: DemoAnalysisInput,
         player_performances: Dict[str, PlayerPerformance],
-        improvement_areas: List[Dict],
+        improvement_areas: List[Dict[str, Any]],
         recommendations: List[str],
         language: str,
-    ) -> Dict:
-        main_player_id = next(iter(player_performances.keys()), demo_input.get("player", {}).get("nickname", "Player"))
+    ) -> Dict[str, Any]:
+        main_player_id = next(
+            iter(player_performances.keys()),
+            str(demo_input.player.get("nickname", "Player")),
+        )
         main_perf = player_performances.get(main_player_id)
 
         kills = main_perf.kills if main_perf else 0
@@ -842,8 +860,8 @@ class DemoAnalyzer:
         hs_percentage = main_perf.headshot_percentage if main_perf else 40.0
         damage_per_round = main_perf.damage_per_round if main_perf else 0.0
 
-        score = demo_input.get("match", {}).get("score", "0-0")
-        map_name = demo_input.get("match", {}).get("map", "unknown")
+        score = str(demo_input.match.get("score", "0-0"))
+        map_name = str(demo_input.match.get("map", "unknown"))
 
         overall_score = max(4.0, min(9.5, 5.0 + (kd_ratio - 1.0) * 2.0))
 
@@ -888,8 +906,8 @@ class DemoAnalyzer:
                 }
             )
 
-        key_moments: List[Dict] = []
-        for kr in demo_input.get("key_rounds", [])[:5]:
+        key_moments: List[Dict[str, Any]] = []
+        for kr in demo_input.key_rounds[:5]:
             rn = kr.get("round")
             situation = kr.get("situation", "key_round")
             pov_list = kr.get("player_pov") or []

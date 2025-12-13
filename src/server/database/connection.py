@@ -74,7 +74,7 @@ DB_POOL_TOTAL_CONNECTIONS = Gauge(
 )
 
 
-def _classify_sql_operation(statement: str) -> str:
+def _classify_sql_operation(statement: str | None) -> str:
     """Classify SQL statement into a low-cardinality operation label."""
 
     sql = (statement or "").lstrip().upper()

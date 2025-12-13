@@ -3,14 +3,8 @@ from dotenv import load_dotenv
 from functools import lru_cache
 from typing import List, Optional
 
-try:
-    import pydantic_settings as _pydantic_settings
-except ImportError:
-    import pydantic as _pydantic_settings
-
+from pydantic_settings import BaseSettings
 from pydantic import validator
-
-BaseSettings = _pydantic_settings.BaseSettings
 
 # Load environment variables from .env
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
@@ -158,6 +152,7 @@ class Settings(BaseSettings):
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: Optional[str] = None
+    REDIS_URL: Optional[str] = None
 
     # Observability settings
     ENVIRONMENT: str = "production"
@@ -166,6 +161,9 @@ class Settings(BaseSettings):
     JAEGER_HOST: str = "localhost"
     JAEGER_PORT: int = 6831
     VERSION: str = "0.4.0"
+
+    # Debug flag (used in tests and local development)
+    DEBUG: bool = False
 
     # Directory for storing AI training samples (JSONL)
     AI_SAMPLES_DIR: str = "data"
