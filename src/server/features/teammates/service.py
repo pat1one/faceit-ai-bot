@@ -40,10 +40,14 @@ class TeammateService:
                 return profile
 
             nickname: Optional[str] = None
-            if profile and profile.faceit_nickname:
-                nickname = profile.faceit_nickname
-            elif current_user.username:
-                nickname = current_user.username
+            if profile is not None:
+                profile_nickname = getattr(profile, "faceit_nickname", None)
+                if isinstance(profile_nickname, str) and profile_nickname:
+                    nickname = profile_nickname
+            if nickname is None:
+                username_value = getattr(current_user, "username", None)
+                if isinstance(username_value, str) and username_value:
+                    nickname = username_value
 
             if not nickname:
                 return profile
@@ -60,14 +64,23 @@ class TeammateService:
                 profile = TeammateProfileDB(user_id=current_user.id)
                 db.add(profile)
 
-            profile.faceit_nickname = (
-                player.get("nickname") or profile.faceit_nickname or nickname
-            )
+            existing_nickname = getattr(profile, "faceit_nickname", None)
+            new_nickname = player.get("nickname") or existing_nickname or nickname
+            if isinstance(new_nickname, str) and new_nickname:
+                setattr(profile, "faceit_nickname", new_nickname)
+
             if elo is not None:
-                profile.elo = elo
+                try:
+                    setattr(profile, "elo", int(elo))
+                except (TypeError, ValueError):
+                    pass
             if level is not None:
-                profile.level = level
-            profile.updated_at = datetime.utcnow()
+                try:
+                    setattr(profile, "level", int(level))
+                except (TypeError, ValueError):
+                    pass
+
+            setattr(profile, "updated_at", datetime.utcnow())
 
             db.commit()
             db.refresh(profile)
@@ -178,17 +191,27 @@ class TeammateService:
 
                 demo_profile = TeammateProfile(
                     user_id=str(current_profile.user_id),
-                    faceit_nickname=current_profile.faceit_nickname or "",
+                    faceit_nickname=(
+                        cast(str, current_profile.faceit_nickname)
+                        if current_profile.faceit_nickname
+                        else ""
+                    ),
                     stats=stats,
                     preferences=candidate_prefs,
-                    availability=[current_profile.availability]
+                    availability=[
+                        cast(str, current_profile.availability)
+                    ]
                     if current_profile.availability
                     else [],
                     team_history=[],
-                    about=current_profile.about,
-                    discord_contact=current_profile.discord_contact,
-                    telegram_contact=current_profile.telegram_contact,
-                    contact_url=current_profile.contact_url,
+                    about=cast(Optional[str], current_profile.about),
+                    discord_contact=cast(
+                        Optional[str], current_profile.discord_contact
+                    ),
+                    telegram_contact=cast(
+                        Optional[str], current_profile.telegram_contact
+                    ),
+                    contact_url=cast(Optional[str], current_profile.contact_url),
                 )
 
                 return [demo_profile]
@@ -204,9 +227,18 @@ class TeammateService:
                     last_20_matches=[],
                 )
 
+                username_value = getattr(current_user, "username", None)
+                email_value = getattr(current_user, "email", None)
+                if isinstance(username_value, str) and username_value:
+                    faceit_nickname = username_value
+                elif isinstance(email_value, str) and email_value:
+                    faceit_nickname = email_value
+                else:
+                    faceit_nickname = ""
+
                 demo_profile = TeammateProfile(
                     user_id=str(current_user.id),
-                    faceit_nickname=current_user.username or current_user.email or "",
+                    faceit_nickname=faceit_nickname,
                     stats=stats,
                     preferences=preferences,
                     availability=[],
@@ -229,45 +261,56 @@ class TeammateService:
                     if not any(r in roles for r in preferences.preferred_roles):
                         continue
 
+                elo_value = int(row.elo) if row.elo is not None else 0
+                preferred_maps_list = (
+                    [
+                        m.strip()
+                        for m in cast(str, row.preferred_maps).split(",")
+                        if m.strip()
+                    ]
+                    if row.preferred_maps
+                    else []
+                )
+
                 stats = PlayerStats(
-                    faceit_elo=row.elo or 0,
+                    faceit_elo=elo_value,
                     matches_played=0,
                     win_rate=0.5,
                     avg_kd=1.0,
                     avg_hs=0.5,
-                    favorite_maps=(
-                        (row.preferred_maps or "").split(",")
-                        if row.preferred_maps
-                        else []
-                    ),
+                    favorite_maps=preferred_maps_list,
                     last_20_matches=[],
                 )
 
                 candidate_prefs = TeammatePreferences(
-                    min_elo=(row.elo - 200) if row.elo else 0,
-                    max_elo=(row.elo + 200) if row.elo else 10000,
-                    preferred_maps=(
-                        (row.preferred_maps or "").split(",")
-                        if row.preferred_maps
-                        else []
-                    ),
+                    min_elo=elo_value - 200 if elo_value else 0,
+                    max_elo=elo_value + 200 if elo_value else 10000,
+                    preferred_maps=preferred_maps_list,
                     preferred_roles=roles,
                     communication_lang=langs,
-                    play_style=row.play_style or "unknown",
+                    play_style=(
+                        cast(str, row.play_style) if row.play_style else "unknown"
+                    ),
                     time_zone="unknown",
                 )
 
                 profile = TeammateProfile(
                     user_id=str(row.user_id),
-                    faceit_nickname=row.faceit_nickname or "",
+                    faceit_nickname=(
+                        cast(str, row.faceit_nickname) if row.faceit_nickname else ""
+                    ),
                     stats=stats,
                     preferences=candidate_prefs,
-                    availability=[row.availability] if row.availability else [],
+                    availability=[
+                        cast(str, row.availability)
+                    ]
+                    if row.availability
+                    else [],
                     team_history=[],
-                    about=row.about,
-                    discord_contact=row.discord_contact,
-                    telegram_contact=row.telegram_contact,
-                    contact_url=row.contact_url,
+                    about=cast(Optional[str], row.about),
+                    discord_contact=cast(Optional[str], row.discord_contact),
+                    telegram_contact=cast(Optional[str], row.telegram_contact),
+                    contact_url=cast(Optional[str], row.contact_url),
                 )
                 result.append(profile)
 
@@ -426,22 +469,26 @@ class TeammateService:
             if not profile:
                 profile = TeammateProfileDB(user_id=current_user.id)
                 db.add(profile)
+            roles_value = ",".join(preferences.preferred_roles or [])
+            languages_value = ",".join(preferences.communication_lang or [])
+            maps_value = ",".join(preferences.preferred_maps or [])
+            play_style_value = preferences.play_style
 
-            profile.roles = ",".join(preferences.preferred_roles or [])
-            profile.languages = ",".join(preferences.communication_lang or [])
-            profile.preferred_maps = ",".join(preferences.preferred_maps or [])
-            profile.play_style = preferences.play_style
+            setattr(profile, "roles", roles_value)
+            setattr(profile, "languages", languages_value)
+            setattr(profile, "preferred_maps", maps_value)
+            setattr(profile, "play_style", play_style_value)
 
             if preferences.about is not None:
-                profile.about = preferences.about
+                setattr(profile, "about", preferences.about)
             if preferences.availability is not None:
-                profile.availability = preferences.availability
+                setattr(profile, "availability", preferences.availability)
             if preferences.discord_contact is not None:
-                profile.discord_contact = preferences.discord_contact
+                setattr(profile, "discord_contact", preferences.discord_contact)
             if preferences.telegram_contact is not None:
-                profile.telegram_contact = preferences.telegram_contact
+                setattr(profile, "telegram_contact", preferences.telegram_contact)
             if preferences.contact_url is not None:
-                profile.contact_url = preferences.contact_url
+                setattr(profile, "contact_url", preferences.contact_url)
 
             db.commit()
             db.refresh(profile)

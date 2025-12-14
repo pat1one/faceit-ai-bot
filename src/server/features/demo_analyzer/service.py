@@ -263,22 +263,27 @@ class DemoAnalyzer:
             faceit_stats = await self.faceit_client.get_player_stats(main_player)
         except Exception as e:
             logger.warning(f"Failed to fetch Faceit stats for {main_player}: {e}")
+            faceit_stats = None
+        
+        if not isinstance(faceit_stats, dict):
             faceit_stats = {}
         
         # Merge stats (demo primary, Faceit for additional context)
-        total_rounds = demo_data.get('total_rounds', 1)
-        
-        kills = demo_stats.get('kills', 0)
-        deaths = demo_stats.get('deaths', 0)
-        assists = demo_stats.get('assists', 0)
-        headshot_percentage = demo_stats.get('headshot_percentage', 40.0)
-        total_damage = demo_stats.get('total_damage', 0)
-        damage_per_round = total_damage / total_rounds if total_rounds > 0 else 0
+        total_rounds = int(demo_data.get('total_rounds', 1) or 1)
+
+        kills = int(demo_stats.get('kills', 0))
+        deaths = int(demo_stats.get('deaths', 0))
+        assists = int(demo_stats.get('assists', 0))
+        headshot_percentage = float(demo_stats.get('headshot_percentage', 40.0))
+        total_damage = float(demo_stats.get('total_damage', 0))
+        damage_per_round = (
+            total_damage / total_rounds if total_rounds > 0 else 0.0
+        )
         
         # Approximate other metrics
         entry_kills = int(kills * 0.2)  # First kills approximation
         clutches_won = int(kills * 0.05)
-        utility_damage = demo_stats.get('utility_damage', 20.0)
+        utility_damage = float(demo_stats.get('utility_damage', 20.0))
         flash_assists = int(total_rounds * 0.1)
         
         # Override with Faceit if available and better context
@@ -527,13 +532,13 @@ class DemoAnalyzer:
                 win_share = score.get('team1', 0) / total_rounds
                 win_rate = win_share * 100.0
                 hs_percentage = main_perf.headshot_percentage
-                avg_damage = main_perf.damage_per_round
+                avg_damage = float(main_perf.damage_per_round)
                 matches_played = 1
             else:
                 kd_ratio = 1.0
                 win_rate = 50.0
                 hs_percentage = 40.0
-                avg_damage = "N/A"
+                avg_damage = 0.0
                 matches_played = 1
 
             score = demo_data.get('score') or {}

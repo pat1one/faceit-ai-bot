@@ -4,6 +4,7 @@ import json
 import hashlib
 import os
 from urllib.parse import urlparse
+from typing import cast
 
 import redis
 from fastapi import Request, Response
@@ -61,7 +62,7 @@ class CacheMiddleware(BaseHTTPMiddleware):
         try:
             # Try to get from cache
             cached_response = redis_client.get(cache_key)
-            if cached_response:
+            if isinstance(cached_response, str):
                 # Parse cached response
                 cached_data = json.loads(cached_response)
                 # Copy headers and drop Content-Length so it can be recalculated
@@ -150,9 +151,10 @@ class CacheMiddleware(BaseHTTPMiddleware):
 def invalidate_cache(pattern: str = "*"):
     """Invalidate cache keys matching pattern"""
     try:
-        keys = redis_client.keys(f"api_cache:{pattern}")
+        keys = cast(list[str], redis_client.keys(f"api_cache:{pattern}"))
         if keys:
-            redis_client.delete(*keys)
+            for key in keys:
+                redis_client.delete(key)
     except Exception:
         pass
 
@@ -165,8 +167,9 @@ def invalidate_user_cache(user_id: str):
 def clear_all_cache():
     """Clear all cached data"""
     try:
-        keys = redis_client.keys("api_cache:*")
+        keys = cast(list[str], redis_client.keys("api_cache:*"))
         if keys:
-            redis_client.delete(*keys)
+            for key in keys:
+                redis_client.delete(key)
     except Exception:
         pass

@@ -4,6 +4,7 @@ import time
 import logging
 
 from fastapi import Request
+from typing import Awaitable, Callable
 from prometheus_client import Counter, Histogram
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
@@ -38,7 +39,11 @@ API_ERRORS_TOTAL = Counter(
 class StructuredLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware to log HTTP requests and responses with structlog."""
 
-    async def dispatch(self, request: Request, call_next) -> Response:
+    async def dispatch(
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         """Log request and response."""
         start_time = time.time()
 

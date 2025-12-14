@@ -25,7 +25,7 @@ async def enforce_teammates_rate_limit(
 ):
     await rate_limit_service.enforce_user_operation_limit(
         db=db,
-        user_id=current_user.id,
+        user_id=int(current_user.id),
         operation="teammates_search",
     )
 

@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Any, cast
 from fastapi import HTTPException
 from .models import SubscriptionTier, Subscription, UserSubscription, SubscriptionFeatures
 import logging
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class SubscriptionService:
     def __init__(self):
-        self.subscription_plans = {
+        self.subscription_plans: Dict[SubscriptionTier, Dict[str, Any]] = {
             SubscriptionTier.FREE: {
                 'price': 0.0,
                 'demos_per_month': 2,
@@ -63,18 +63,23 @@ class SubscriptionService:
     async def get_subscription_plans(self) -> Dict[str, Subscription]:
         """Get available subscription plans"""
         try:
-            return {
-                tier.value: Subscription(
+            plans: Dict[str, Subscription] = {}
+            for tier, plan in self.subscription_plans.items():
+                price = float(plan["price"])
+                demos_per_month = int(plan["demos_per_month"])
+                features_data = cast(Dict[str, bool], plan["features"])
+
+                plans[tier.value] = Subscription(
                     tier=tier,
-                    price=plan["price"],
+                    price=price,
                     features=SubscriptionFeatures(
-                        demos_per_month=plan["demos_per_month"],
-                        **plan["features"],
+                        demos_per_month=demos_per_month,
+                        **features_data,
                     ),
                     description=self._get_plan_description(tier),
                 )
-                for tier, plan in self.subscription_plans.items()
-            }
+
+            return plans
         except Exception:
             logger.exception("Failed to get subscription plans")
             raise HTTPException(
@@ -85,7 +90,7 @@ class SubscriptionService:
     async def get_user_subscription(
         self,
         user_id: str
-    ) -> Optional[UserSubscription]:
+    ) -> UserSubscription:
         """Get user subscription information"""
         try:
             # Database query not implemented
@@ -144,13 +149,13 @@ class SubscriptionService:
     ) -> bool:
         """Check feature access"""
         try:
-            subscription = (
-                await self.get_user_subscription(user_id)
-            )
-            plan = self.subscription_plans[
-                subscription.subscription_tier
-            ]
-            return plan['features'].get(feature, False)
+            subscription = await self.get_user_subscription(user_id)
+            plan = self.subscription_plans.get(subscription.subscription_tier)
+            if not plan:
+                return False
+
+            features = cast(Dict[str, bool], plan.get("features", {}))
+            return bool(features.get(feature, False))
         except Exception:
             logger.exception(
                 f"Failed to check feature access for "

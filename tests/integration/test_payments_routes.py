@@ -1,7 +1,7 @@
 """Integration tests for /payments routes."""
 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, cast
 
 import pytest
 
@@ -74,7 +74,8 @@ def _clear_payment_service_override():
 
 
 def _get_current_user(db_session) -> User:
-    return db_session.query(User).order_by(User.id.desc()).first()
+    user = db_session.query(User).order_by(User.id.desc()).first()
+    return cast(User, user)
 
 
 @pytest.fixture(autouse=True)

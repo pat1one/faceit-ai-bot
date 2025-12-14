@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Dict
+from typing import Optional, Dict, cast
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
@@ -107,7 +107,7 @@ async def create_payment(
     try:
         business_logger.log_payment_event(
             user_id=str(current_user.id),
-            amount=db_payment.amount,
+            amount=cast(float, db_payment.amount),
             currency=str(db_payment.currency),
             status="pending",
             payment_id=str(db_payment.provider_payment_id),
