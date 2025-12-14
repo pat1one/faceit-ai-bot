@@ -2,6 +2,29 @@
 
 **[Русская версия](CHANGELOG.md)**
 
+## Version 0.4.8 — December 14, 2025
+
+Release focused on production stability and reliable auto‑startup after server reboots.
+
+### 🎉 Highlights
+
+- 🚀 **Reliable auto‑startup via systemd**  
+  Introduced a single `faceit-api.service` systemd unit that brings up the entire Docker stack (`nginx`, `api`, `web`, `db`, `redis`, `celery`, bots). Removed legacy conflicting units and the system nginx service that was competing with the containerized nginx.
+- 🐍 **Safe database initialization**  
+  The `scripts/init_db.py` script now waits for Postgres to become available before creating tables. This eliminates random startup crashes when the DB container is still initializing.
+- ⚙️ **Stable Celery worker/beat/flower startup**  
+  Fixed Celery commands in `docker-compose.prod.yml` so that the worker no longer fails with CLI argument parsing errors and health checks pass consistently.
+- 🧹 **Cleaner docker-compose output**  
+  Removed the obsolete top‑level `version` key and added safe defaults for environment variables (`GROQ_API_KEY`, `NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY`) to avoid noisy Docker Compose WARN messages.
+
+### 🛠 Under the Hood
+
+- Production nginx configuration fixes.
+- Minor improvements in backend typings and middleware.
+- Updated README/CHANGELOG to reflect the 0.4.8 release.
+
+---
+
 ## Version 0.4.6 — November 22, 2025
 
 Small but important release focused on the ML pipeline and release infrastructure.
