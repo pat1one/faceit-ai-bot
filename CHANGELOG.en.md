@@ -29,7 +29,7 @@ Release focused on production stability and reliable auto‑startup after server
 
 Small but important release focused on the ML pipeline and release infrastructure.
 
-### 🎉 Highlights
+### 🎉 Highlights in 0.4.6
 
 - 📦 **New web assets archive**  
   Automatic Next.js frontend build and publication of `faceit-ai-bot-web-assets-<version>.tar.gz` in GitHub Releases.
@@ -53,7 +53,7 @@ Small but important release focused on the ML pipeline and release infrastructur
 
 Big update! Everything now works automatically and looks beautiful.
 
-### 🎉 Highlights
+### 🎉 Highlights in 0.2.2
 
 **Automatic Releases**  
 Now when you create a tag, GitHub automatically builds extensions, Docker images, and publishes everything in a release. No more manual work!
