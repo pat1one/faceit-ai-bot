@@ -104,12 +104,16 @@ services:
 
   celery_worker:
     image: ghcr.io/pat1one/faceit-ai-bot/api:latest
-    command: celery -A src.server.celery_app worker \
-      --loglevel=info \
-      --concurrency=1 \
-      --prefetch-multiplier=1 \
-      --max-tasks-per-child=10 \
-      --queues=demo_analysis,notifications,webhooks
+    command:
+      - celery
+      - -A
+      - src.server.celery_app
+      - worker
+      - --loglevel=info
+      - --concurrency=1
+      - --prefetch-multiplier=1
+      - --max-tasks-per-child=10
+      - --queues=demo_analysis,notifications,webhooks
     restart: on-failure
     depends_on:
       - redis
