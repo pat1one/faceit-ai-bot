@@ -276,3 +276,86 @@ async def test_get_optional_current_user_payload_without_sub_returns_none(monkey
 
     assert response.status_code == 200
     assert response.json()["user_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_optional_current_user_decode_returns_none(monkeypatch, client):
+    def fake_decode(token: str):  # noqa: ARG001
+        return None
+
+    monkeypatch.setattr(auth_deps, "decode_access_token", fake_decode)
+
+    response = client.get("/me-optional", headers={"Authorization": "Bearer token"})
+
+    assert response.status_code == 200
+    assert response.json()["user_id"] is None
+
+
+@pytest.mark.asyncio
+async def test_get_optional_current_user_missing_user_returns_none(monkeypatch, db_session):
+    def fake_decode(token: str):  # noqa: ARG001
+        return {"sub": 999999}
+
+    monkeypatch.setattr(auth_deps, "decode_access_token", fake_decode)
+
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/me",
+        "headers": [],
+        "client": ("testclient", 50000),
+    }
+    request = Request(scope)
+
+    user = await get_optional_current_user(request=request, token="token", db=db_session)
+
+    assert user is None
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_uses_cookie_and_sets_state(monkeypatch, db_session):
+    user = create_user(db_session, email="cookie@example.com")
+
+    def fake_decode(token: str):  # noqa: ARG001
+        assert token == "cookie-token"
+        return {"sub": user.id}
+
+    monkeypatch.setattr(auth_deps, "decode_access_token", fake_decode)
+
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/me",
+        "headers": [(b"cookie", b"access_token=cookie-token")],
+        "client": ("testclient", 50000),
+    }
+    request = Request(scope)
+
+    result = await get_current_user(request=request, token=None, db=db_session)
+
+    assert result.id == user.id
+    assert request.state.user_id == str(user.id)
+
+
+@pytest.mark.asyncio
+async def test_get_current_admin_user_sets_state(db_session):
+    admin_user = create_user(
+        db_session,
+        email="admin-state@example.com",
+        is_active=True,
+        is_admin=True,
+    )
+
+    scope = {
+        "type": "http",
+        "method": "GET",
+        "path": "/me-admin",
+        "headers": [],
+        "client": ("testclient", 50000),
+    }
+    request = Request(scope)
+
+    result = await get_current_admin_user(request=request, current_user=admin_user)
+
+    assert result is admin_user
+    assert request.state.user_id == str(admin_user.id)
