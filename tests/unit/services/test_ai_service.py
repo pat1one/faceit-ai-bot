@@ -137,3 +137,52 @@ class TestAIServiceExtractRecommendations:
 
         assert recs == []
 
+    def test_extract_ai_recommendations_en_filters_and_keeps_cs2_lines(self) -> None:
+        service = AIService()
+
+        detailed_text = """
+        1. Practice aim and spray control in deathmatch.
+        2. Go for a morning run and do yoga every day.
+        3. Review your demos and focus on positioning.
+        """
+
+        recs = service._extract_ai_recommendations(
+            detailed_text=detailed_text,
+            language="en",
+        )
+
+        assert recs
+        joined = " ".join(recs).lower()
+        assert "aim" in joined or "deathmatch" in joined or "demo" in joined
+        assert "yoga" not in joined
+        assert "run" not in joined
+
+
+class TestAIServiceTrainingPlanEstimatedTime:
+    async def test_generate_training_plan_estimated_time_tiers(self) -> None:
+        service = AIService()
+
+        async def check(kd: float, win_rate: float, language: str, expected: str) -> None:
+            stats: Dict[str, Any] = {
+                "kd_ratio": kd,
+                "win_rate": win_rate,
+                "hs_percentage": 40.0,
+            }
+
+            plan = await service.generate_training_plan(
+                nickname="player",
+                stats=stats,
+                language=language,
+                focus_areas=["aim"],
+            )
+
+            assert plan["estimated_time"] == expected
+
+        await check(0.8, 40.0, "en", "6 weeks")
+        await check(1.0, 50.0, "en", "4 weeks")
+        await check(1.3, 60.0, "en", "2-3 weeks")
+
+        await check(0.8, 40.0, "ru", "6 недель")
+        await check(1.0, 50.0, "ru", "4 недели")
+        await check(1.3, 60.0, "ru", "2-3 недели")
+
