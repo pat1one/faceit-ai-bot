@@ -2,7 +2,7 @@
 Player Analysis Schemas
 Data schemas for player analysis
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict
 from datetime import datetime
 
@@ -64,8 +64,8 @@ class PlayerAnalysisResponse(BaseModel):
         default_factory=datetime.utcnow, description="Analysis time"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "player_id": "abc123",
                 "nickname": "ProPlayer",
@@ -76,31 +76,32 @@ class PlayerAnalysisResponse(BaseModel):
                     "average_kills": 18.5,
                     "matches_played": 250,
                     "elo": 2100,
-                    "level": 8
+                    "level": 8,
                 },
                 "strengths": {
                     "aim": 8,
                     "game_sense": 7,
                     "positioning": 6,
                     "teamwork": 7,
-                    "consistency": 8
+                    "consistency": 8,
                 },
                 "weaknesses": {
                     "areas": ["positioning", "economy management"],
                     "priority": "positioning",
                     "recommendations": [
                         "Practice holding positions",
-                        "Study maps in detail"
-                    ]
+                        "Study maps in detail",
+                    ],
                 },
                 "training_plan": {
                     "focus_areas": ["positioning", "map knowledge"],
                     "daily_exercises": [
                         {"name": "Position practice", "duration": "30 min"}
                     ],
-                    "estimated_time": "2-3 weeks"
+                    "estimated_time": "2-3 weeks",
                 },
                 "overall_rating": 7,
-                "analyzed_at": "2025-11-09T18:00:00Z"
+                "analyzed_at": "2025-11-09T18:00:00Z",
             }
         }
+    )
