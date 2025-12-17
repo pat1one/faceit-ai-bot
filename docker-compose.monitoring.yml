@@ -34,6 +34,7 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - monitoring
     ports:
@@ -86,10 +87,39 @@ services:
           cpus: '0.15'
           memory: 150M
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: faceit_alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+    networks:
+      - monitoring
+    ports:
+      - "9093:9093"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: faceit_loki
+    restart: unless-stopped
+    volumes:
+      - loki_data:/loki
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+    command:
+      - '-config.file=/etc/loki/local-config.yaml'
+    networks:
+      - monitoring
+    ports:
+      - "3100:3100"
+
 volumes:
   prometheus_data:
     driver: local
   grafana_data:
+    driver: local
+  loki_data:
     driver: local
 
 networks:

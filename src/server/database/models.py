@@ -1,13 +1,15 @@
 """SQLAlchemy database models"""
 from datetime import datetime
+from typing import Any
+
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, DateTime,
-    ForeignKey, Enum
+    ForeignKey, Enum,
 )
 from sqlalchemy.orm import relationship, declarative_base
 import enum
 
-Base = declarative_base()
+Base: Any = declarative_base()
 
 
 class SubscriptionTier(enum.Enum):
@@ -75,7 +77,7 @@ class Subscription(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    tier = Column(Enum(SubscriptionTier), default=SubscriptionTier.FREE)
+    tier: Any = Column(Enum(SubscriptionTier), default=SubscriptionTier.FREE)
     started_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime)
     is_active = Column(Boolean, default=True)
@@ -90,10 +92,10 @@ class Payment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     amount = Column(Float, nullable=False)
     currency = Column(String(3), default="RUB")
-    status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
+    status: Any = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
     provider = Column(String(50))
     provider_payment_id = Column(String(100), unique=True, index=True, nullable=True)
-    subscription_tier = Column(Enum(SubscriptionTier), nullable=True)
+    subscription_tier: Any = Column(Enum(SubscriptionTier), nullable=True)
     description = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     completed_at = Column(DateTime, nullable=True)
@@ -147,7 +149,7 @@ class ProDemo(Base):
     started_at = Column(DateTime, nullable=True)
     demo_url = Column(String(500), nullable=True)
     storage_path = Column(String(500), nullable=True)
-    status = Column(Enum(ProDemoStatus), default=ProDemoStatus.QUEUED, nullable=False)
+    status: Any = Column(Enum(ProDemoStatus), default=ProDemoStatus.QUEUED, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     features = relationship("DemoFeature", back_populates="pro_demo")
