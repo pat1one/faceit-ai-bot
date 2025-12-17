@@ -103,6 +103,7 @@ services:
   loki:
     image: grafana/loki:latest
     container_name: faceit_loki
+    user: "0:0"
     restart: unless-stopped
     volumes:
       - loki_data:/loki
