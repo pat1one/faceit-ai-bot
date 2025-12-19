@@ -29,6 +29,7 @@ demo_analyzer = DemoAnalyzer()
 MAX_DEMO_SIZE_MB = settings.MAX_DEMO_FILE_MB
 MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
 _SNIFF_BYTES = 4096
+_SHARED_TMP_DIR = "/tmp_demos"
 
 
 async def enforce_demo_analyze_rate_limit(
@@ -191,7 +192,13 @@ async def analyze_demo_background(
 
     tmp_path: Optional[str] = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=".dem", delete=False) as tmp_file:
+        os.makedirs(_SHARED_TMP_DIR, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            dir=_SHARED_TMP_DIR,
+            prefix="demo_",
+            suffix=".dem",
+            delete=False,
+        ) as tmp_file:
             tmp_file.write(content)
             tmp_path = tmp_file.name
 
