@@ -186,23 +186,45 @@ class DemoAnalyzer:
                 # Принудительно уйти в fallback-парсинг ниже
                 raise RuntimeError("demoparser2 is not installed")
 
-            parser = DemoParser(demopath=tmp_path)
-    
+            def _to_records(value: Any) -> List[Dict[str, Any]]:
+                if value is None:
+                    return []
+                if isinstance(value, list):
+                    return [v for v in value if isinstance(v, dict)]
+                if hasattr(value, "to_dict"):
+                    try:
+                        return value.to_dict("records")
+                    except TypeError:
+                        pass
+                if hasattr(value, "to_dicts"):
+                    try:
+                        return value.to_dicts()
+                    except Exception:
+                        return []
+                return []
+
+            parser = DemoParser(tmp_path)
+
             # Parse header
             header = parser.parse_header()
             map_name = header.get('mapname', 'unknown')
             tickrate = header.get('tickrate', 128)
             duration = int(header.get('duration', 0))
-    
+
             # Parse rounds for score and total_rounds
             rounds_data = parser.parse_rounds()
-            total_rounds = len(rounds_data)
-            team1_rounds = sum(1 for r in rounds_data if r.get('winning_team') == 'T')  # Approximate
+            rounds_records = _to_records(rounds_data)
+            total_rounds = len(rounds_records)
+            team1_rounds = sum(
+                1
+                for r in rounds_records
+                if (r.get("winning_team") or r.get("winner") or r.get("winningteam")) == "T"
+            )  # Approximate
             team2_rounds = total_rounds - team1_rounds
-    
+
             # Parse kills for player stats
             kills_data = parser.parse_kills()
-    
+
             # Parse damage
             damage_data = parser.parse_damage()
     
@@ -219,9 +241,9 @@ class DemoAnalyzer:
                 'total_rounds': total_rounds,
                 'file_size': len(content),
                 'tickrate': tickrate,
-                'kills_data': kills_data.to_dict('records') if not kills_data.empty else [],
-                'rounds_data': rounds_data.to_dict('records') if len(rounds_data) > 0 else [],
-                'damage_data': damage_data.to_dict('records') if not damage_data.empty else []
+                'kills_data': _to_records(kills_data),
+                'rounds_data': rounds_records,
+                'damage_data': _to_records(damage_data),
             }
     
         except Exception as e:
