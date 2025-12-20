@@ -193,12 +193,14 @@ class DemoAnalyzer:
                     return [v for v in value if isinstance(v, dict)]
                 if hasattr(value, "to_dict"):
                     try:
-                        return value.to_dict("records")
+                        records = value.to_dict("records")
+                        return [v for v in records if isinstance(v, dict)]
                     except TypeError:
                         pass
                 if hasattr(value, "to_dicts"):
                     try:
-                        return value.to_dicts()
+                        records = value.to_dicts()
+                        return [v for v in records if isinstance(v, dict)]
                     except Exception:
                         return []
                 return []
