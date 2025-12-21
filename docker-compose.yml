@@ -146,6 +146,10 @@ services:
       - HTTP_PROXY=http://singbox:2080
       - DISCORD_PROXY_URL=http://singbox:2080
       - NO_PROXY=localhost,127.0.0.1,db,redis,api
+      - DISCORD_MAX_DEMO_FILE_MB=${DISCORD_MAX_DEMO_FILE_MB:-25}
+      - API_INTERNAL_URL=${API_INTERNAL_URL:-http://api:8000}
+      - BOT_DEMO_URL_MAX_WAIT_SECONDS=${BOT_DEMO_URL_MAX_WAIT_SECONDS:-480}
+      - BOT_DEMO_URL_POLL_SECONDS=${BOT_DEMO_URL_POLL_SECONDS:-3}
     command: python -m scripts.discord_bot
     volumes:
       - ./:/app:cached
@@ -166,6 +170,10 @@ services:
     environment:
       - DATABASE_URL=postgresql://faceit_user:faceit_local_2024@db:5432/faceit_user
       - REDIS_URL=redis://redis:6379
+      - TELEGRAM_MAX_DEMO_FILE_MB=${TELEGRAM_MAX_DEMO_FILE_MB:-50}
+      - API_INTERNAL_URL=${API_INTERNAL_URL:-http://api:8000}
+      - BOT_DEMO_URL_MAX_WAIT_SECONDS=${BOT_DEMO_URL_MAX_WAIT_SECONDS:-480}
+      - BOT_DEMO_URL_POLL_SECONDS=${BOT_DEMO_URL_POLL_SECONDS:-3}
     command: python -m scripts.telegram_bot
     volumes:
       - ./:/app:cached
