@@ -9,6 +9,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - tmp_demos:/tmp_demos:ro
     depends_on:
       - api
       - web
