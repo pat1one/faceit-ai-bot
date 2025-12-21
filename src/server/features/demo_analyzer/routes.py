@@ -1,10 +1,15 @@
 import logging
 import os
 import tempfile
+import socket
+import ipaddress
+from urllib.parse import urlparse
 from typing import Optional
 
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+import httpx
 
 from ..demo_analyzer.service import DemoAnalyzer
 from ..demo_analyzer.models import DemoAnalysis
@@ -44,6 +49,146 @@ async def enforce_demo_analyze_rate_limit(
         user_id=int(current_user.id),
         operation="demo_analyze",
     )
+
+
+class DemoAnalyzeUrlRequest(BaseModel):
+    url: str
+    language: str = "ru"
+    user_id: Optional[str] = None
+
+
+def _is_private_address(host: str) -> bool:
+    try:
+        ip = ipaddress.ip_address(host)
+        return bool(
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        )
+    except ValueError:
+        pass
+
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except Exception:
+        return True
+
+    for info in infos:
+        addr = info[4][0]
+        try:
+            ip = ipaddress.ip_address(addr)
+        except ValueError:
+            return True
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            return True
+    return False
+
+
+async def _download_demo_to_shared_tmp(url: str) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        raise DemoAnalysisException(
+            detail="Invalid URL. Only http/https are supported.",
+            error_code="INVALID_URL",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    if not parsed.hostname:
+        raise DemoAnalysisException(
+            detail="Invalid URL host.",
+            error_code="INVALID_URL",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    if _is_private_address(parsed.hostname):
+        raise DemoAnalysisException(
+            detail="URL host is not allowed.",
+            error_code="INVALID_URL_HOST",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    os.makedirs(_SHARED_TMP_DIR, exist_ok=True)
+
+    tmp_path: Optional[str] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=_SHARED_TMP_DIR,
+            prefix="demo_url_",
+            suffix=".dem",
+            delete=False,
+        ) as tmp_file:
+            tmp_path = tmp_file.name
+
+            timeout = httpx.Timeout(connect=10.0, read=60.0, write=60.0, pool=10.0)
+            limits = httpx.Limits(max_connections=5, max_keepalive_connections=5)
+            async with httpx.AsyncClient(
+                follow_redirects=True,
+                timeout=timeout,
+                limits=limits,
+                headers={"User-Agent": "faceit-ai-bot/1.0"},
+            ) as client:
+                async with client.stream("GET", url) as resp:
+                    resp.raise_for_status()
+                    content_length = resp.headers.get("Content-Length")
+                    if content_length and content_length.isdigit():
+                        if int(content_length) > MAX_DEMO_SIZE_BYTES:
+                            raise DemoAnalysisException(
+                                detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
+                                error_code="FILE_TOO_LARGE",
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                            )
+
+                    total = 0
+                    async for chunk in resp.aiter_bytes(chunk_size=1024 * 1024):
+                        if not chunk:
+                            continue
+                        total += len(chunk)
+                        if total > MAX_DEMO_SIZE_BYTES:
+                            raise DemoAnalysisException(
+                                detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
+                                error_code="FILE_TOO_LARGE",
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                            )
+                        tmp_file.write(chunk)
+
+        return tmp_path
+    except DemoAnalysisException:
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise
+    except httpx.HTTPError:
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise DemoAnalysisException(
+            detail="Failed to download demo from URL.",
+            error_code="DEMO_DOWNLOAD_FAILED",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    except Exception:
+        logger.exception("Failed to download demo from URL")
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to download demo from URL",
+        )
 
 
 @router.post(
@@ -218,6 +363,46 @@ async def analyze_demo_background(
         }
     except Exception:
         logger.exception("Failed to submit demo analysis task")
+        if tmp_path is not None and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to submit demo analysis task",
+        )
+
+
+@router.post(
+    "/analyze/url/background",
+    summary="Demo URL analysis in background",
+)
+async def analyze_demo_url_background(
+    request: DemoAnalyzeUrlRequest,
+    _: None = Depends(rate_limiter),
+):
+    tmp_path: Optional[str] = None
+    try:
+        tmp_path = await _download_demo_to_shared_tmp(request.url)
+        task = analyze_demo_task.delay(
+            demo_file_path=tmp_path,
+            user_id=request.user_id,
+            language=request.language,
+        )
+        return {
+            "task_id": task.id,
+            "status": "submitted",
+        }
+    except DemoAnalysisException as exc:
+        raise HTTPException(
+            status_code=getattr(exc, "status_code", status.HTTP_400_BAD_REQUEST),
+            detail=getattr(exc, "detail", "Failed to submit demo analysis task"),
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Failed to submit demo URL analysis task")
         if tmp_path is not None and os.path.exists(tmp_path):
             try:
                 os.unlink(tmp_path)

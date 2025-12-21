@@ -457,6 +457,136 @@ async def cmd_faceit_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await chat.send_message("\n".join(lines))
 
 
+@track_telegram_command("demo_analyze_url")
+async def cmd_demo_analyze_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_key = f"{user.id if user else 0}"
+
+    chat = update.effective_chat
+    if chat is None:
+        return
+    if not await check_bot_rate_limit(
+        user_key,
+        "demo_analyze",
+        limit_per_minute=3,
+        limit_per_day=10,
+    ):
+        await chat.send_message(
+            "Превышен лимит анализов демок для этой команды, попробуй позже.",
+        )
+        return
+
+    args = context.args or []
+    language = "ru"
+    if args and args[0] in {"ru", "en"}:
+        language = args[0]
+        args = args[1:]
+
+    if not args:
+        await chat.send_message(
+            "Пришли команду так: /demo_analyze_url [ru|en] <прямая ссылка на .dem>"
+        )
+        return
+
+    url = args[0]
+    if not (url.startswith("http://") or url.startswith("https://")):
+        await chat.send_message("Нужна http/https ссылка на .dem файл.")
+        return
+
+    await chat.send_message("Скачиваю демку по ссылке и запускаю анализ...")
+
+    timeout = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        try:
+            submit = await client.post(
+                f"{API_INTERNAL_URL}/demo/analyze/url/background",
+                json={
+                    "url": url,
+                    "language": language,
+                    "user_id": str(user.id) if user else None,
+                },
+            )
+        except Exception:
+            logger.exception("Telegram demo_analyze_url submit failed")
+            await chat.send_message("Не удалось отправить демку на анализ (ошибка сети).")
+            return
+
+        if submit.status_code >= 400:
+            try:
+                payload = submit.json()
+                detail = payload.get("detail")
+            except Exception:
+                detail = None
+            await chat.send_message(str(detail or "Не удалось отправить демку на анализ."))
+            return
+
+        task_id = submit.json().get("task_id")
+        if not task_id:
+            await chat.send_message("Не удалось получить task_id для анализа демки.")
+            return
+
+        await chat.send_message("Анализ запущен. Жду результат...")
+
+        max_wait_seconds = int(os.getenv("BOT_DEMO_URL_MAX_WAIT_SECONDS", "480"))
+        poll_interval = float(os.getenv("BOT_DEMO_URL_POLL_SECONDS", "3"))
+        deadline = time.time() + max_wait_seconds
+
+        last_status: Optional[str] = None
+        while time.time() < deadline:
+            try:
+                status_resp = await client.get(f"{API_INTERNAL_URL}/tasks/status/{task_id}")
+            except Exception:
+                logger.exception("Telegram demo_analyze_url status check failed")
+                await chat.send_message("Не удалось получить статус задачи анализа.")
+                return
+
+            if status_resp.status_code >= 400:
+                await chat.send_message("Не удалось получить статус задачи анализа.")
+                return
+
+            status_payload = status_resp.json()
+            celery_status = status_payload.get("status")
+            if celery_status and celery_status != last_status:
+                last_status = celery_status
+
+            if celery_status in {"SUCCESS", "FAILURE", "REVOKED"}:
+                if celery_status != "SUCCESS":
+                    await chat.send_message("Анализ не удался. Попробуй другую демку/ссылку.")
+                    return
+
+                result = (status_payload.get("result") or {})
+                analysis = ((result.get("analysis") or {}) if isinstance(result, dict) else {})
+                metadata = analysis.get("metadata") or {}
+                coach = analysis.get("coach_report") or {}
+
+                lines = [
+                    f"Анализ демки {metadata.get('map_name', 'unknown')}",
+                    f"Матч: {metadata.get('match_id', 'unknown')}",
+                    f"Счёт: {metadata.get('score', {})}",
+                    "",
+                ]
+
+                summary = coach.get("summary") if isinstance(coach, dict) else None
+                if summary:
+                    lines.append("Краткий вывод коуча:")
+                    lines.append(str(summary)[:1000])
+                else:
+                    recs = analysis.get("recommendations") or []
+                    if recs:
+                        lines.append("Рекомендации:")
+                        for rec in recs[:5]:
+                            lines.append(f"- {rec}")
+
+                await chat.send_message("\n".join(lines))
+                return
+
+            await asyncio.sleep(poll_interval)
+
+        await chat.send_message(
+            f"Анализ ещё выполняется. Task ID: {task_id}"
+        )
+
+
 @track_telegram_command("faceit_analyze")
 async def cmd_faceit_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
