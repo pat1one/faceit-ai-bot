@@ -68,12 +68,13 @@ player_service = PlayerAnalysisService()
 demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
 
-_tg_limit_mb = int(os.getenv("TELEGRAM_MAX_DEMO_FILE_MB", "50"))
+_tg_limit_mb = int(os.getenv("TELEGRAM_MAX_DEMO_FILE_MB", str(settings.MAX_DEMO_FILE_MB)))
 MAX_DEMO_SIZE_MB = min(settings.MAX_DEMO_FILE_MB, _tg_limit_mb)
 MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
 _SNIFF_BYTES = 4096
 
 API_INTERNAL_URL = os.getenv("API_INTERNAL_URL", "http://api:8000").rstrip("/")
+DEMO_UPLOAD_API_URL = os.getenv("DEMO_UPLOAD_API_URL", API_INTERNAL_URL).rstrip("/")
 
 WAITING_NICKNAME, WAITING_ANALYZE_PARAMS, WAITING_TM_PARAMS, WAITING_DEMO = range(4)
 user_session_data: dict[int, dict] = {}
@@ -503,7 +504,7 @@ async def cmd_demo_analyze_url(update: Update, context: ContextTypes.DEFAULT_TYP
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             submit = await client.post(
-                f"{API_INTERNAL_URL}/demo/analyze/url/background",
+                f"{DEMO_UPLOAD_API_URL}/demo/analyze/url/background",
                 json={
                     "url": url,
                     "language": language,
@@ -538,7 +539,7 @@ async def cmd_demo_analyze_url(update: Update, context: ContextTypes.DEFAULT_TYP
         last_status: Optional[str] = None
         while time.time() < deadline:
             try:
-                status_resp = await client.get(f"{API_INTERNAL_URL}/tasks/status/{task_id}")
+                status_resp = await client.get(f"{DEMO_UPLOAD_API_URL}/tasks/status/{task_id}")
             except Exception:
                 logger.exception("Telegram demo_analyze_url status check failed")
                 await chat.send_message("Не удалось получить статус задачи анализа.")

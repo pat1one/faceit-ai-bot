@@ -4,30 +4,27 @@ import time
 import asyncio
 from datetime import datetime
 from functools import wraps
-from io import BytesIO
-from typing import Optional
+from typing import Any, Optional
 
 import discord
 from discord import app_commands
-from fastapi import UploadFile
 import httpx
 from prometheus_client import Counter, Histogram, start_http_server
 
+from src.server.database.connection import SessionLocal
+from src.server.database.models import User
+from src.server.features.player_analysis.service import PlayerAnalysisService
+from src.server.features.teammates.models import TeammatePreferences
+from src.server.features.teammates.service import TeammateService
+from src.server.config.settings import settings
+
+redis: Any
 try:
     import redis.asyncio as redis
     REDIS_AVAILABLE = True
 except ImportError:
     REDIS_AVAILABLE = False
-    redis = None  # type: ignore[assignment]
-
-from src.server.database.connection import SessionLocal
-from src.server.database.models import User
-from src.server.exceptions import DemoAnalysisException
-from src.server.features.player_analysis.service import PlayerAnalysisService
-from src.server.features.demo_analyzer.service import DemoAnalyzer
-from src.server.features.teammates.models import TeammatePreferences
-from src.server.features.teammates.service import TeammateService
-from src.server.config.settings import settings
+    redis = None
 
 
 logger = logging.getLogger("discord_bot")
@@ -75,15 +72,15 @@ if _guild_env:
 
 
 player_service = PlayerAnalysisService()
-demo_analyzer = DemoAnalyzer()
 teammate_service = TeammateService()
 
-_ds_limit_mb = int(os.getenv("DISCORD_MAX_DEMO_FILE_MB", "25"))
+_ds_limit_mb = int(os.getenv("DISCORD_MAX_DEMO_FILE_MB", str(settings.MAX_DEMO_FILE_MB)))
 MAX_DEMO_SIZE_MB = min(settings.MAX_DEMO_FILE_MB, _ds_limit_mb)
 MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024
 _SNIFF_BYTES = 4096
 
 API_INTERNAL_URL = os.getenv("API_INTERNAL_URL", "http://api:8000").rstrip("/")
+DEMO_UPLOAD_API_URL = os.getenv("DEMO_UPLOAD_API_URL", API_INTERNAL_URL).rstrip("/")
 
 if REDIS_AVAILABLE:
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -178,7 +175,127 @@ def track_discord_command(command_name: str):
     return decorator
 
 
-class FaceitStatsModal(discord.ui.Modal, title="📊 Статистика игрока"):
+async def submit_demo_url_analysis(
+    interaction: discord.Interaction,
+    url: str,
+    language: str,
+) -> None:
+    timeout = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
+    async with httpx.AsyncClient(timeout=timeout) as client_http:
+        try:
+            submit = await client_http.post(
+                f"{DEMO_UPLOAD_API_URL}/demo/analyze/url/background",
+                json={
+                    "url": url,
+                    "language": language,
+                    "user_id": str(interaction.user.id),
+                },
+            )
+        except Exception:
+            logger.exception("Discord demo url submit failed")
+            await interaction.followup.send(
+                "Не удалось отправить демку на анализ (ошибка сети).",
+                ephemeral=True,
+            )
+            return
+
+        if submit.status_code >= 400:
+            try:
+                payload = submit.json()
+                detail = payload.get("detail")
+            except Exception:
+                detail = None
+            await interaction.followup.send(
+                str(detail or "Не удалось отправить демку на анализ."),
+                ephemeral=True,
+            )
+            return
+
+        task_id = submit.json().get("task_id")
+        if not task_id:
+            await interaction.followup.send(
+                "Не удалось получить task_id для анализа демки.",
+                ephemeral=True,
+            )
+            return
+
+        max_wait_seconds = int(os.getenv("BOT_DEMO_URL_MAX_WAIT_SECONDS", "480"))
+        poll_interval = float(os.getenv("BOT_DEMO_URL_POLL_SECONDS", "3"))
+        deadline = time.time() + max_wait_seconds
+
+        while time.time() < deadline:
+            try:
+                status_resp = await client_http.get(
+                    f"{DEMO_UPLOAD_API_URL}/tasks/status/{task_id}"
+                )
+            except Exception:
+                logger.exception("Discord demo url status check failed")
+                await interaction.followup.send(
+                    "Не удалось получить статус задачи анализа.",
+                    ephemeral=True,
+                )
+                return
+
+            if status_resp.status_code >= 400:
+                await interaction.followup.send(
+                    "Не удалось получить статус задачи анализа.",
+                    ephemeral=True,
+                )
+                return
+
+            status_payload = status_resp.json()
+            celery_status = status_payload.get("status")
+
+            if celery_status in {"SUCCESS", "FAILURE", "REVOKED"}:
+                if celery_status != "SUCCESS":
+                    await interaction.followup.send(
+                        "Анализ не удался. Попробуй другую демку/ссылку.",
+                        ephemeral=True,
+                    )
+                    return
+
+                result = (status_payload.get("result") or {})
+                analysis = ((result.get("analysis") or {}) if isinstance(result, dict) else {})
+                metadata = analysis.get("metadata") or {}
+                coach = analysis.get("coach_report") or {}
+
+                embed = discord.Embed(
+                    title=f"Анализ демки: {metadata.get('map_name', 'unknown')}",
+                    description=f"Матч {metadata.get('match_id', 'unknown')}",
+                    color=discord.Color.blue(),
+                )
+                embed.add_field(name="Счёт", value=str(metadata.get("score", {})), inline=False)
+
+                summary = coach.get("summary") if isinstance(coach, dict) else None
+                if summary:
+                    embed.add_field(
+                        name="Краткий вывод коуча",
+                        value=str(summary)[:1024],
+                        inline=False,
+                    )
+                else:
+                    recs = analysis.get("recommendations") or []
+                    if recs:
+                        joined = "\n".join([str(r) for r in recs[:5]])
+                        embed.add_field(
+                            name="Рекомендации",
+                            value=joined[:1024],
+                            inline=False,
+                        )
+
+                await interaction.followup.send(embed=embed, ephemeral=True)
+                return
+
+            await asyncio.sleep(poll_interval)
+
+        await interaction.followup.send(
+            f"Анализ ещё выполняется. Task ID: {task_id}",
+            ephemeral=True,
+        )
+
+
+class FaceitStatsModal(discord.ui.Modal):
+    title = "📊 Статистика игрока"
     nickname: discord.ui.TextInput = discord.ui.TextInput(
         label="Faceit ник",
         placeholder="s1mple",
@@ -262,119 +379,11 @@ async def demo_analyze_url(
         await interaction.followup.send("Нужна http/https ссылка на .dem файл.", ephemeral=True)
         return
 
-    timeout = httpx.Timeout(connect=10.0, read=30.0, write=30.0, pool=10.0)
-    async with httpx.AsyncClient(timeout=timeout) as client_http:
-        try:
-            submit = await client_http.post(
-                f"{API_INTERNAL_URL}/demo/analyze/url/background",
-                json={
-                    "url": url,
-                    "language": language,
-                    "user_id": str(interaction.user.id),
-                },
-            )
-        except Exception:
-            logger.exception("Discord demo_analyze_url submit failed")
-            await interaction.followup.send(
-                "Не удалось отправить демку на анализ (ошибка сети).",
-                ephemeral=True,
-            )
-            return
-
-        if submit.status_code >= 400:
-            try:
-                payload = submit.json()
-                detail = payload.get("detail")
-            except Exception:
-                detail = None
-            await interaction.followup.send(
-                str(detail or "Не удалось отправить демку на анализ."),
-                ephemeral=True,
-            )
-            return
-
-        task_id = submit.json().get("task_id")
-        if not task_id:
-            await interaction.followup.send(
-                "Не удалось получить task_id для анализа демки.",
-                ephemeral=True,
-            )
-            return
-
-        max_wait_seconds = int(os.getenv("BOT_DEMO_URL_MAX_WAIT_SECONDS", "480"))
-        poll_interval = float(os.getenv("BOT_DEMO_URL_POLL_SECONDS", "3"))
-        deadline = time.time() + max_wait_seconds
-
-        while time.time() < deadline:
-            try:
-                status_resp = await client_http.get(f"{API_INTERNAL_URL}/tasks/status/{task_id}")
-            except Exception:
-                logger.exception("Discord demo_analyze_url status check failed")
-                await interaction.followup.send(
-                    "Не удалось получить статус задачи анализа.",
-                    ephemeral=True,
-                )
-                return
-
-            if status_resp.status_code >= 400:
-                await interaction.followup.send(
-                    "Не удалось получить статус задачи анализа.",
-                    ephemeral=True,
-                )
-                return
-
-            status_payload = status_resp.json()
-            celery_status = status_payload.get("status")
-
-            if celery_status in {"SUCCESS", "FAILURE", "REVOKED"}:
-                if celery_status != "SUCCESS":
-                    await interaction.followup.send(
-                        "Анализ не удался. Попробуй другую демку/ссылку.",
-                        ephemeral=True,
-                    )
-                    return
-
-                result = (status_payload.get("result") or {})
-                analysis = ((result.get("analysis") or {}) if isinstance(result, dict) else {})
-                metadata = analysis.get("metadata") or {}
-                coach = analysis.get("coach_report") or {}
-
-                embed = discord.Embed(
-                    title=f"Анализ демки: {metadata.get('map_name', 'unknown')}",
-                    description=f"Матч {metadata.get('match_id', 'unknown')}",
-                    color=discord.Color.blue(),
-                )
-                embed.add_field(name="Счёт", value=str(metadata.get("score", {})), inline=False)
-
-                summary = coach.get("summary") if isinstance(coach, dict) else None
-                if summary:
-                    embed.add_field(
-                        name="Краткий вывод коуча",
-                        value=str(summary)[:1024],
-                        inline=False,
-                    )
-                else:
-                    recs = analysis.get("recommendations") or []
-                    if recs:
-                        joined = "\n".join([str(r) for r in recs[:5]])
-                        embed.add_field(
-                            name="Рекомендации",
-                            value=joined[:1024],
-                            inline=False,
-                        )
-
-                await interaction.followup.send(embed=embed, ephemeral=True)
-                return
-
-            await asyncio.sleep(poll_interval)
-
-        await interaction.followup.send(
-            f"Анализ ещё выполняется. Task ID: {task_id}",
-            ephemeral=True,
-        )
+    await submit_demo_url_analysis(interaction, url=url, language=language)
 
 
-class FaceitAnalyzeModal(discord.ui.Modal, title="🤖 AI-анализ игрока"):
+class FaceitAnalyzeModal(discord.ui.Modal):
+    title = "🤖 AI-анализ игрока"
     nickname: discord.ui.TextInput = discord.ui.TextInput(
         label="Faceit ник",
         placeholder="s1mple",
@@ -488,7 +497,8 @@ class FaceitAnalyzeModal(discord.ui.Modal, title="🤖 AI-анализ игро�
         await interaction.followup.send(embed=embed, ephemeral=True)
 
 
-class TeammatesModal(discord.ui.Modal, title="👥 Поиск тиммейтов"):
+class TeammatesModal(discord.ui.Modal):
+    title = "👥 Поиск тиммейтов"
     min_elo: discord.ui.TextInput = discord.ui.TextInput(
         label="Минимальный ELO",
         placeholder="1500",
@@ -948,78 +958,7 @@ async def demo_analyze(
         )
         return
 
-    data = await demo.read()
-    if not data:
-        await interaction.followup.send(
-            "Файл пустой, пришли, пожалуйста, валидную демку .dem.",
-            ephemeral=True,
-        )
-        return
-
-    sniff = data[:_SNIFF_BYTES].lower()
-    suspicious_markers = (
-        b"<html",
-        b"<script",
-        b"<?php",
-        b"#!/bin/bash",
-        b"#!/usr/bin/env",
-        b"import os",
-        b"import sys",
-    )
-    if any(marker in sniff for marker in suspicious_markers):
-        await interaction.followup.send(
-            "Похоже, это не бинарная демка CS2. Пришли корректный .dem файл.",
-            ephemeral=True,
-        )
-        return
-
-    file_obj = BytesIO(data)
-    upload = UploadFile(filename=filename, file=file_obj)
-
-    try:
-        analysis = await demo_analyzer.analyze_demo(upload, language=language)
-    except DemoAnalysisException as exc:
-        detail = getattr(exc, "detail", None)
-        message = "Не удалось проанализировать демку."
-        if isinstance(detail, dict):
-            message = str(detail.get("error") or detail) or message
-        elif isinstance(detail, str):
-            message = detail or message
-        await interaction.followup.send(message, ephemeral=True)
-        return
-    except Exception:
-        logger.exception("Discord demo_analyze failed")
-        await interaction.followup.send(
-            "Произошла внутренняя ошибка при анализе демки.",
-            ephemeral=True,
-        )
-        return
-
-    metadata = analysis.metadata
-    coach = analysis.coach_report
-
-    embed = discord.Embed(
-        title=f"Анализ демки: {metadata.map_name}",
-        description=f"Матч {metadata.match_id} на {metadata.map_name}",
-        color=discord.Color.blue(),
-    )
-    embed.add_field(name="Счёт", value=str(metadata.score), inline=False)
-
-    if coach and coach.summary:
-        embed.add_field(
-            name="Краткий вывод коуча",
-            value=coach.summary[:1024],
-            inline=False,
-        )
-    elif analysis.recommendations:
-        joined = "\n".join(analysis.recommendations[:5])
-        embed.add_field(
-            name="Рекомендации",
-            value=joined[:1024],
-            inline=False,
-        )
-
-    await interaction.followup.send(embed=embed, ephemeral=True)
+    await submit_demo_url_analysis(interaction, url=demo.url, language=language)
 
 
 @tree.command(name="faceit_analyze", description="AI-анализ игрока по нику Faceit")
