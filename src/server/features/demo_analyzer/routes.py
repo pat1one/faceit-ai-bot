@@ -580,6 +580,8 @@ async def upload_demo_file(
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        os.chmod(tmp_path, 0o644)
+
         public_name = os.path.basename(tmp_path)
         demo_url = f"{_DEMO_PUBLIC_BASE_URL}/{public_name}"
 
