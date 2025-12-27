@@ -38,7 +38,7 @@ secretGenerator:
       - REDIS_PASSWORD=change_me_in_production
       - DATABASE_URL=postgresql://faceit:change_me_in_production@faceit-postgres:5432/faceit
       - REDIS_URL=redis://:change_me_in_production@faceit-redis:6379/0
-      - SECRET_KEY=change_me_in_production
+      - SECRET_KEY=change_me_in_production_min_32_characters_long
       - FACEIT_API_KEY=change_me_in_production
       - GROQ_API_KEY=change_me_in_production
       - SENTRY_DSN=change_me_in_production
