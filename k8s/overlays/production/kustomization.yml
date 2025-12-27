@@ -18,9 +18,11 @@ commonLabels:
 
 images:
   - name: registry.pattmsc.online/faceit-api
-    newTag: v1.0.0
+    newName: ghcr.io/pat1one/faceit-ai-bot/api
+    newTag: latest
   - name: registry.pattmsc.online/faceit-web
-    newTag: v1.0.0
+    newName: ghcr.io/pat1one/faceit-ai-bot/web
+    newTag: latest
 
 configMapGenerator:
   - name: faceit-config

@@ -4,7 +4,7 @@ metadata:
   name: faceit-api
   namespace: faceit-prod
 spec:
-  replicas: 3
+  replicas: 1
 
 ---
 apiVersion: apps/v1
@@ -13,7 +13,7 @@ metadata:
   name: faceit-web
   namespace: faceit-prod
 spec:
-  replicas: 2
+  replicas: 1
 
 ---
 apiVersion: apps/v1
@@ -22,7 +22,7 @@ metadata:
   name: faceit-celery-worker
   namespace: faceit-prod
 spec:
-  replicas: 4
+  replicas: 1
 
 ---
 apiVersion: apps/v1
