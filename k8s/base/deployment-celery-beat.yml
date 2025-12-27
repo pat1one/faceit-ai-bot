@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-celery-beat
+  namespace: faceit-prod
   labels:
     app: faceit-celery-beat
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: celery-beat
-          image: faceit-api:latest
+          image: registry.pattmsc.online/faceit-api:latest
           command: ['celery', '-A', 'src.server.celery_app', 'beat', '--loglevel=info']
           envFrom:
             - configMapRef:
@@ -33,6 +34,12 @@ spec:
           volumeMounts:
             - name: temp-storage
               mountPath: /tmp
+            - name: tmp-demos
+              mountPath: /tmp_demos
       volumes:
         - name: temp-storage
           emptyDir: {}
+        - name: tmp-demos
+          hostPath:
+            path: /tmp_demos
+            type: DirectoryOrCreate

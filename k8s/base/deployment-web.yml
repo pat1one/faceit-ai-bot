@@ -30,7 +30,10 @@ spec:
               name: faceit-config
               key: NODE_ENV
         - name: NEXT_PUBLIC_API_URL
-          value: "https://pattmsc.online/api"
+          valueFrom:
+            configMapKeyRef:
+              name: faceit-config
+              key: NEXT_PUBLIC_API_URL
         resources:
           requests:
             memory: "256Mi"

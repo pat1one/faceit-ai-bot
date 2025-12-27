@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-api
+  namespace: faceit-prod
 spec:
   replicas: 3
 
@@ -10,6 +11,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-web
+  namespace: faceit-prod
 spec:
   replicas: 2
 
@@ -18,6 +20,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-celery-worker
+  namespace: faceit-prod
 spec:
   replicas: 4
 
@@ -26,6 +29,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: faceit-postgres
+  namespace: faceit-prod
 spec:
   replicas: 1
 
@@ -34,5 +38,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-redis
+  namespace: faceit-prod
 spec:
   replicas: 1

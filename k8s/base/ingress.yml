@@ -4,7 +4,8 @@ metadata:
   name: faceit-ingress
   namespace: faceit-prod
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -13,13 +14,49 @@ spec:
   tls:
   - hosts:
     - pattmsc.online
+    - pattcs.pro
+    - pattmsc.ru
     secretName: faceit-tls
   rules:
   - host: pattmsc.online
     http:
       paths:
-      - path: /api
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: faceit-api
+            port:
+              number: 8000
+      - path: /
         pathType: Prefix
+        backend:
+          service:
+            name: faceit-web
+            port:
+              number: 3000
+  - host: pattcs.pro
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: faceit-api
+            port:
+              number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: faceit-web
+            port:
+              number: 3000
+  - host: pattmsc.ru
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: faceit-api

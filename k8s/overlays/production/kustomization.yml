@@ -4,6 +4,11 @@ kind: Kustomization
 bases:
   - ../../base
 
+namespace: faceit-prod
+
+generatorOptions:
+  disableNameSuffixHash: true
+
 patchesStrategicMerge:
   - replica-patch.yml
   - resource-limits-patch.yml
@@ -12,28 +17,28 @@ commonLabels:
   environment: production
 
 images:
-  - name: faceit-api
+  - name: registry.pattmsc.online/faceit-api
     newTag: v1.0.0
-  - name: faceit-web
+  - name: registry.pattmsc.online/faceit-web
     newTag: v1.0.0
 
 configMapGenerator:
   - name: faceit-config
     behavior: replace
     literals:
-      - DATABASE_URL=postgresql://faceit_user:$(DB_PASSWORD)@faceit-postgres:5432/faceit_user
-      - REDIS_URL=redis://faceit-redis:6379
-      - SECRET_KEY=$(SECRET_KEY)
-      - FACEIT_API_KEY=$(FACEIT_API_KEY)
-      - GROQ_API_KEY=$(GROQ_API_KEY)
-      - SENTRY_DSN=$(SENTRY_DSN)
+      - NEXT_PUBLIC_API_URL=/api
 
 secretGenerator:
   - name: faceit-secrets
     behavior: replace
     literals:
       - DB_PASSWORD=change_me_in_production
+      - REDIS_PASSWORD=change_me_in_production
+      - DATABASE_URL=postgresql://faceit:change_me_in_production@faceit-postgres:5432/faceit
+      - REDIS_URL=redis://:change_me_in_production@faceit-redis:6379/0
       - SECRET_KEY=change_me_in_production
       - FACEIT_API_KEY=change_me_in_production
       - GROQ_API_KEY=change_me_in_production
       - SENTRY_DSN=change_me_in_production
+      - TURNSTILE_SECRET_KEY=change_me_in_production
+      - BOT_UPLOAD_SESSION_SECRET=change_me_in_production

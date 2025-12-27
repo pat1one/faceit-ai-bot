@@ -12,6 +12,9 @@ resources:
 - deployment-celery-beat.yml
 - deployment-web.yml
 - ingress.yml
+- uploads-nginx-configmap.yml
+- uploads-nginx-deployment.yml
+- uploads-ingress.yml
 
 commonLabels:
   environment: production

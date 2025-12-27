@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: faceit-postgres
   namespace: faceit-prod
 spec:
-  serviceName: postgres
+  serviceName: faceit-postgres
   replicas: 1
   selector:
     matchLabels:
@@ -21,10 +21,7 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: faceit-secrets
-              key: DB_NAME
+          value: "faceit"
         - name: POSTGRES_USER
           value: "faceit"
         - name: POSTGRES_PASSWORD
@@ -72,7 +69,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: faceit-postgres
   namespace: faceit-prod
 spec:
   selector:

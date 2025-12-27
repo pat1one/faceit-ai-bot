@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-api
+  namespace: faceit-prod
 spec:
   template:
     spec:
@@ -20,6 +21,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-web
+  namespace: faceit-prod
 spec:
   template:
     spec:
@@ -38,6 +40,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-celery-worker
+  namespace: faceit-prod
 spec:
   template:
     spec:
@@ -56,6 +59,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: faceit-postgres
+  namespace: faceit-prod
 spec:
   template:
     spec:
@@ -74,6 +78,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-redis
+  namespace: faceit-prod
 spec:
   template:
     spec:

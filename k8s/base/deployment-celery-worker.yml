@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: faceit-celery-worker
+  namespace: faceit-prod
   labels:
     app: faceit-celery-worker
 spec:
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: celery-worker
-          image: faceit-api:latest
+          image: registry.pattmsc.online/faceit-api:latest
           command:
             [
               'celery',
@@ -42,6 +43,12 @@ spec:
           volumeMounts:
             - name: temp-storage
               mountPath: /tmp
+            - name: tmp-demos
+              mountPath: /tmp_demos
       volumes:
         - name: temp-storage
           emptyDir: {}
+        - name: tmp-demos
+          hostPath:
+            path: /tmp_demos
+            type: DirectoryOrCreate
