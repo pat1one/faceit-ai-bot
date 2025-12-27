@@ -82,3 +82,25 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/faceit-ai-bot:latest
             ghcr.io/${{ github.repository_owner }}/faceit-ai-bot:${{ github.sha }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.api
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/api:latest
+            ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile.web
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/web:latest
+            ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=/api
