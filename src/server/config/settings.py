@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 from dotenv import load_dotenv
 from functools import lru_cache
 from typing import List, Optional
@@ -93,6 +94,32 @@ class Settings(BaseSettings):
             raise ValueError(
                 "SECRET_KEY must be at least 32 characters long for security"
             )
+        return v
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if v is None:
+            return v
+
+        if isinstance(v, list):
+            return v
+
+        if isinstance(v, str):
+            s = v.strip()
+            if not s:
+                return []
+
+            if s.startswith("["):
+                try:
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        return [str(item).strip() for item in parsed if str(item).strip()]
+                except json.JSONDecodeError:
+                    pass
+
+            return [part.strip() for part in s.split(",") if part.strip()]
+
         return v
 
     # SBP API settings
