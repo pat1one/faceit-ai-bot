@@ -3,7 +3,7 @@
 import logging
 import os
 import sys
-from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi import FastAPI, Request, Response, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_client import generate_latest, Counter
@@ -16,6 +16,9 @@ from .middleware.logging_middleware import StructuredLoggingMiddleware
 from .middleware.security_middleware import SecurityMiddleware
 from .middleware.cache_middleware import CacheMiddleware
 from .auth.routes import router as auth_router
+from .auth.dependencies import get_current_active_user
+from .auth.schemas import UserResponse
+from .database.models import User
 from .features.ai_analysis.routes import router as ai_router
 from .features.payments.routes import router as payment_router
 from .features.subscriptions.routes import router as subscriptions_router
@@ -188,6 +191,11 @@ def health_check():
 def health_check_api():
     """Alias endpoint for /health when proxied through /api prefix."""
     return {"status": "healthy", "service": "backend", "path": "/api/health"}
+
+
+@app.get("/me", response_model=UserResponse, tags=["auth"])
+async def me(current_user: User = Depends(get_current_active_user)):
+    return current_user
 
 
 @app.get("/metrics")
