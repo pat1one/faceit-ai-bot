@@ -7,6 +7,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { API_ENDPOINTS } from '../../src/config/api';
 import CaptchaWidget from '../../src/components/CaptchaWidget';
 
+type PublicConfig = {
+  captcha?: {
+    provider?: string | null;
+  };
+};
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -16,6 +22,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaReset, setCaptchaReset] = useState(0);
+  const [captchaEnabled, setCaptchaEnabled] = useState(false);
   
   const { login, register, loginWithToken } = useAuth();
   const router = useRouter();
@@ -67,6 +74,37 @@ export default function AuthPage() {
   }, [loginWithToken, router, t]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/public-config', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          if (!cancelled) setCaptchaEnabled(false);
+          return;
+        }
+
+        const cfg = (await res.json()) as PublicConfig;
+        const provider = (cfg?.captcha?.provider || '').toLowerCase().trim();
+        if (!cancelled) setCaptchaEnabled(!!provider);
+      } catch {
+        if (!cancelled) setCaptchaEnabled(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handlePageShow = (event: any) => {
@@ -92,9 +130,6 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER?.toLowerCase();
-      const captchaEnabled = !!captchaProvider;
-
       if (captchaEnabled && !captchaToken) {
         setError(
           t('auth.captcha_required', {
@@ -161,9 +196,6 @@ export default function AuthPage() {
   };
 
   const handleSteamLoginClick = () => {
-    const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER?.toLowerCase();
-    const captchaEnabled = !!captchaProvider;
-
     if (captchaEnabled && !captchaToken) {
       setError(
         t('auth.captcha_required', {
@@ -203,9 +235,6 @@ export default function AuthPage() {
   };
 
   const handleFaceitLoginClick = () => {
-    const captchaProvider = process.env.NEXT_PUBLIC_CAPTCHA_PROVIDER?.toLowerCase();
-    const captchaEnabled = !!captchaProvider;
-
     if (captchaEnabled && !captchaToken) {
       setError(
         t('auth.captcha_required', {
