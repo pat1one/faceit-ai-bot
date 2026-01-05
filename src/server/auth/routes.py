@@ -177,7 +177,7 @@ async def steam_login(request: Request):
         captcha_ok = await captcha_service.verify_token(
             token=captcha_token,
             remote_ip=remote_ip,
-            action="auth_steam_login",
+            action=None,
             fail_open_on_error=False,
         )
         if not captcha_ok:
@@ -361,7 +361,7 @@ async def faceit_login(request: Request):
         captcha_ok = await captcha_service.verify_token(
             token=captcha_token,
             remote_ip=remote_ip,
-            action="auth_faceit_login",
+            action=None,
             fail_open_on_error=False,
         )
         if not captcha_ok:
