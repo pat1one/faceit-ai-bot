@@ -18,6 +18,7 @@ spec:
       containers:
         - name: celery-worker
           image: registry.pattmsc.online/faceit-api:latest
+          imagePullPolicy: Always
           command:
             [
               'celery',

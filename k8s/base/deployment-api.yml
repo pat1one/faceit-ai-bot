@@ -21,6 +21,7 @@ spec:
       containers:
       - name: api
         image: registry.pattmsc.online/faceit-api:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         envFrom:

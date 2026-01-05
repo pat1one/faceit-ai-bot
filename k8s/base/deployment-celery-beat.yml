@@ -18,6 +18,7 @@ spec:
       containers:
         - name: celery-beat
           image: registry.pattmsc.online/faceit-api:latest
+          imagePullPolicy: Always
           command: ['celery', '-A', 'src.server.celery_app', 'beat', '--loglevel=info']
           envFrom:
             - configMapRef:
