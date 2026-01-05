@@ -2,6 +2,28 @@
 
 **[Русская версия](CHANGELOG.md)**
 
+## Version 0.4.9 — January 5, 2026
+
+Release focused on production availability, secure authentication flows, and admin ergonomics.
+
+### 🎉 Highlights
+
+- 🔐 **CAPTCHA / login / registration fixes**  
+  Restored working CAPTCHA validation and authentication flows.
+- 📊 **Metrics & monitoring**  
+  Prometheus metrics are available and verified in production: `/api/metrics`, with an easy entry point via `/metrics`.
+- 🛡️ **Rate limit admin panel**  
+  Restored access to `/api/admin/rate-limit/*` and UI, confirmed Redis status as connected.
+- 🧩 **Production nginx (container) config**  
+  Removed overly strict blocks that caused `403` for `/metrics` and admin endpoints.
+
+### 🛠 Under the Hood
+
+- Stabilized environment configuration (DB/Redis) and deployment setup.
+- Improved observability: HTTP metrics, API error counters, DB pool metrics.
+
+---
+
 ## Version 0.4.8 — December 14, 2025
 
 Release focused on production stability and reliable auto‑startup after server reboots.

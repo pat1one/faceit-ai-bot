@@ -1,12 +1,15 @@
 {
   "name": "faceit-stats-bot",
-  "version": "0.4.8",
-  "description": "Удобный инструмент для анализа игровой статистики и поиска тиммейтов на Faceit",
+  "version": "0.4.9",
+  "description": "AI-коуч для анализа CS2 демок (обученная модель + Ollama) для Faceit",
   "keywords": [
     "faceit",
     "cs2",
     "statistics",
     "analysis",
+    "demo",
+    "coach",
+    "ollama",
     "gaming"
   ],
   "homepage": "https://pattmsc.online",

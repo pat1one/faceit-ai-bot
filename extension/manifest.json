@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Faceit AI Bot Assistant",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Quick access to Faceit AI Bot player and demo analysis.",
   "action": {
     "default_popup": "popup.html",

@@ -88,7 +88,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
@@ -99,7 +98,7 @@ pnpm-lock.yaml
 out/
 build/
 .next/cache/
-next-env.d.ts
+
 
 # ============================================
 # TYPESCRIPT

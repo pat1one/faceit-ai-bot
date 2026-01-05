@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.8-2E9EF7?style=for-the-badge)
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.9-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 [![License](https://img.shields.io/badge/License-Source--available-blue?style=for-the-badge)](LICENSE)
@@ -10,25 +10,29 @@
 
 [![Site Status](https://img.shields.io/badge/Site-Online-brightgreen?style=for-the-badge)](https://pattmsc.online)
 [![Documentation](https://img.shields.io/badge/Documentation-Available-blue?style=for-the-badge)](https://pat1one.github.io/faceit-ai-bot/)
+[![CI](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci.yml)
+[![Coverage](https://github.com/pat1one/faceit-ai-bot/actions/workflows/coverage.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/coverage.yml)
+[![Lint](https://img.shields.io/badge/linting-eslint%20%2B%20ruff-4B32C3?style=for-the-badge)](https://github.com/pat1one/faceit-ai-bot/actions)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)
 [![codecov](https://codecov.io/gh/pat1one/faceit-ai-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/pat1one/faceit-ai-bot)
 [![Code Quality](https://img.shields.io/badge/code%20quality-A-brightgreen)](https://github.com/pat1one/faceit-ai-bot)
 [![GitHub issues](https://img.shields.io/github/issues/pat1one/faceit-ai-bot)](https://github.com/pat1one/faceit-ai-bot/issues)
 [![GitHub stars](https://img.shields.io/github/stars/pat1one/faceit-ai-bot)](https://github.com/pat1one/faceit-ai-bot/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/pat1one/faceit-ai-bot)](https://github.com/pat1one/faceit-ai-bot/network)
 
-**Анализ игроков CS2 и поиск тиммейтов на платформе Faceit**
-**CS2 player analytics and teammate finder for the Faceit platform.**
+**AI‑коуч для анализа CS2 демок на Faceit (обученная модель + Ollama)**
+**CS2 demo analysis AI coach for Faceit (trained model + Ollama).**
 
 ✅ **Сайт активно работает: [pattmsc.online](https://pattmsc.online)**  
 📚 **Документация доступна на GitHub Pages: [pat1one.github.io/faceit-ai-bot](https://pat1one.github.io/faceit-ai-bot/)**
 
-[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://pat1one.github.io/faceit-ai-bot/) • [📦 Релиз v0.4.8](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.8) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
+[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://pat1one.github.io/faceit-ai-bot/) • [📦 Релиз v0.4.9](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
 
-**⬇️ Загрузки (v0.4.8):**
+**⬇️ Загрузки (v0.4.9):**
 
-- 🧩 `faceit-ai-bot-extension-v0.4.8.zip` — браузерное расширение (Chrome/Edge).
+- 🧩 `faceit-ai-bot-extension-v0.4.9.zip` — браузерное расширение (Chrome/Edge).
 
-Все файлы доступны в разделе **Assets** на странице релиза v0.4.8 в GitHub.
+Все файлы доступны в разделе **Assets** на странице релиза v0.4.9 в GitHub.
 
 **[English version](README.en.md)** | **[Contributing](CONTRIBUTING.md)** | **[Changelog](CHANGELOG.md)** | **[FAQ](FAQ.md)**
 
@@ -40,7 +44,7 @@
 
 ✅ **Запущен и работает в продакшене!**
 
-Инструмент для анализа статистики игроков CS2 на платформе Faceit. Помогает находить тиммейтов, анализировать демки и улучшать свою игру через детальную статистику и персональные рекомендации.
+Платформа для анализа CS2 демок и игровых паттернов на Faceit с помощью AI‑коуча (обученная модель + Ollama). Поиск тиммейтов и социальные фичи — вторичный модуль и часть roadmap.
 
 🌍 **Доступен онлайн:** [pattmsc.online](https://pattmsc.online)
 
@@ -52,7 +56,7 @@
 - 🧠 **Groq powered insights** — продвинутый анализ игровых паттернов
 - 📊 **Интеграция с Faceit API** — актуальные данные матчей и игроков в реальном времени
 - 🗄️ **База данных PostgreSQL** — хранение истории аналитики и статистики
-- 📈 **Анализ демо-файлов** — детальный разбор игровых моментов и ключевых ситуаций
+- 📈 **Анализ CS2 демо-файлов** — детальный разбор раундов, ошибок и ключевых ситуаций с AI‑коучем
 - 👥 **Поиск тиммейтов** — умный подбор напарников по стилю игры и совместимости
 - 💡 **Персональные планы тренировок** — индивидуальные программы улучшения навыков
 - 📊 **Историческая аналитика** — отслеживание прогресса и динамики показателей
@@ -106,6 +110,7 @@
 
 ✅ **Продакшн развертывание:**
 - 🌐 **VPS хостинг** на Ubuntu 24.04
+- ☸️ **Kubernetes (k3s)** — продакшн‑развертывание и маршрутизация сервисов
 - 🔒 **Let's Encrypt SSL** сертификат
 - 🚀 **Nginx reverse proxy** с оптимизацией
 - 🐳 **Docker контейнеры** для всех сервисов
@@ -154,7 +159,7 @@
 
 #### Самостоятельная установка браузерного расширения (Chrome/Edge)
 
-1. Откройте релиз v0.4.8 на GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.8) и скачайте архив с расширением в разделе **Assets**, затем распакуйте его (или скачайте весь репозиторий как ZIP).
+1. Откройте релиз v0.4.9 на GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) и скачайте архив с расширением в разделе **Assets**, затем распакуйте его (или скачайте весь репозиторий как ZIP).
 2. Откройте в браузере `chrome://extensions` (для Chrome) или `edge://extensions` (для Edge).
 3. Включите **режим разработчика** (Developer mode).
 4. Нажмите **«Загрузить распакованное»** и выберите папку `extension` внутри проекта `faceit-ai-bot`.
@@ -249,7 +254,7 @@ npm run dev
 ## 🗺️ Roadmap
 
 <details>
-<summary><b>📍 Текущая версия: v0.4.8</b></summary>
+<summary><b>📍 Текущая версия: v0.4.9</b></summary>
 
 ### ✅ Реализовано в v0.4.1
 

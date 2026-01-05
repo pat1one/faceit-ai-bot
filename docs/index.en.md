@@ -12,18 +12,15 @@
 
 ## 📋 Project Overview
 
-Faceit AI Bot is a tool for analyzing CS2 player statistics on the Faceit platform. It helps you:
-
-- find compatible teammates,
-- analyze demos,
-- and improve your gameplay using detailed stats and AI-driven recommendations.
+Faceit AI Bot is an AI coach for CS2 demo analysis on Faceit (trained model + Ollama). Teammate finder and social features are secondary and tracked in the roadmap.
 
 ## 🚀 Production Deployment
 
 - 🌐 **VPS hosting:** Ubuntu 24.04
+- ☸️ **Kubernetes (k3s):** production orchestration and service routing
 - 🔒 **SSL certificate:** Let's Encrypt
-- 🚀 **Reverse proxy:** Nginx with basic optimizations
-- 🐳 **Containers:** Docker for all services (API, web, bots, DB, cache)
+- 🚀 **Proxy:** Nginx reverse proxy
+- 🐳 **Containers:** Docker for all services
 - 🔄 **CI/CD:** GitHub Actions automation
 
 ## ✨ Key Features
@@ -42,9 +39,12 @@ Faceit AI Bot is a tool for analyzing CS2 player statistics on the Faceit platfo
 - 📱 PWA support (install as an app)
 
 🔐 **Security & Integrations**
-- 🔐 CAPTCHA protection for login/registration/payments
-  (Cloudflare Turnstile + Yandex SmartCaptcha for Russian users)
-- 🤖 Telegram/Discord bots for quick checks and demos
+- 🔐 **CAPTCHA protection** for login, registration and payment creation (Cloudflare Turnstile + Yandex SmartCaptcha for Russian users)
+- 🤖 **Telegram/Discord bot integrations** for notifications and demonstrating the service capabilities
+
+📊 **Observability & Administration**
+- 📈 **Prometheus metrics** are available at `/api/metrics`, with a convenient entry point at `/metrics`
+- 🛡️ **Rate limit admin UI** is available at `/admin/rate-limit` (admin permissions required)
 
 > Disclaimer: Discord is blocked in some regions (including Russia). Use at your own risk. The integration is shown mainly for educational/demo purposes.
 

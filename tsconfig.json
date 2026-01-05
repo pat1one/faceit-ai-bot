@@ -25,10 +25,6 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictFunctionTypes": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/types"
-    ],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],

@@ -2,21 +2,26 @@
 
 <div align="center">
 
-![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.8-2E9EF7?style=for-the-badge)
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.9-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 [![License](https://img.shields.io/badge/License-Source--available-blue?style=for-the-badge)](LICENSE)
 [![2028 License](https://img.shields.io/badge/2028_License-AGPL--3.0-orange?style=for-the-badge)](LICENSE)
 
-**CS2 Player Analysis and Teammate Finder for Faceit Platform**
+[![CI](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/ci.yml)
+[![Coverage](https://github.com/pat1one/faceit-ai-bot/actions/workflows/coverage.yml/badge.svg)](https://github.com/pat1one/faceit-ai-bot/actions/workflows/coverage.yml)
+[![Lint](https://img.shields.io/badge/linting-eslint%20%2B%20ruff-4B32C3?style=for-the-badge)](https://github.com/pat1one/faceit-ai-bot/actions)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)
 
-[🚀 Demo](https://pattmsc.online) • [📚 Documentation](https://pat1one.github.io/faceit-ai-bot/) • [📦 Release v0.4.8](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.8) • [🐛 Bug Reports](https://github.com/pat1one/faceit-ai-bot/issues)
+**AI Coach for CS2 Demo Analysis on Faceit (trained model + Ollama)**
 
-**⬇️ Downloads (v0.4.8):**
+[🚀 Demo](https://pattmsc.online) • [📚 Documentation](https://pat1one.github.io/faceit-ai-bot/) • [📦 Release v0.4.9](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) • [🐛 Bug Reports](https://github.com/pat1one/faceit-ai-bot/issues)
 
-- 🧩 `faceit-ai-bot-extension-v0.4.8.zip` — browser extension for Chrome/Edge.
+**⬇️ Downloads (v0.4.9):**
 
-All files are available in the **Assets** section of the v0.4.8 GitHub Release page.
+- 🧩 `faceit-ai-bot-extension-v0.4.9.zip` — browser extension for Chrome/Edge.
+
+All files are available in the **Assets** section of the v0.4.9 GitHub Release page.
 
 **[Русская версия](README.md)**
 
@@ -26,7 +31,7 @@ All files are available in the **Assets** section of the v0.4.8 GitHub Release p
 
 ## 📋 Description
 
-A tool for analyzing CS2 player statistics on the Faceit platform. Helps find teammates, analyze demos, and improve gameplay through detailed statistics and personalized recommendations.
+An AI coach for CS2 demo analysis on Faceit (trained model + Ollama). Teammate finder and social features are secondary and tracked in the roadmap.
 
 ### ✨ Key Features
 
@@ -34,7 +39,7 @@ A tool for analyzing CS2 player statistics on the Faceit platform. Helps find te
 - 🧠 **Groq-powered insights** — advanced analysis of gameplay patterns
 - 📊 **Faceit API integration** — real-time match and player data
 - �️ **PostgreSQL analytics storage** — history of player stats and reports
-- �📈 **Demo file analysis** — breakdown of key rounds and situations in CS2 demos
+- �📈 **CS2 demo analysis** — breakdown of rounds, mistakes and key situations with an AI coach
 - 👥 **Teammate search** — smart matching by rank, roles, languages and playstyle
 - 💡 **Personalized training plans** — daily/weekly routines for faster improvement
 - 📊 **Historical analytics** — track your progress and performance dynamics
@@ -82,6 +87,8 @@ A tool for analyzing CS2 player statistics on the Faceit platform. Helps find te
 ![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 
+- ☸️ **Kubernetes (k3s)** — production deployment and service routing
+
 ---
 
 ## 🚀 How to Use
@@ -116,7 +123,7 @@ Current extension capabilities:
 
 #### Manual Browser Extension Installation (Chrome/Edge)
 
-1. Open the v0.4.8 release on GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.8) and download the extension archive from the **Assets** section, then unpack it (or download the whole repository as a ZIP).
+1. Open the v0.4.9 release on GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) and download the extension archive from the **Assets** section, then unpack it (or download the whole repository as a ZIP).
 2. Open `chrome://extensions` (for Chrome) or `edge://extensions` (for Microsoft Edge).
 3. Enable **Developer mode**.
 4. Click **"Load unpacked"** and select the `extension` folder inside the `faceit-ai-bot` project.
@@ -212,7 +219,7 @@ Detailed documentation for developers and contributors is available in the `/doc
 ## 🗺️ Roadmap
 
 <details>
-<summary><b>📍 Current Version: v0.4.8</b></summary>
+<summary><b>📍 Current Version: v0.4.9</b></summary>
 
 ### ✅ Implemented in v0.4.1
 
