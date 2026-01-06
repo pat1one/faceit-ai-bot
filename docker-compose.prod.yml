@@ -10,9 +10,6 @@ services:
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - tmp_demos:/tmp_demos:ro
-    depends_on:
-      - api
-      - web
     networks:
       - faceit-network
 
@@ -50,6 +47,8 @@ services:
       timeout: 5s
       retries: 5
 
+    ports:
+      - "5432:5432"
   ollama:
     image: ollama/ollama:latest
     restart: always
