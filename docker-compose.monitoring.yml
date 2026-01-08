@@ -102,7 +102,7 @@ services:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml:ro
     command:
       - '--config.file=/etc/alertmanager/config.yml'
-      - '--web.external-url=/monitoring/alertmanager'
+      - '--web.external-url=https://pattmsc.online/monitoring/alertmanager'
       - '--web.route-prefix=/monitoring/alertmanager'
     networks:
       - monitoring
