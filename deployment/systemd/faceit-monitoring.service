@@ -1,0 +1,16 @@
+[Unit]
+Description=Faceit Monitoring Docker Compose
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/faceit-ai-bot
+EnvironmentFile=/opt/faceit-ai-bot/.env
+ExecStart=/usr/bin/docker compose -f /opt/faceit-ai-bot/docker-compose.monitoring.yml up -d
+ExecStop=/usr/bin/docker compose -f /opt/faceit-ai-bot/docker-compose.monitoring.yml down
+RemainAfterExit=yes
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
