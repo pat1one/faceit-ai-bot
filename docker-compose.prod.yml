@@ -65,6 +65,8 @@ services:
           cpus: '0.80'
           memory: 1400M
 
+    sysctls:
+      net.ipv6.bindv6only: "0"
   api:
     image: ghcr.io/pat1one/faceit-ai-bot/api:latest
     restart: always
