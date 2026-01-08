@@ -84,11 +84,16 @@ DEMO_UPLOAD_API_URL = os.getenv("DEMO_UPLOAD_API_URL", API_INTERNAL_URL).rstrip(
 
 if REDIS_AVAILABLE:
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+    BOT_REDIS_TIMEOUT_SECONDS = float(os.getenv("BOT_REDIS_TIMEOUT_SECONDS", "1"))
     try:
         redis_client = redis.from_url(
             REDIS_URL,
             encoding="utf-8",
             decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+            retry_on_timeout=True,
+            health_check_interval=30,
         )
         logger.info("Discord bot rate limiting enabled via Redis")
     except Exception:
@@ -97,6 +102,18 @@ if REDIS_AVAILABLE:
 else:
     redis_client = None
 
+
+ADMIN_STEAM_IDS = {x.strip() for x in os.getenv("ADMIN_STEAM_IDS", "").split(",") if x.strip()}
+ADMIN_BIND_TTL_SECONDS = int(os.getenv("ADMIN_BIND_TTL_SECONDS", "31536000"))
+
+async def is_admin_discord(user_key: str) -> bool:
+    if redis_client is None:
+        return False
+    try:
+        v = await asyncio.wait_for(redis_client.get(f"rl:bot:discord:admin:{user_key}"), timeout=BOT_REDIS_TIMEOUT_SECONDS)
+        return v == "1"
+    except Exception:
+        return False
 
 async def check_bot_rate_limit(
     user_key: str,
@@ -111,11 +128,25 @@ async def check_bot_rate_limit(
     if redis_client is None:
         return True
 
+    if await is_admin_discord(user_key):
+        return True
+
+
+
+async def safe_defer(interaction: discord.Interaction) -> bool:
+    try:
+        if not await safe_defer(interaction):
+            return
+        return True
+    except discord.errors.InteractionResponded:
+        return True
+    except discord.errors.NotFound:
+        return False
     try:
         key = f"rl:bot:discord:{operation}:{user_key}:minute"
-        count = await redis_client.incr(key)
+        count = await asyncio.wait_for(redis_client.incr(key), timeout=1.0)
         if count == 1:
-            await redis_client.expire(key, 60)
+            await asyncio.wait_for(redis_client.expire(key, 60), timeout=1.0)
         if count > limit_per_minute:
             try:
                 BOT_RATE_LIMIT_DENIED_TOTAL.labels(bot="discord", operation=operation).inc()
@@ -126,9 +157,9 @@ async def check_bot_rate_limit(
         if limit_per_day is not None and limit_per_day > 0:
             day_suffix = datetime.utcnow().strftime("%Y%m%d")
             day_key = f"rl:bot:discord:{operation}:{user_key}:day:{day_suffix}"
-            day_count = await redis_client.incr(day_key)
+            day_count = await asyncio.wait_for(redis_client.incr(day_key), timeout=1.0)
             if day_count == 1:
-                await redis_client.expire(day_key, 86400)
+                await asyncio.wait_for(redis_client.expire(day_key, 86400), timeout=1.0)
             if day_count > limit_per_day:
                 try:
                     BOT_RATE_LIMIT_DENIED_TOTAL.labels(bot="discord", operation=operation).inc()
@@ -316,8 +347,9 @@ class FaceitStatsModal(discord.ui.Modal):
             )
             return
 
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        if not await safe_defer(interaction):
 
+            return
         nickname = str(self.nickname)
         stats = await player_service.get_player_stats(nickname)
         if not stats:
@@ -373,8 +405,9 @@ async def demo_analyze_url(
         )
         return
 
-    await interaction.response.defer(thinking=True, ephemeral=True)
+    if not await safe_defer(interaction):
 
+        return
     if not (url.startswith("http://") or url.startswith("https://")):
         await interaction.followup.send("Нужна http/https ссылка на .dem файл.", ephemeral=True)
         return
@@ -410,8 +443,9 @@ class FaceitAnalyzeModal(discord.ui.Modal):
             )
             return
 
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        if not await safe_defer(interaction):
 
+            return
         nickname = str(self.nickname)
         lang = str(self.language).strip().lower() or "ru"
         if lang not in {"ru", "en"}:
@@ -532,8 +566,9 @@ class TeammatesModal(discord.ui.Modal):
             )
             return
 
-        await interaction.response.defer(thinking=True, ephemeral=True)
+        if not await safe_defer(interaction):
 
+            return
         try:
             min_elo = int(str(self.min_elo))
             max_elo = int(str(self.max_elo))
@@ -779,8 +814,8 @@ async def faceit_stats(
             ephemeral=True,
         )
         return
-    await interaction.response.defer(thinking=True, ephemeral=True)
-
+    if not await safe_defer(interaction):
+        return
     stats = await player_service.get_player_stats(nickname)
     if not stats:
         await interaction.followup.send(
@@ -839,8 +874,9 @@ async def tm_find(
         )
         return
 
-    await interaction.response.defer(thinking=True, ephemeral=True)
+    if not await safe_defer(interaction):
 
+        return
     db = SessionLocal()
     try:
         user = User(
@@ -939,8 +975,9 @@ async def demo_analyze(
         )
         return
 
-    await interaction.response.defer(thinking=True, ephemeral=True)
+    if not await safe_defer(interaction):
 
+        return
     filename = demo.filename or ""
     if not filename.lower().endswith(".dem"):
         await interaction.followup.send(
@@ -985,8 +1022,9 @@ async def faceit_analyze(
         )
         return
 
-    await interaction.response.defer(thinking=True, ephemeral=True)
+    if not await safe_defer(interaction):
 
+        return
     analysis = await player_service.analyze_player(nickname, language=language)
     if not analysis:
         await interaction.followup.send(
@@ -1067,6 +1105,43 @@ async def faceit_analyze(
     await interaction.followup.send(embed=embed, ephemeral=True)
 
 
+
+
+@tree.command(name="admin_bind", description="Привязать админство по SteamID")
+@app_commands.describe(steam_id="Твой SteamID64")
+@track_discord_command("admin_bind")
+async def admin_bind(interaction: discord.Interaction, steam_id: str) -> None:
+    if redis_client is None:
+        await interaction.response.send_message("Redis недоступен, привязка админа временно невозможна.", ephemeral=True)
+        return
+
+    steam_id = str(steam_id).strip()
+    if not steam_id:
+        await interaction.response.send_message("Нужен steam_id.", ephemeral=True)
+        return
+
+    if ADMIN_STEAM_IDS and steam_id not in ADMIN_STEAM_IDS:
+        await interaction.response.send_message("SteamID не разрешён для админ-привязки.", ephemeral=True)
+        return
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.steam_id == steam_id).first()
+    finally:
+        db.close()
+
+    if user is None:
+        await interaction.response.send_message("Не нашёл пользователя с таким SteamID в базе.", ephemeral=True)
+        return
+
+    ds_id = str(interaction.user.id)
+    try:
+        await asyncio.wait_for(redis_client.set(f"rl:bot:discord:admin:{ds_id}", "1", ex=ADMIN_BIND_TTL_SECONDS), timeout=BOT_REDIS_TIMEOUT_SECONDS)
+    except Exception:
+        await interaction.response.send_message("Не удалось записать флаг админа в Redis.", ephemeral=True)
+        return
+
+    await interaction.response.send_message("Готово: админ-привязка установлена, лимиты для тебя отключены.", ephemeral=True)
 @client.event
 async def on_ready() -> None:
     global GUILD_ID

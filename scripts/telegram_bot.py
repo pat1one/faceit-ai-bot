@@ -81,11 +81,16 @@ user_session_data: dict[int, dict] = {}
 
 if REDIS_AVAILABLE:
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+    BOT_REDIS_TIMEOUT_SECONDS = float(os.getenv("BOT_REDIS_TIMEOUT_SECONDS", "1"))
     try:
         redis_client = redis.from_url(
             REDIS_URL,
             encoding="utf-8",
             decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+            retry_on_timeout=True,
+            health_check_interval=30,
         )
         logger.info("Telegram bot rate limiting enabled via Redis")
     except Exception:
@@ -94,6 +99,18 @@ if REDIS_AVAILABLE:
 else:
     redis_client = None
 
+
+ADMIN_STEAM_IDS = {x.strip() for x in os.getenv("ADMIN_STEAM_IDS", "").split(",") if x.strip()}
+ADMIN_BIND_TTL_SECONDS = int(os.getenv("ADMIN_BIND_TTL_SECONDS", "31536000"))
+
+async def is_admin_telegram(user_key: str) -> bool:
+    if redis_client is None:
+        return False
+    try:
+        v = await asyncio.wait_for(redis_client.get(f"rl:bot:telegram:admin:{user_key}"), timeout=BOT_REDIS_TIMEOUT_SECONDS)
+        return v == "1"
+    except Exception:
+        return False
 
 async def check_bot_rate_limit(
     user_key: str,
@@ -108,11 +125,14 @@ async def check_bot_rate_limit(
     if redis_client is None:
         return True
 
+    if await is_admin_telegram(user_key):
+        return True
+
     try:
         key = f"rl:bot:telegram:{operation}:{user_key}:minute"
-        count = await redis_client.incr(key)
+        count = await asyncio.wait_for(redis_client.incr(key), timeout=1.0)
         if count == 1:
-            await redis_client.expire(key, 60)
+            await asyncio.wait_for(redis_client.expire(key, 60), timeout=1.0)
         if count > limit_per_minute:
             try:
                 BOT_RATE_LIMIT_DENIED_TOTAL.labels(bot="telegram", operation=operation).inc()
@@ -123,9 +143,9 @@ async def check_bot_rate_limit(
         if limit_per_day is not None and limit_per_day > 0:
             day_suffix = datetime.utcnow().strftime("%Y%m%d")
             day_key = f"rl:bot:telegram:{operation}:{user_key}:day:{day_suffix}"
-            day_count = await redis_client.incr(day_key)
+            day_count = await asyncio.wait_for(redis_client.incr(day_key), timeout=1.0)
             if day_count == 1:
-                await redis_client.expire(day_key, 86400)
+                await asyncio.wait_for(redis_client.expire(day_key, 86400), timeout=1.0)
             if day_count > limit_per_day:
                 try:
                     BOT_RATE_LIMIT_DENIED_TOTAL.labels(bot="telegram", operation=operation).inc()
@@ -923,6 +943,44 @@ async def cmd_demo_analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     await chat.send_message("\n".join(lines))
 
 
+
+
+@track_telegram_command("admin_bind")
+async def cmd_admin_bind(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.effective_user is None:
+        return
+    if redis_client is None:
+        await update.effective_message.reply_text("Redis недоступен, привязка админа временно невозможна.")
+        return
+
+    args = context.args or []
+    steam_id = (args[0].strip() if args else "")
+    if not steam_id:
+        await update.effective_message.reply_text("Использование: /admin_bind <steam_id>")
+        return
+
+    if ADMIN_STEAM_IDS and steam_id not in ADMIN_STEAM_IDS:
+        await update.effective_message.reply_text("SteamID не разрешён для админ-привязки.")
+        return
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.steam_id == steam_id).first()
+    finally:
+        db.close()
+
+    if user is None:
+        await update.effective_message.reply_text("Не нашёл пользователя с таким SteamID в базе.")
+        return
+
+    tg_id = str(update.effective_user.id)
+    try:
+        await asyncio.wait_for(redis_client.set(f"rl:bot:telegram:admin:{tg_id}", "1", ex=ADMIN_BIND_TTL_SECONDS), timeout=BOT_REDIS_TIMEOUT_SECONDS)
+    except Exception:
+        await update.effective_message.reply_text("Не удалось записать флаг админа в Redis.")
+        return
+
+    await update.effective_message.reply_text("Готово: админ-привязка установлена, лимиты для тебя отключены.")
 def main() -> None:
     token: Optional[str] = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
@@ -931,6 +989,7 @@ def main() -> None:
     app = ApplicationBuilder().token(token).build()
 
     app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(CommandHandler("admin_bind", cmd_admin_bind))
     app.add_handler(CommandHandler("faceit_stats", cmd_faceit_stats))
     app.add_handler(CommandHandler("faceit_analyze", cmd_faceit_analyze))
     app.add_handler(CommandHandler("tm_find", cmd_tm_find))
