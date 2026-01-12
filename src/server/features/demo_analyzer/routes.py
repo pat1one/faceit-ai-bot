@@ -299,25 +299,16 @@ async def analyze_demo(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Read file into memory once to check size and basic content, then rewind
-    content = await demo.read(MAX_DEMO_SIZE_BYTES + 1)
+    sniff = await demo.read(_SNIFF_BYTES)
 
-    if not content:
+    if not sniff:
         raise DemoAnalysisException(
             detail="Empty file. Please upload a valid CS2 demo.",
             error_code="EMPTY_FILE",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    if len(content) > MAX_DEMO_SIZE_BYTES:
-        raise DemoAnalysisException(
-            detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
-            error_code="FILE_TOO_LARGE",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
     # Very basic content sanity check: reject obviously textual/script files
-    sniff = content[:_SNIFF_BYTES]
     lowered_sniff = sniff.lower()
     suspicious_markers = [
         b"<html",
@@ -360,40 +351,6 @@ async def analyze_demo_background(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    content = await demo.read(MAX_DEMO_SIZE_BYTES + 1)
-
-    if not content:
-        raise DemoAnalysisException(
-            detail="Empty file. Please upload a valid CS2 demo.",
-            error_code="EMPTY_FILE",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    if len(content) > MAX_DEMO_SIZE_BYTES:
-        raise DemoAnalysisException(
-            detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
-            error_code="FILE_TOO_LARGE",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
-    sniff = content[:_SNIFF_BYTES]
-    lowered_sniff = sniff.lower()
-    suspicious_markers = [
-        b"<html",
-        b"<script",
-        b"<?php",
-        b"#!/bin/bash",
-        b"#!/usr/bin/env",
-        b"import os",
-        b"import sys",
-    ]
-    if any(marker in lowered_sniff for marker in suspicious_markers):
-        raise DemoAnalysisException(
-            detail="Invalid file content. Expected a binary CS2 demo file.",
-            error_code="INVALID_FILE_CONTENT",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
-
     tmp_path: Optional[str] = None
     try:
         os.makedirs(_SHARED_TMP_DIR, exist_ok=True)
@@ -403,8 +360,48 @@ async def analyze_demo_background(
             suffix=".dem",
             delete=False,
         ) as tmp_file:
-            tmp_file.write(content)
             tmp_path = tmp_file.name
+
+            total = 0
+            first_bytes = b""
+            while True:
+                chunk = await demo.read(1024 * 1024)
+                if not chunk:
+                    break
+                if not first_bytes:
+                    first_bytes = chunk[:_SNIFF_BYTES]
+                total += len(chunk)
+                if total > MAX_DEMO_SIZE_BYTES:
+                    raise DemoAnalysisException(
+                        detail=f"File too large. Maximum allowed size is {MAX_DEMO_SIZE_MB} MB.",
+                        error_code="FILE_TOO_LARGE",
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                    )
+                tmp_file.write(chunk)
+
+        if total == 0:
+            raise DemoAnalysisException(
+                detail="Empty file. Please upload a valid CS2 demo.",
+                error_code="EMPTY_FILE",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+        lowered_sniff = (first_bytes or b"").lower()
+        suspicious_markers = [
+            b"<html",
+            b"<script",
+            b"<?php",
+            b"#!/bin/bash",
+            b"#!/usr/bin/env",
+            b"import os",
+            b"import sys",
+        ]
+        if any(marker in lowered_sniff for marker in suspicious_markers):
+            raise DemoAnalysisException(
+                detail="Invalid file content. Expected a binary CS2 demo file.",
+                error_code="INVALID_FILE_CONTENT",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
 
         user_id_value = None
         if current_user is not None and current_user.id is not None:

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from fastapi import UploadFile
-
+ 
 from .models import (
     CoachReport,
     DemoAnalysis,
@@ -14,7 +14,8 @@ from .models import (
     RoundAnalysis,
 )
 from ...exceptions import DemoAnalysisException
-
+from ...config.settings import settings
+ 
 import tempfile
 import os
 
@@ -173,14 +174,28 @@ class DemoAnalyzer:
         filename = demo_file.filename or "unknown_match.dem"
         stem = Path(filename).stem
         main_player = stem.split("_")[0] if stem else "Player"
-    
-        content = await demo_file.read()
-    
+
+        max_demo_size_bytes = int(settings.MAX_DEMO_FILE_MB) * 1024 * 1024
+        size = 0
+
         # Create temporary file for parsing
         with tempfile.NamedTemporaryFile(suffix='.dem', delete=False) as tmp_file:
             tmp_path = tmp_file.name
-            tmp_file.write(content)
-    
+            while True:
+                chunk = await demo_file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > max_demo_size_bytes:
+                    raise DemoAnalysisException(
+                        detail=(
+                            "File too large. Maximum allowed size is "
+                            f"{settings.MAX_DEMO_FILE_MB} MB."
+                        ),
+                        error_code="FILE_TOO_LARGE",
+                    )
+                tmp_file.write(chunk)
+
         try:
             if DemoParser is None:
                 # Принудительно уйти в fallback-парсинг ниже
@@ -300,7 +315,7 @@ class DemoAnalyzer:
                 'score': {'team1': team1_rounds, 'team2': team2_rounds},
                 'main_player': main_player,
                 'total_rounds': total_rounds,
-                'file_size': len(content),
+                'file_size': size,
                 'tickrate': tickrate,
                 'kills_data': kills_records,
                 'rounds_data': rounds_records,
@@ -310,7 +325,6 @@ class DemoAnalyzer:
         except Exception as e:
             logger.warning(f"Demo parsing failed, using fallback: {e}")
             # Fallback to old fake parsing
-            size = len(content)
             min_rounds = 16
             max_rounds = 30
             rounds_span = max_rounds - min_rounds + 1
@@ -329,7 +343,10 @@ class DemoAnalyzer:
             }
         finally:
             if 'tmp_path' in locals():
-                os.unlink(tmp_path)
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
 
     async def _analyze_player_performance(
         self,
