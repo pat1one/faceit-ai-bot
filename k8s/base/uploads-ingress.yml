@@ -6,6 +6,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1g"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
@@ -24,3 +25,10 @@ spec:
             name: faceit-uploads-nginx
             port:
               number: 8080
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: faceit-api
+            port:
+              number: 8000
