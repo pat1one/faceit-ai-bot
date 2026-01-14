@@ -131,17 +131,6 @@ async def check_bot_rate_limit(
     if await is_admin_discord(user_key):
         return True
 
-
-
-async def safe_defer(interaction: discord.Interaction) -> bool:
-    try:
-        if not await safe_defer(interaction):
-            return
-        return True
-    except discord.errors.InteractionResponded:
-        return True
-    except discord.errors.NotFound:
-        return False
     try:
         key = f"rl:bot:discord:{operation}:{user_key}:minute"
         count = await asyncio.wait_for(redis_client.incr(key), timeout=1.0)
@@ -171,6 +160,21 @@ async def safe_defer(interaction: discord.Interaction) -> bool:
     except Exception as e:
         logger.error("Discord bot rate limit error: %s", e)
         return True
+
+
+async def safe_defer(interaction: discord.Interaction) -> bool:
+    try:
+        if interaction.response.is_done():
+            return True
+        await interaction.response.defer()
+        return True
+    except discord.errors.InteractionResponded:
+        return True
+    except discord.errors.NotFound:
+        return False
+    except Exception:
+        logger.exception("Failed to defer Discord interaction")
+        return False
 
 
 def track_discord_command(command_name: str):
