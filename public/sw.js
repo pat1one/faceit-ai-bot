@@ -1,5 +1,5 @@
 // Service Worker for Faceit AI Bot PWA
-const CACHE_NAME = 'faceit-ai-bot-v1';
+const CACHE_NAME = 'faceit-ai-bot-v2';
 const urlsToCache = [
   '/',
   '/analyze',
@@ -41,6 +41,19 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  try {
+    const url = new URL(event.request.url);
+    if (
+      event.request.method !== 'GET' ||
+      (url.origin === self.location.origin && url.pathname.startsWith('/api/'))
+    ) {
+      event.respondWith(fetch(event.request));
+      return;
+    }
+  } catch {
+    // ignore URL parse errors
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
