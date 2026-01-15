@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
   
   // Demo analysis (can go through a dedicated upload origin)
   DEMO_ANALYZE: `${DEMO_UPLOAD_BASE_URL}/demo/analyze`,
+  DEMO_ANALYZE_BACKGROUND: `${DEMO_UPLOAD_BASE_URL}/demo/analyze/background`,
+  TASK_STATUS: (taskId: string) => `${API_BASE_URL}/tasks/status/${encodeURIComponent(taskId)}`,
   // Player analysis
   PLAYER_ANALYSIS: (nickname: string) => `${API_BASE_URL}/players/${encodeURIComponent(nickname)}/analysis`,
   

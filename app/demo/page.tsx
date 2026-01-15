@@ -81,7 +81,7 @@ export default function DemoPage() {
         ? 'en'
         : 'ru';
 
-      const response = await fetch(`${API_ENDPOINTS.DEMO_ANALYZE}?language=${lang}`, {
+      const response = await fetch(`${API_ENDPOINTS.DEMO_ANALYZE_BACKGROUND}?language=${lang}`, {
         method: 'POST',
         body: formData,
       });
@@ -143,8 +143,75 @@ export default function DemoPage() {
         return;
       }
 
-      const data = await response.json();
-      setResult(data);
+      const submitData: any = await response.json();
+      const taskId = submitData?.task_id as string | undefined;
+
+      if (!taskId) {
+        setError(
+          t('demo.error_sbp', {
+            defaultValue:
+              'Произошла ошибка при анализе демо. Попробуйте ещё раз позже.',
+          }),
+        );
+        return;
+      }
+
+      const pollDelayMs = 2000;
+      const maxWaitMs = 30 * 60 * 1000;
+      const startedAt = Date.now();
+
+      while (true) {
+        if (Date.now() - startedAt > maxWaitMs) {
+          setError(
+            t('demo.error_sbp', {
+              defaultValue:
+                'Произошла ошибка при анализе демо. Попробуйте ещё раз позже.',
+            }),
+          );
+          return;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, pollDelayMs));
+
+        const statusResponse = await fetch(API_ENDPOINTS.TASK_STATUS(taskId), {
+          cache: 'no-store',
+        });
+
+        if (!statusResponse.ok) {
+          setError(
+            t('demo.error_sbp', {
+              defaultValue:
+                'Произошла ошибка при анализе демо. Попробуйте ещё раз позже.',
+            }),
+          );
+          return;
+        }
+
+        const statusData: any = await statusResponse.json();
+        const taskStatus = String(statusData?.status || '').toUpperCase();
+
+        if (taskStatus === 'SUCCESS') {
+          const taskResult = statusData?.result;
+          setResult(taskResult?.analysis ?? taskResult);
+          return;
+        }
+
+        if (taskStatus === 'FAILURE' || taskStatus === 'REVOKED') {
+          const messageFromTask =
+            (typeof statusData?.error === 'string' && statusData.error) ||
+            (typeof statusData?.result?.error === 'string' && statusData.result.error);
+          setError(
+            messageFromTask ||
+              t('demo.error_sbp', {
+                defaultValue:
+                  'Произошла ошибка при анализе демо. Попробуйте ещё раз позже.',
+              }),
+          );
+          return;
+        }
+
+        // else: PENDING / STARTED / RETRY etc.
+      }
     } catch (e) {
       console.error('Demo analyze error', e);
       setError(t('demo.error_sbp'));
