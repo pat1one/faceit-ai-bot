@@ -255,3 +255,8 @@ async def public_config_api_alias():
 @app.get("/metrics")
 async def metrics():
     return Response(generate_latest(), media_type="text/plain; charset=utf-8")
+
+
+@app.get("/api/metrics")
+async def metrics_api_alias():
+    return await metrics()

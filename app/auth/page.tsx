@@ -25,6 +25,8 @@ export default function AuthPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaReset, setCaptchaReset] = useState(0);
   const [captchaEnabled, setCaptchaEnabled] = useState(false);
+  const [captchaConfigLoading, setCaptchaConfigLoading] = useState(true);
+  const [captchaConfigError, setCaptchaConfigError] = useState<string | null>(null);
   
   const { login, register, loginWithToken } = useAuth();
   const router = useRouter();
@@ -80,6 +82,11 @@ export default function AuthPage() {
 
     (async () => {
       try {
+        if (!cancelled) {
+          setCaptchaConfigLoading(true);
+          setCaptchaConfigError(null);
+        }
+
         const res = await fetch('/api/public-config', {
           method: 'GET',
           credentials: 'include',
@@ -89,7 +96,11 @@ export default function AuthPage() {
         });
 
         if (!res.ok) {
-          if (!cancelled) setCaptchaEnabled(false);
+          if (!cancelled) {
+            setCaptchaEnabled(false);
+            setCaptchaConfigError('Не удалось загрузить конфигурацию CAPTCHA.');
+            setCaptchaConfigLoading(false);
+          }
           return;
         }
 
@@ -103,9 +114,17 @@ export default function AuthPage() {
           ((provider === 'smartcaptcha' || provider === 'yandex_smartcaptcha' || provider === 'yandex') &&
             hasSmartKey);
 
-        if (!cancelled) setCaptchaEnabled(enabled);
+        if (!cancelled) {
+          setCaptchaEnabled(enabled);
+          setCaptchaConfigLoading(false);
+          setCaptchaConfigError(null);
+        }
       } catch {
-        if (!cancelled) setCaptchaEnabled(false);
+        if (!cancelled) {
+          setCaptchaEnabled(false);
+          setCaptchaConfigError('Не удалось загрузить конфигурацию CAPTCHA.');
+          setCaptchaConfigLoading(false);
+        }
       }
     })();
 
@@ -140,6 +159,22 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      if (captchaConfigLoading) {
+        setError(
+          t('auth.captcha_loading', {
+            defaultValue: 'Загружаем CAPTCHA, подождите пару секунд…',
+          }),
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (captchaConfigError) {
+        setError(captchaConfigError);
+        setLoading(false);
+        return;
+      }
+
       if (captchaEnabled && !captchaToken) {
         setError(
           t('auth.captcha_required', {
@@ -206,6 +241,19 @@ export default function AuthPage() {
   };
 
   const handleSteamLoginClick = () => {
+    if (captchaConfigLoading) {
+      setError(
+        t('auth.captcha_loading', {
+          defaultValue: 'Загружаем CAPTCHA, подождите пару секунд…',
+        }),
+      );
+      return;
+    }
+    if (captchaConfigError) {
+      setError(captchaConfigError);
+      return;
+    }
+
     if (captchaEnabled && !captchaToken) {
       setError(
         t('auth.captcha_required', {
@@ -245,6 +293,19 @@ export default function AuthPage() {
   };
 
   const handleFaceitLoginClick = () => {
+    if (captchaConfigLoading) {
+      setError(
+        t('auth.captcha_loading', {
+          defaultValue: 'Загружаем CAPTCHA, подождите пару секунд…',
+        }),
+      );
+      return;
+    }
+    if (captchaConfigError) {
+      setError(captchaConfigError);
+      return;
+    }
+
     if (captchaEnabled && !captchaToken) {
       setError(
         t('auth.captcha_required', {
