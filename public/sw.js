@@ -1,13 +1,10 @@
 // Service Worker for Faceit AI Bot PWA
-const CACHE_NAME = 'faceit-ai-bot-v2';
+const CACHE_NAME = 'faceit-ai-bot-v3';
 const urlsToCache = [
-  '/',
-  '/analyze',
-  '/teammates',
-  '/demo',
   '/manifest.json',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/offline.html'
 ];
 
 // Install event - cache resources
@@ -41,6 +38,13 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/offline.html'))
+    );
+    return;
+  }
+
   try {
     const url = new URL(event.request.url);
     if (
