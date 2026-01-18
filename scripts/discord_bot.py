@@ -12,7 +12,7 @@ import httpx
 from prometheus_client import Counter, Histogram, start_http_server
 
 from src.server.database.connection import SessionLocal
-from src.server.database.models import User
+from src.server.database.models import User, Subscription, SubscriptionTier
 from src.server.features.player_analysis.service import PlayerAnalysisService
 from src.server.features.teammates.models import TeammatePreferences
 from src.server.features.teammates.service import TeammateService
@@ -105,6 +105,47 @@ else:
 
 ADMIN_STEAM_IDS = {x.strip() for x in os.getenv("ADMIN_STEAM_IDS", "").split(",") if x.strip()}
 ADMIN_BIND_TTL_SECONDS = int(os.getenv("ADMIN_BIND_TTL_SECONDS", "31536000"))
+BOT_BYPASS_STEAM_IDS = {x.strip() for x in os.getenv("BOT_BYPASS_STEAM_IDS", "").split(",") if x.strip()}
+
+
+def has_active_paid_subscription(db: SessionLocal, steam_id: str) -> bool:
+    user = db.query(User).filter(User.steam_id == steam_id).first()
+    if user is None:
+        return False
+
+    subscription = (
+        db.query(Subscription)
+        .filter(Subscription.user_id == user.id, Subscription.is_active == True)
+        .order_by(Subscription.expires_at.desc())
+        .first()
+    )
+    if subscription is None:
+        return False
+
+    now = datetime.utcnow()
+    if subscription.expires_at is not None and subscription.expires_at < now:
+        return False
+
+    tier = subscription.tier
+    if isinstance(tier, SubscriptionTier):
+        return tier != SubscriptionTier.FREE
+    try:
+        return SubscriptionTier(tier) != SubscriptionTier.FREE
+    except Exception:
+        return False
+
+
+async def is_subscriber_discord(user_key: str) -> bool:
+    if redis_client is None:
+        return False
+    try:
+        v = await asyncio.wait_for(
+            redis_client.get(f"rl:bot:discord:subscriber:{user_key}"),
+            timeout=BOT_REDIS_TIMEOUT_SECONDS,
+        )
+        return v == "1"
+    except Exception:
+        return False
 
 async def is_admin_discord(user_key: str) -> bool:
     if redis_client is None:
@@ -129,6 +170,9 @@ async def check_bot_rate_limit(
         return True
 
     if await is_admin_discord(user_key):
+        return True
+
+    if await is_subscriber_discord(user_key):
         return True
 
     try:
@@ -1146,6 +1190,57 @@ async def admin_bind(interaction: discord.Interaction, steam_id: str) -> None:
         return
 
     await interaction.response.send_message("Готово: админ-привязка установлена, лимиты для тебя отключены.", ephemeral=True)
+
+
+@tree.command(name="sub_bind", description="Привязать подписку по SteamID (убрать лимиты)")
+@app_commands.describe(steam_id="Твой SteamID64")
+@track_discord_command("sub_bind")
+async def sub_bind(interaction: discord.Interaction, steam_id: str) -> None:
+    if redis_client is None:
+        await interaction.response.send_message(
+            "Redis недоступен, привязка подписчика временно невозможна.",
+            ephemeral=True,
+        )
+        return
+
+    steam_id = str(steam_id).strip()
+    if not steam_id:
+        await interaction.response.send_message("Нужен steam_id.", ephemeral=True)
+        return
+
+    if BOT_BYPASS_STEAM_IDS and steam_id not in BOT_BYPASS_STEAM_IDS:
+        db = SessionLocal()
+        try:
+            if not has_active_paid_subscription(db, steam_id=steam_id):
+                await interaction.response.send_message(
+                    "У этого SteamID нет активной подписки.",
+                    ephemeral=True,
+                )
+                return
+        finally:
+            db.close()
+
+    ds_id = str(interaction.user.id)
+    try:
+        await asyncio.wait_for(
+            redis_client.set(
+                f"rl:bot:discord:subscriber:{ds_id}",
+                "1",
+                ex=ADMIN_BIND_TTL_SECONDS,
+            ),
+            timeout=BOT_REDIS_TIMEOUT_SECONDS,
+        )
+    except Exception:
+        await interaction.response.send_message(
+            "Не удалось записать флаг подписчика в Redis.",
+            ephemeral=True,
+        )
+        return
+
+    await interaction.response.send_message(
+        "Готово: подписка привязана, лимиты для тебя отключены.",
+        ephemeral=True,
+    )
 @client.event
 async def on_ready() -> None:
     global GUILD_ID

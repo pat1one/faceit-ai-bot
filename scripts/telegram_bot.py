@@ -29,7 +29,7 @@ except ImportError:
     redis = None  # type: ignore[assignment]
 
 from src.server.database.connection import SessionLocal
-from src.server.database.models import User
+from src.server.database.models import User, Subscription, SubscriptionTier
 from src.server.exceptions import DemoAnalysisException
 from src.server.features.player_analysis.service import PlayerAnalysisService
 from src.server.features.demo_analyzer.service import DemoAnalyzer
@@ -102,6 +102,47 @@ else:
 
 ADMIN_STEAM_IDS = {x.strip() for x in os.getenv("ADMIN_STEAM_IDS", "").split(",") if x.strip()}
 ADMIN_BIND_TTL_SECONDS = int(os.getenv("ADMIN_BIND_TTL_SECONDS", "31536000"))
+BOT_BYPASS_STEAM_IDS = {x.strip() for x in os.getenv("BOT_BYPASS_STEAM_IDS", "").split(",") if x.strip()}
+
+
+def has_active_paid_subscription(db: SessionLocal, steam_id: str) -> bool:
+    user = db.query(User).filter(User.steam_id == steam_id).first()
+    if user is None:
+        return False
+
+    subscription = (
+        db.query(Subscription)
+        .filter(Subscription.user_id == user.id, Subscription.is_active == True)
+        .order_by(Subscription.expires_at.desc())
+        .first()
+    )
+    if subscription is None:
+        return False
+
+    now = datetime.utcnow()
+    if subscription.expires_at is not None and subscription.expires_at < now:
+        return False
+
+    tier = subscription.tier
+    if isinstance(tier, SubscriptionTier):
+        return tier != SubscriptionTier.FREE
+    try:
+        return SubscriptionTier(tier) != SubscriptionTier.FREE
+    except Exception:
+        return False
+
+
+async def is_subscriber_telegram(user_key: str) -> bool:
+    if redis_client is None:
+        return False
+    try:
+        v = await asyncio.wait_for(
+            redis_client.get(f"rl:bot:telegram:subscriber:{user_key}"),
+            timeout=BOT_REDIS_TIMEOUT_SECONDS,
+        )
+        return v == "1"
+    except Exception:
+        return False
 
 async def is_admin_telegram(user_key: str) -> bool:
     if redis_client is None:
@@ -126,6 +167,9 @@ async def check_bot_rate_limit(
         return True
 
     if await is_admin_telegram(user_key):
+        return True
+
+    if await is_subscriber_telegram(user_key):
         return True
 
     try:
@@ -981,6 +1025,52 @@ async def cmd_admin_bind(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     await update.effective_message.reply_text("Готово: админ-привязка установлена, лимиты для тебя отключены.")
+
+
+@track_telegram_command("sub_bind")
+async def cmd_sub_bind(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.effective_user is None:
+        return
+    if redis_client is None:
+        await update.effective_message.reply_text(
+            "Redis недоступен, привязка подписчика временно невозможна."
+        )
+        return
+
+    args = context.args or []
+    steam_id = (args[0].strip() if args else "")
+    if not steam_id:
+        await update.effective_message.reply_text("Использование: /sub_bind <steam_id>")
+        return
+
+    if BOT_BYPASS_STEAM_IDS and steam_id not in BOT_BYPASS_STEAM_IDS:
+        db = SessionLocal()
+        try:
+            if not has_active_paid_subscription(db, steam_id=steam_id):
+                await update.effective_message.reply_text(
+                    "У этого SteamID нет активной подписки."
+                )
+                return
+        finally:
+            db.close()
+
+    tg_id = str(update.effective_user.id)
+    try:
+        await asyncio.wait_for(
+            redis_client.set(
+                f"rl:bot:telegram:subscriber:{tg_id}",
+                "1",
+                ex=ADMIN_BIND_TTL_SECONDS,
+            ),
+            timeout=BOT_REDIS_TIMEOUT_SECONDS,
+        )
+    except Exception:
+        await update.effective_message.reply_text("Не удалось записать флаг подписчика в Redis.")
+        return
+
+    await update.effective_message.reply_text(
+        "Готово: подписка привязана, лимиты для тебя отключены."
+    )
 def main() -> None:
     token: Optional[str] = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
@@ -990,6 +1080,7 @@ def main() -> None:
 
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("admin_bind", cmd_admin_bind))
+    app.add_handler(CommandHandler("sub_bind", cmd_sub_bind))
     app.add_handler(CommandHandler("faceit_stats", cmd_faceit_stats))
     app.add_handler(CommandHandler("faceit_analyze", cmd_faceit_analyze))
     app.add_handler(CommandHandler("tm_find", cmd_tm_find))
