@@ -1151,14 +1151,18 @@ async def on_ready() -> None:
     global GUILD_ID
 
     try:
+        synced_global = await tree.sync()
+        logger.info("Синхронизировано %s глобальных команд", len(synced_global))
+
         if GUILD_ID is not None:
             guild = discord.Object(id=GUILD_ID)
             tree.copy_global_to(guild=guild)
-            synced = await tree.sync(guild=guild)
-            logger.info("Синхронизировано %s команд на сервере", len(synced))
-        else:
-            synced = await tree.sync()
-            logger.info("Синхронизировано %s глобальных команд", len(synced))
+            synced_guild = await tree.sync(guild=guild)
+            logger.info(
+                "Синхронизировано %s команд на сервере %s",
+                len(synced_guild),
+                GUILD_ID,
+            )
 
         logger.info("Discord бот %s запущен", client.user)
     except Exception:
