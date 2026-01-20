@@ -9,6 +9,7 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
 
 # Virtualenvs
 .venv/
@@ -45,6 +46,7 @@ sh/
 -n
 NUL
 | grep faceit-ai-bot_faceit-network
+test_integration.db
 
 # One-off server files (not part of repo)
 faceit-celery.service
