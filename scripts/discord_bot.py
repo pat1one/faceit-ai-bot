@@ -81,6 +81,7 @@ _SNIFF_BYTES = 4096
 
 API_INTERNAL_URL = os.getenv("API_INTERNAL_URL", "http://api:8000").rstrip("/")
 DEMO_UPLOAD_API_URL = os.getenv("DEMO_UPLOAD_API_URL", API_INTERNAL_URL).rstrip("/")
+TASK_STATUS_API_URL = os.getenv("TASK_STATUS_API_URL", API_INTERNAL_URL).rstrip("/")
 
 if REDIS_AVAILABLE:
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -305,7 +306,7 @@ async def submit_demo_url_analysis(
         while time.time() < deadline:
             try:
                 status_resp = await client_http.get(
-                    f"{DEMO_UPLOAD_API_URL}/tasks/status/{task_id}"
+                    f"{TASK_STATUS_API_URL}/tasks/status/{task_id}"
                 )
             except Exception:
                 logger.exception("Discord demo url status check failed")

@@ -23,7 +23,9 @@ class TaskSubmitRequest(BaseModel):
 class TaskStatusResponse(BaseModel):
     """Task status response"""
     task_id: str
+    taskId: str
     status: str
+    state: str
     result: Optional[Dict] = None
     error: Optional[str] = None
 
@@ -88,7 +90,9 @@ async def get_task_status(task_id: str):
 
         response = {
             "task_id": task_id,
+            "taskId": task_id,
             "status": result.status,
+            "state": result.status,
         }
 
         if result.ready():

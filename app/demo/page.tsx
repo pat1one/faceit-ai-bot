@@ -14,7 +14,7 @@ const MAX_DEMO_SIZE_MB =
 const MAX_DEMO_SIZE_BYTES = MAX_DEMO_SIZE_MB * 1024 * 1024;
 
 export default function DemoPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,9 +81,16 @@ export default function DemoPage() {
         ? 'en'
         : 'ru';
 
+      const authHeaders: HeadersInit = {};
+      if (token) {
+        authHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_ENDPOINTS.DEMO_ANALYZE_BACKGROUND}?language=${lang}`, {
         method: 'POST',
         body: formData,
+        credentials: 'include',
+        headers: authHeaders,
       });
 
       if (!response.ok) {
@@ -144,7 +151,7 @@ export default function DemoPage() {
       }
 
       const submitData: any = await response.json();
-      const taskId = submitData?.task_id as string | undefined;
+      const taskId = (submitData?.task_id ?? submitData?.taskId) as string | undefined;
 
       if (!taskId) {
         setError(
@@ -180,6 +187,8 @@ export default function DemoPage() {
         try {
           statusResponse = await fetch(API_ENDPOINTS.TASK_STATUS(taskId), {
             cache: 'no-store',
+            credentials: 'include',
+            headers: authHeaders,
           });
 
           if (!statusResponse.ok) {
@@ -213,7 +222,7 @@ export default function DemoPage() {
         }
 
         consecutiveStatusErrors = 0;
-        const taskStatus = String(statusData?.status || '').toUpperCase();
+        const taskStatus = String(statusData?.status ?? statusData?.state ?? '').toUpperCase();
 
         if (taskStatus === 'SUCCESS') {
           const taskResult = statusData?.result;
@@ -223,7 +232,7 @@ export default function DemoPage() {
 
         if (taskStatus === 'FAILURE' || taskStatus === 'REVOKED') {
           const messageFromTask =
-            (typeof statusData?.error === 'string' && statusData.error) ||
+            (typeof (statusData?.error ?? statusData?.detail) === 'string' && (statusData.error ?? statusData.detail)) ||
             (typeof statusData?.result?.error === 'string' && statusData.result.error);
           setError(
             messageFromTask ||
