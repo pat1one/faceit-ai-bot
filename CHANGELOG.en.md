@@ -2,6 +2,10 @@
 
 **[Русская версия](CHANGELOG.md)**
 
+## Version 0.5.0 — January 24, 2026
+
+- Fixed API ↔ PostgreSQL connectivity in production (Steam callback no longer returns 500).
+
 ## Version 0.4.9 — January 5, 2026
 
 Release focused on production availability, secure authentication flows, and admin ergonomics.

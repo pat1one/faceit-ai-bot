@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.4.9-2E9EF7?style=for-the-badge)
+![Faceit AI Bot](https://img.shields.io/badge/Faceit_AI_Bot-v0.5.0-2E9EF7?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 [![License](https://img.shields.io/badge/License-Source--available-blue?style=for-the-badge)](LICENSE)
@@ -26,13 +26,13 @@
 ✅ **Сайт активно работает: [pattmsc.online](https://pattmsc.online)**  
 📚 **Документация доступна на GitHub Pages: [pat1one.github.io/faceit-ai-bot](https://pat1one.github.io/faceit-ai-bot/)**
 
-[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://pat1one.github.io/faceit-ai-bot/) • [📦 Релиз v0.4.9](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
+[🚀 Демо](https://pattmsc.online) • [📚 Документация](https://pat1one.github.io/faceit-ai-bot/) • [📦 Релиз v0.5.0](https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.5.0) • [🐛 Баг-репорты](https://github.com/pat1one/faceit-ai-bot/issues) • [💡 Идеи](https://github.com/pat1one/faceit-ai-bot/issues/new?template=feature_request.md)
 
-**⬇️ Загрузки (v0.4.9):**
+**⬇️ Загрузки (v0.5.0):**
 
-- 🧩 `faceit-ai-bot-extension-v0.4.9.zip` — браузерное расширение (Chrome/Edge).
+- 🧩 `faceit-ai-bot-extension-v0.5.0.zip` — браузерное расширение (Chrome/Edge).
 
-Все файлы доступны в разделе **Assets** на странице релиза v0.4.9 в GitHub.
+Все файлы доступны в разделе **Assets** на странице релиза v0.5.0 в GitHub.
 
 **[English version](README.en.md)** | **[Contributing](CONTRIBUTING.md)** | **[Changelog](CHANGELOG.md)** | **[FAQ](FAQ.md)**
 
@@ -159,7 +159,7 @@
 
 #### Самостоятельная установка браузерного расширения (Chrome/Edge)
 
-1. Откройте релиз v0.4.9 на GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.4.9) и скачайте архив с расширением в разделе **Assets**, затем распакуйте его (или скачайте весь репозиторий как ZIP).
+1. Откройте релиз v0.5.0 на GitHub (https://github.com/pat1one/faceit-ai-bot/releases/tag/v0.5.0) и скачайте архив с расширением в разделе **Assets**, затем распакуйте его (или скачайте весь репозиторий как ZIP).
 2. Откройте в браузере `chrome://extensions` (для Chrome) или `edge://extensions` (для Edge).
 3. Включите **режим разработчика** (Developer mode).
 4. Нажмите **«Загрузить распакованное»** и выберите папку `extension` внутри проекта `faceit-ai-bot`.
@@ -254,7 +254,7 @@ npm run dev
 ## 🗺️ Roadmap
 
 <details>
-<summary><b>📍 Текущая версия: v0.4.9</b></summary>
+<summary><b>📍 Текущая версия: v0.5.0</b></summary>
 
 ### ✅ Реализовано в v0.4.1
 
