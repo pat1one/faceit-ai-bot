@@ -19,19 +19,15 @@ import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any, Optional
 
-# Try to set up path for imports
-# When run as: python -m src.server.features.demo_analyzer.export_dataset
-if __name__ == "__main__" and __package__ is None:
-    # Direct execution - add project root to path
-    project_root = Path(__file__).parent.parent.parent.parent.parent
-    sys.path.insert(0, str(project_root))
-    from src.server.features.demo_analyzer.service import DemoAnalyzer
-    from src.server.features.demo_analyzer.dataset import build_training_sample_from_demo, append_samples_to_jsonl
-else:
-    # Module execution or already in path
-    from server.features.demo_analyzer.service import DemoAnalyzer
-    from server.features.demo_analyzer.dataset import build_training_sample_from_demo, append_samples_to_jsonl
+# Add project root to path for imports
+project_root = Path(__file__).parent.parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from src.server.features.demo_analyzer.service import DemoAnalyzer
+from src.server.features.demo_analyzer.dataset import build_training_sample_from_demo, append_samples_to_jsonl
+from src.server.features.demo_analyzer.models import DemoTrainingSample
 
 
 class MockUploadFile:
@@ -49,7 +45,7 @@ class MockUploadFile:
         pass
 
 
-async def process_demo_file(demo_path: Path, analyzer: DemoAnalyzer, source: str) -> dict:
+async def process_demo_file(demo_path: Path, analyzer: DemoAnalyzer, source: str) -> Optional[DemoTrainingSample]:
     """Process a single .dem file and return training sample."""
     print(f"Processing {demo_path}...")
 
@@ -66,7 +62,10 @@ async def process_demo_file(demo_path: Path, analyzer: DemoAnalyzer, source: str
         # Build training sample
         sample = build_training_sample_from_demo(analysis, source=source)
 
-        rounds_count = len(sample.input.rounds) if sample.input and sample.input.rounds else 0
+        # Safe access to rounds count
+        rounds_count = 0
+        if sample.input and hasattr(sample.input, 'rounds') and sample.input.rounds:
+            rounds_count = len(sample.input.rounds)
         print(f"  -> Generated sample with {rounds_count} rounds")
         return sample
 
@@ -128,7 +127,7 @@ async def main():
     print("Initializing DemoAnalyzer...")
     analyzer = DemoAnalyzer()
 
-    samples = []
+    samples: list[Any] = []
     processed = 0
     errors = 0
 
